@@ -1,0 +1,11 @@
+general:
+  input_dir_prefix: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/puppiIsoData
+  output_dir: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/OutHistoFiles
+  tree_name: Events
+
+samples:
+  DYToLL_M50_PU0:
+    input_file_pattern: DYToLL_M50_PU0/FP/240801_131Xv3a/*.root
+
+  DYToLL_M50_PU200:
+    input_file_pattern: DYToLL_M50_PU200/FP/240801_131Xv3a/*.root
