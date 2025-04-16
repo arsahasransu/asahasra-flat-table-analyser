@@ -1,2 +1,4 @@
 *.root
 *__pycache__/
+hists_*/
+puppiIsoData/

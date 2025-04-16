@@ -3,11 +3,15 @@ import yaml
 
 import ROOT
 
-from dy_to_ll_ana import dy_to_ll_ana
+from define_cpp_utils import define_cpp_utils
+from dy_to_ll_ana import dy_to_ll_ana_main
 import utilities as utilities
 
 @utilities.time_eval
 def analyser():
+
+    ROOT.EnableImplicitMT()
+    define_cpp_utils()
 
     parser = argparse.ArgumentParser(description="Analyse the data")
     parser.add_argument("config", help="Path to the configuration file")
@@ -27,8 +31,14 @@ def analyser():
             continue
         print(f"Processing {df.Count().GetValue()} events in sample {s_name}")
 
-        df = dy_to_ll_ana(df)
+        histograms = []
+        df,more_hists = dy_to_ll_ana_main(df)
+        histograms.extend(more_hists)
 
+        outfile = ROOT.TFile(f'{opts['output_dir']}/hists_{s_name}.root', 'RECREATE')
+        for hist in histograms:
+            hist.Write()
+        outfile.Close()
 
 if __name__ == "__main__":
     analyser()

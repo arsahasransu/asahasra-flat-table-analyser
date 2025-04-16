@@ -1,6 +1,7 @@
 general:
-  input_dir_prefix: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/puppiIsoData
-  output_dir: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/OutHistoFiles
+  # input_dir_prefix: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/puppiIsoData
+  input_dir_prefix: ./puppiIsoData
+  output_dir: ./OutHistoFiles
   tree_name: Events
 
 samples:
