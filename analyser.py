@@ -4,7 +4,8 @@ import yaml
 import ROOT
 
 from define_cpp_utils import define_cpp_utils
-from dy_to_ll_ana import dy_to_ll_ana_main
+import dy_to_ll_ana
+import qcd_ana
 import utilities as utilities
 
 @utilities.time_eval
@@ -32,8 +33,14 @@ def analyser():
         print(f"Processing {df.Count().GetValue()} events in sample {s_name}")
 
         histograms = []
-        df,more_hists = dy_to_ll_ana_main(df)
-        histograms.extend(more_hists)
+        if s_info['type'] == 'dytoll':
+            df,hists = dy_to_ll_ana.dy_to_ll_ana_main(df)
+        elif s_info['type'] == 'qcd':
+            df,hists = qcd_ana.qcd_ana_main(df)
+        else:
+            print(f"Unknown sample type {s_info['type']}")
+            continue
+        histograms.extend(hists)
 
         outfile = ROOT.TFile(f'{opts['output_dir']}/hists_{s_name}.root', 'RECREATE')
         for hist in histograms:

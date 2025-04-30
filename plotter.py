@@ -1,4 +1,6 @@
 import os
+import glob
+
 import ROOT
 from ROOT import TCanvas, TEfficiency, TH1D, TFile
 
@@ -43,17 +45,22 @@ def plotter():
 
 def auto_plotter():
 
-    for file_n in ['hists_DYToLL_M50_PU0', 'hists_DYToLL_M50_PU200']:
-        file = TFile.Open(f"./OutHistoFiles/{file_n}.root")
+    histdirs = glob.glob("./OutHistoFiles/hists_*.root")
+
+
+    for file_n in histdirs:
+        file = TFile.Open(file_n)
+        basefilename = os.path.basename(file_n)
+        file_prefix = basefilename[:-5]
 
         for histKey in file.GetListOfKeys():
             histObj = histKey.ReadObj()
             if isinstance(histObj, ROOT.TH1D):
                 histTh1Obj = TH1D(histKey.ReadObj())
 
-                makePngPlot(histTh1Obj, f'{file_n}/autoplots/', 'autoSinglePlot')
+                makePngPlot(histTh1Obj, f'{file_prefix}/autoplots/', 'autoSinglePlot')
 
 
 if __name__ == "__main__":
-    plotter()
+    # plotter()
     auto_plotter()

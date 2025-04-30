@@ -6,7 +6,29 @@ general:
 
 samples:
   DYToLL_M50_PU0:
-    input_file_pattern: DYToLL_M50_PU0/FP/240801_131Xv3a/*.root
+    input_file_pattern: DYToLL_M50_PU0/FP/v142Xv0/perfNano_2636447_*.root
+    type: 'dytoll'
 
   DYToLL_M50_PU200:
-    input_file_pattern: DYToLL_M50_PU200/FP/240801_131Xv3a/*.root
+    input_file_pattern: DYToLL_M50_PU200/FP/v142Xv0/perfNano_2636448_*.root
+    type: 'dytoll'
+
+  QCD_Pt20To30:
+    input_file_pattern: QCD_Pt20To30/FP/v142Xv0/perfNano_2636449_*.root
+    type: 'qcd'
+
+  QCD_Pt30To50:
+    input_file_pattern: QCD_Pt30To50/FP/v142Xv0/perfNano_2636450_*.root
+    type: 'qcd'
+
+  QCD_Pt50To80:
+    input_file_pattern: QCD_Pt50To80/FP/v142Xv0/perfNano_2636451_*.root
+    type: 'qcd'
+
+  QCD_Pt80To120:
+    input_file_pattern: QCD_Pt80To120/FP/v142Xv0/perfNano_2636452_*.root
+    type: 'qcd'
+
+  QCD_Pt120To170:
+    input_file_pattern: QCD_Pt120To170/FP/v142Xv0/perfNano_2636453_*.root
+    type: 'qcd'
