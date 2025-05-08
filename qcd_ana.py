@@ -1,9 +1,10 @@
+import numpy as np
+
+from calc_puppi_iso import get_iso
 import utilities as utilities
 from utilities import puppi_vars, tkell2_vars
+from utilities import sufEl, sufPu
 
-
-sufEl = 'TkEleL2'
-sufPu = 'L1PuppiCands'
 
 def add_tkel_filter(df, prefiltid='', filterid='', filter_cond=None):
 
@@ -56,13 +57,16 @@ def qcd_ana_main(df):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    # Consistency check for pt sorting
-    # TODO: Implement this
-
     # No selection
     add_standard_hists(df, histograms, '', '')
 
     df_TkElEB = add_tkel_filter(df, '', 'TkElPt10EB', f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479')
     add_standard_hists(df_TkElEB, histograms, 'TkElPt10EB', '')
+
+    df_TkElEB = get_iso(df_TkElEB, f'{sufEl}TkElPt10EB', sufPu)
+    dRmin_list = np.arange(0.01, 0.2, 0.01)
+    for dRmin in dRmin_list:
+        histograms.append(df_TkElEB.Histo1D((f'{sufEl}TkElPt10EB_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}', 
+                                             'recalcPuppiIso', 10000, -2, 8), f'{sufEl}TkElPt10EB_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}'))
 
     return (df, histograms)

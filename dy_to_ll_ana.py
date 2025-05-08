@@ -1,10 +1,10 @@
+import numpy as np
+
+from calc_puppi_iso import get_iso
 import utilities as utilities
 from utilities import genel_vars, genmch_vars, puppi_vars, tkell2_vars
+from utilities import sufEl, sufGen, sufPu
 
-
-sufGen = 'GenEl'
-sufEl = 'TkEleL2'
-sufPu = 'L1PuppiCands'
 
 def do_gen_match(df, histograms, gencoll, recocoll):
 
@@ -110,9 +110,6 @@ def dy_to_ll_ana_main(df):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    # Consistency check for pt sorting
-    # TODO: Implement this
-
     # No selection
     add_standard_hists(df, histograms, '', '')
 
@@ -122,6 +119,15 @@ def dy_to_ll_ana_main(df):
 
     # Observe angles before gen matching
     dfEB = pre_gen_mch_hists(dfEB, histograms, sufGen+'genEB', sufEl)
+
+    # Gen match
     dfEB = do_gen_match(dfEB, histograms, sufGen+'genEB', sufEl)
+
+    # Calculate puppi iso
+    dfEB = get_iso(dfEB, f'{sufEl}_{sufGen}genEBmatched', sufPu)
+    dRmin_list = np.arange(0.01, 0.2, 0.01)
+    for dRmin in dRmin_list:
+        histograms.append(dfEB.Histo1D((f'{sufEl}_{sufGen}genEBmatched_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}', 
+                                        'recalcPuppiIso', 10000, -2, 8), f'{sufEl}_{sufGen}genEBmatched_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}'))
 
     return (df, histograms)

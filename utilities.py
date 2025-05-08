@@ -1,6 +1,12 @@
 import time
 
 
+# Define suffixes for different collections
+sufEl = 'TkEleL2'
+sufGen = 'GenEl'
+sufPu = 'L1PuppiCands'
+
+
 # Decorator to measure the execution time of a function
 def time_eval(func):
     def wrapper(*args, **kwargs):
