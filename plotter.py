@@ -58,7 +58,7 @@ def auto_plotter():
             if isinstance(histObj, ROOT.TH1D):
                 histTh1Obj = TH1D(histKey.ReadObj())
 
-                makePngPlot(histTh1Obj, f'{file_prefix}/autoplots/', 'autoSinglePlot')
+                makePngPlot(histTh1Obj, f'{file_prefix}/autoplots', 'autoSinglePlot')
 
 
 if __name__ == "__main__":
