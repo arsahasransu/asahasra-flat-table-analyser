@@ -1,4 +1,3 @@
-import string
 import time
 
 from ROOT import RDataFrame
@@ -26,7 +25,7 @@ def time_eval(func):
 angdiff_vars = ['deta', 'dphi', 'dR']
 
 
-def angdiff_hists(df:RDataFrame, referencecoll:string, targetcoll:string):
+def angdiff_hists(df:RDataFrame, referencecoll:str, targetcoll:str):
 
     collectionkey = f'{referencecoll}_{targetcoll}'
     get_angdiffs_str = f'getminangs({referencecoll}_eta, {referencecoll}_phi,\
@@ -38,7 +37,7 @@ def angdiff_hists(df:RDataFrame, referencecoll:string, targetcoll:string):
     return df
 
 
-def do_gen_match(df:RDataFrame, gencoll:string, recocoll:string):
+def do_gen_match(df:RDataFrame, gencoll:str, recocoll:str):
 
     perform_genmatch_str = f'getmatchedidxs({gencoll}_eta, {gencoll}_phi,\
                                             {recocoll}_eta, {recocoll}_phi, 0.02)'

@@ -67,31 +67,31 @@ def define_cpp_utils():
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_getmatchedidxs)
 
-    STRCPPFUNC_calcpuppiiso = """
-        ROOT::VecOps::RVec<float> calcpuppiiso(ROOT::VecOps::RVec<float> &e_pt,
-                                               ROOT::VecOps::RVec<float> &e_eta,
-                                               ROOT::VecOps::RVec<float> &e_phi,
-                                               ROOT::VecOps::RVec<float> &puppi_pt,
-                                               ROOT::VecOps::RVec<float> &puppi_eta,
-                                               ROOT::VecOps::RVec<float> &puppi_phi,
-                                               float dRmin, float dRmax) {
-            ROOT::VecOps::RVec<float> iso(e_pt.size(), -1);
+    STRCPPFUNC_calcisoannularcone = """
+        ROOT::VecOps::RVec<float> calcisoannularcone(ROOT::VecOps::RVec<float> &sig_pt,
+                                                     ROOT::VecOps::RVec<float> &sig_eta,
+                                                     ROOT::VecOps::RVec<float> &sig_phi,
+                                                     ROOT::VecOps::RVec<float> &bkg_pt,
+                                                     ROOT::VecOps::RVec<float> &bkg_eta,
+                                                     ROOT::VecOps::RVec<float> &bkg_phi,
+                                                     float dRmin, float dRmax) {
+            ROOT::VecOps::RVec<float> iso(sig_pt.size(), -1);
 
-            for (int i = 0; i < e_pt.size(); i++) {
+            for (int i = 0; i < sig_pt.size(); i++) {
                 float sum = 0;
-                for (int j = 0; j < puppi_pt.size(); j++) {
-                    float deta = e_eta[i] - puppi_eta[j];
-                    float dphi = e_phi[i] - puppi_phi[j];
+                for (int j = 0; j < bkg_pt.size(); j++) {
+                    float deta = sig_eta[i] - bkg_eta[j];
+                    float dphi = sig_phi[i] - bkg_phi[j];
                     dphi = abs(dphi) > M_PI ? dphi - 2 * M_PI : dphi;
                     float dR = sqrt(deta * deta + dphi * dphi);
                     if (dR > dRmin && dR < dRmax) {
-                        sum += puppi_pt[j];
+                        sum += bkg_pt[j];
                     }
                 }
-                iso[i] = sum / e_pt[i];
+                iso[i] = sum / sig_pt[i];
             }
             return iso;
         }
     """
 
-    ROOT.gInterpreter.Declare(STRCPPFUNC_calcpuppiiso)
+    ROOT.gInterpreter.Declare(STRCPPFUNC_calcisoannularcone)

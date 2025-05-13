@@ -1,5 +1,6 @@
 from ROOT import RDataFrame
 
+from calc_puppi_iso import recalculate_puppi_iso
 import rdf_generic as rdf_g
 import utilities as ut
 from utilities import sufEl, sufPu
@@ -16,15 +17,12 @@ def qcd_ana_main(df:RDataFrame):
     rdf_g.add_hists_multiplecolls(df, histograms, [sufEl, sufPu])
 
     df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479', 'TkElEBPt10')
-    rdf_g.add_hists_singlecollection(df, histograms, sufEl, 'TkElEBPt10')
+    rdf_g.add_hists_singlecollection(df, histograms, f'{sufEl}_TkElEBPt10')
 
     dfTkElEBPt10 = df.Filter(f'{sufEl}_TkElEBPt10_n > 0', 'tkelEBpt10')
     rdf_g.add_hists_multiplecolls(dfTkElEBPt10, histograms, [f'{sufEl}_TkElEBPt10', sufPu])
 
-    # df_TkElEB = get_iso(df_TkElEB, f'{sufEl}TkElPt10EB', sufPu)
-    # dRmin_list = np.arange(0.01, 0.2, 0.01)
-    # for dRmin in dRmin_list:
-    #     histograms.append(df_TkElEB.Histo1D((f'{sufEl}TkElPt10EB_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}', 
-    #                                          'recalcPuppiIso', 10000, -2, 8), f'{sufEl}TkElPt10EB_recalcPuppiIso_dRmin{str(dRmin).replace('.', '_')}'))
+    dfTkElEBPt10 = recalculate_puppi_iso(dfTkElEBPt10, f'{sufEl}_TkElEBPt10', sufPu)
+    rdf_g.add_hists_singlecollection(dfTkElEBPt10, histograms, f'{sufEl}_TkElEBPt10_Re', 'dRmin\\d_\\d{1,2}')
 
     return histograms
