@@ -1,5 +1,5 @@
 linkvartohist = {
-    'n': (41, -1, 50, 'multiplicity'), 
+    'n': (51, -1, 50, 'multiplicity'), 
     
     'e': (2001, -1, 2000, 'energy [GeV]'),
     'pt': (2001, -1, 2000, 'p_{T} [GeV]'),
@@ -29,7 +29,7 @@ linkvartohist = {
     'puppiWeight': (1000, 0, 1000, 'puppi weight'),
     'z0': (2000, -1, 1, 'z0'),
 
-    'deta': (400, -0.02, 0.02, '#Delta#eta'),
+    'deta': (400, -0.2, 0.2, '#Delta#eta'),
     'dphi': (400, -0.02, 0.02, '#Delta#phi'),
-    'dR': (400, 0, 0.04, '#DeltaR')
+    'dR': (400, 0, 0.4, '#DeltaR')
 }

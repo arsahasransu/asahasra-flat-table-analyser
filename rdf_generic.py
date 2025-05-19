@@ -14,7 +14,8 @@ def define_newcollection(df:RDataFrame, collection:str, selection:str, sid:str):
             df = df.Define(f'{collection}_{sid}_{var}',
                         f'{collection}_{var}[{selection}]')
     
-    df = df.Define(f'{collection}_{sid}_n', f'{collection}_{sid}_pt.size()')
+    if df.GetColumnType(f'{collection}_{sid}_pt').startswith('ROOT::VecOps::RVec'):
+        df = df.Define(f'{collection}_{sid}_n', f'{collection}_{sid}_pt.size()')
 
     return df
 
@@ -25,7 +26,7 @@ def define_newcollection(df:RDataFrame, collection:str, selection:str, sid:str):
 def add_hists_singlecollection(df:RDataFrame, histograms:list, collection:str, sreg:str=''):
 
     # Infer the filter ID of the dataframe
-    fid = ''
+    fid = 'base_'
     # TODO LINE BELOW GIVES MORE TIME DELAY THAN EXPECTED - REASON UNKNOWN
     filternameslist = df.GetFilterNames()
     if len(filternameslist) != 0:

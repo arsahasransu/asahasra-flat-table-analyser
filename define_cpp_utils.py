@@ -24,7 +24,7 @@ def define_cpp_utils():
                     double dR = sqrt(deta * deta + dphi * dphi);
                     if (dR < min_dR) min_dR = dR;
                     if (fabs(deta) < fabs(min_deta)) min_deta = deta;
-                    if (dphi < min_dphi) min_dphi = dphi;
+                    if (fabs(dphi) < fabs(min_dphi)) min_dphi = dphi;
                 }
                 mindeta.push_back(min_deta);
                 mindphi.push_back(min_dphi);
@@ -95,3 +95,65 @@ def define_cpp_utils():
     """
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_calcisoannularcone)
+
+    STRCPPFUNC_calcisoanncone_singleobj = """
+        std::tuple< float, float, float,
+            float, float, float, float > calcisoanncone_singleobj(float sig_pt,
+                                                                  float sig_eta,
+                                                                  float sig_calo_eta,
+                                                                  float sig_phi,
+                                                                  float sig_calo_phi,
+                                                                  ROOT::VecOps::RVec<float> &bkg_pt,
+                                                                  ROOT::VecOps::RVec<float> &bkg_eta,
+                                                                  ROOT::VecOps::RVec<float> &bkg_calo_eta,
+                                                                  ROOT::VecOps::RVec<float> &bkg_phi,
+                                                                  ROOT::VecOps::RVec<float> &bkg_calo_phi,
+                                                                  ROOT::VecOps::RVec<float> &bkg_pid,
+                                                                  float dRmin, float dRmax) {
+            float isotot = 0.0, iso11 = 0.0, iso13 = 0.0, iso22 = 0.0, iso130 = 0.0, iso211 = 0.0, isooth = 0.0;
+            for(int i=0; i<bkg_pt.size(); i++) {
+                float deta = sig_eta - bkg_eta[i];
+                float dcaloeta = sig_calo_eta - bkg_calo_eta[i];
+                float dphi = sig_phi - bkg_phi[i];
+                float dcalophi = sig_calo_phi - bkg_calo_phi[i];
+                dphi = abs(dphi) > M_PI ? dphi - 2 * M_PI : dphi;
+                dcalophi = abs(dcalophi) > M_PI ? dcalophi - 2 * M_PI : dcalophi;
+                float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ?
+                           sqrt(deta * deta + dphi * dphi) : sqrt(dcaloeta * dcaloeta + dcalophi * dcalophi);
+                if (dR > dRmin && dR < dRmax) {
+                        isotot += bkg_pt[i];
+                        if( fabs(bkg_pid[i]) == 11 ) iso11 += bkg_pt[i];
+                        else if( fabs(bkg_pid[i]) == 13 ) iso13 += bkg_pt[i];
+                        else if( fabs(bkg_pid[i]) == 22 ) iso22 += bkg_pt[i];
+                        else if( fabs(bkg_pid[i]) == 130 ) iso130 += bkg_pt[i];
+                        else if( fabs(bkg_pid[i]) == 211 ) iso211 += bkg_pt[i];
+                        else isooth += bkg_pt[i];
+                    }
+            }
+            return std::make_tuple(isotot/sig_pt, iso11/sig_pt, iso13/sig_pt,
+                                   iso22/sig_pt, iso130/sig_pt, iso211/sig_pt,
+                                   isooth/sig_pt);
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_calcisoanncone_singleobj)
+
+    STRCPPFUNC_checksorting = """
+        template <typename T>
+        unsigned int checksorting(ROOT::VecOps::RVec<T> &collection, bool descending=true) {
+            bool is_sorted = true;
+            unsigned int collection_size = collection.size();
+            if(collection_size <= 1) return 2;
+            for (unsigned int i=1; i<collection_size; i++) {
+                bool check_sort_order = descending ? collection[i] <= collection[i-1] :
+                                                     collection[i] >= collection[i-1];
+                if(!check_sort_order) {
+                    is_sorted = false;
+                    break;
+                }
+            }
+            return is_sorted ? 1 : 0;
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_checksorting)
