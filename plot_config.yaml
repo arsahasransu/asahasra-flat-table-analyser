@@ -1,0 +1,10 @@
+general:
+  hist_folder: ./OutHistoFiles/
+
+comparePU_DYM50:
+  samples: 
+    DY_noPU: hists_DYToLL_M50_PU0.root
+    DY_PU200: hists_DYToLL_M50_PU200.root
+  hist_tag: 
+    - ['genDYP']
+    - ['GenEl_DYP', 'TkEleL2', 'L1PuppiCands']

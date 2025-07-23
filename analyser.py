@@ -1,4 +1,6 @@
 import argparse 
+import pathlib
+import shutil
 import yaml
 
 import ROOT
@@ -25,6 +27,12 @@ def analyser():
 
     opts = config['general']
     samples = config['samples']
+
+    # Remake the histogram root output directory
+    outdir = pathlib.Path(f'{opts['output_dir']}')
+    if outdir.exists() and outdir.is_dir():
+        shutil.rmtree(outdir) 
+    outdir.mkdir(parents=True, exist_ok=True)
 
     # Loop on simulation samples
     for s_name, s_info in samples.items():

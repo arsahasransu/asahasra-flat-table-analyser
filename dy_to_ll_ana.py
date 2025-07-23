@@ -15,13 +15,23 @@ def dy_to_ll_ana_main(df:RDataFrame):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl])
+    # Step 1_0_0: Enable for plots in "Gen properties" section
+    ##########################################################
+    # rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
 
-    df = rdf_g.define_newcollection(df, sufGen, f'abs({sufGen}_eta)<1.47 && {sufGen}_prompt==2', 'DYEB')
-    rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYEB')
+    # df_genstudy1 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==1', 'GENST1')
+    # rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
 
-    dfgenEB = df.Filter(f'{sufGen}_DYEB_n > 0', 'genDYEB')
-    rdf_g.add_hists_multiplecolls(dfgenEB, histograms, [f'{sufGen}_DYEB', sufEl])
+    # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
+    # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
+    ###########################################################
+
+
+    df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.6', 'DYP')
+
+    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
+    rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
+    return histograms
 
     #### GEN MATCH BLOCK ###
     

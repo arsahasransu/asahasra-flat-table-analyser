@@ -22,8 +22,8 @@ def recalcpuppiiso_comps_oneel(df:RDataFrame, elcoll:str, puppicoll:str):
         for dRmax in dRmax_list: 
             if dRmin >= dRmax:
                 continue          
-            getisostr = f'calcisoanncone_singleobj({elcoll}_pt, {elcoll}_eta, {elcoll}_phi,\
-                            {elcoll}_calo_eta, {elcoll}_calo_phi,\
+            getisostr = f'calcisoanncone_singleobj({elcoll}_pt, {elcoll}_eta, {elcoll}_caloEta,\
+                            {elcoll}_phi, {elcoll}_caloPhi,\
                             {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
                             {dRmin}, {dRmax})'
             for i, isostr in enumerate(['isotot', 'iso11', 'iso13', 'iso22', 'iso130', 'iso211', 'isooth']):
