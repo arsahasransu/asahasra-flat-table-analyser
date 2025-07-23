@@ -13,6 +13,7 @@ from plotBeautifier import makePngPlot
 # Enable batch mode
 ROOT.gROOT.SetBatch(True)
 
+
 def make_effs(dirname, base, target, var='pt'):
 
     eff = TEfficiency(target, base)
@@ -37,7 +38,7 @@ def plotter():
         # Use k to create a directory
         pdir = pathlib.Path(f'{k}')
         if pdir.exists() and pdir.is_dir():
-            shutil.rmtree(pdir) 
+            shutil.rmtree(pdir)
         pdir.mkdir(parents=True, exist_ok=True)
 
         # Use v['samples'] to open the right root file
@@ -58,11 +59,8 @@ def plotter():
             hnames = [hkey.GetName() for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(coll)]
             for hname in hnames:
                 hobjs = [file.Get(hname) for file in files]
-                
+
                 makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
-
-
-
 
     # Legacy Efficiency Plot Maker
 
@@ -89,7 +87,6 @@ def auto_singlehist_plotter():
 
     histdirs = glob.glob("./OutHistoFiles/hists_*.root")
 
-
     for file_n in histdirs:
         file = TFile.Open(file_n)
         basefilename = os.path.basename(file_n)
@@ -98,7 +95,7 @@ def auto_singlehist_plotter():
         # Remake the histogram autoplot directory
         outdir = pathlib.Path(f'{file_prefix}/autoplots')
         if outdir.exists() and outdir.is_dir():
-            shutil.rmtree(outdir) 
+            shutil.rmtree(outdir)
         outdir.mkdir(parents=True, exist_ok=True)
 
         for histKey in file.GetListOfKeys():
@@ -107,8 +104,6 @@ def auto_singlehist_plotter():
                 histTh1Obj = TH1D(histKey.ReadObj())
 
                 makePngPlot([histTh1Obj], f'{file_prefix}/autoplots', 'autoSinglePlot')
-
-    
 
 
 if __name__ == "__main__":

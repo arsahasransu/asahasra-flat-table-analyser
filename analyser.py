@@ -1,4 +1,4 @@
-import argparse 
+import argparse
 import pathlib
 import shutil
 import yaml
@@ -8,9 +8,10 @@ import ROOT
 from define_cpp_utils import define_cpp_utils
 import dy_to_ll_ana
 import qcd_ana
-import utilities as utilities
+import an_specific_utilities as ut
 
-@utilities.time_eval
+
+@ut.time_eval
 def analyser():
 
     ROOT.EnableImplicitMT()
@@ -31,15 +32,15 @@ def analyser():
     # Remake the histogram root output directory
     outdir = pathlib.Path(f'{opts['output_dir']}')
     if outdir.exists() and outdir.is_dir():
-        shutil.rmtree(outdir) 
+        shutil.rmtree(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
 
     # Loop on simulation samples
     for s_name, s_info in samples.items():
         try:
             df = ROOT.RDataFrame(opts['tree_name'], opts['input_dir_prefix']+'/'+s_info['input_file_pattern'])
-        except:
-            print(f"Could not load the data for sample {s_name}")
+        except FileNotFoundError as err:
+            print(f"Could not load the data for sample {s_name}: {err}")
             continue
         print(f"Processing {df.Count().GetValue()} events in sample {s_name}")
 

@@ -2,15 +2,16 @@ from ROOT import RDataFrame
 
 import calc_puppi_iso as reiso
 import rdf_generic as rdf_g
-import utilities as ut
-from utilities import sufEl, sufGen, sufPu
+import an_specific_utilities as ut
+from an_specific_utilities import sufEl, sufGen, sufPu
+from an_specific_utilities import add_puppicands_by_pdg
 
 
 @ut.time_eval
-def dy_to_ll_ana_main(df:RDataFrame):
+def dy_to_ll_ana_main(df: RDataFrame):
 
     histograms = []
-    
+
     df = df.Define(sufGen+'_n', sufGen+'_pt.size()')
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
@@ -26,15 +27,15 @@ def dy_to_ll_ana_main(df:RDataFrame):
     # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
     ###########################################################
 
-
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.6', 'DYP')
 
     dfGenP = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
     rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
+    add_puppicands_by_pdg(dfGenP, histograms, '')
     return histograms
 
     #### GEN MATCH BLOCK ###
-    
+
     dfgenEB = ut.angdiff_hists(dfgenEB, f'{sufGen}_DYEB', sufEl)
     rdf_g.add_hists_singlecollection(dfgenEB, histograms, f'{sufGen}_DYEB_{sufEl}')
 
@@ -63,7 +64,7 @@ def dy_to_ll_ana_main(df:RDataFrame):
     rdf_g.add_hists_singlecollection(dfgEBel1, histograms, f'{sufEl}_MCH_El1')
     # Puppi isolation and components by pdgId
     dfgEBel1 = reiso.recalcpuppiiso_comps_oneel(dfgEBel1, f'{sufEl}_MCH_El1', sufPu)
-    rdf_g.add_hists_singlecollection(dfgEBel1, histograms, f'{sufEl}_MCH_El1_Re',\
+    rdf_g.add_hists_singlecollection(dfgEBel1, histograms, f'{sufEl}_MCH_El1_Re',
                                      'dRmin\\d_\\d{1,2}_dRmax\\d_\\d{1,2}_[a-z0-9]+')
 
     # dfgEBel2 = dfgenEB.Filter(f'{sufEl}_MCH_n >= 2', 'genDYEBTkEl2')

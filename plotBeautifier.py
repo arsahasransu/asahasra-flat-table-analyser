@@ -1,7 +1,8 @@
 import math as m
 import numpy as np
-import re
 import os
+import re
+import warnings
 
 import ROOT
 from ROOT import TH1
@@ -10,7 +11,7 @@ from ROOT import TH1
 # def adjustBinContentAuto(histo: TH1):
 #     # For bins with low stats - adjust bin content to have atleast
 #     # minstat percentage of events in the next bin comapred to the previous bin
-#     # 
+#     #
 #     # Skip bins with zero entries
 
 #     minstat = 0.01*10
@@ -40,7 +41,7 @@ canvas_customisation_conds = [
     (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx())]
 
 
-def makePlot_isolation(histo : TH1):
+def makePlot_isolation(histo: TH1):
     # Generate 100 xbins upto precision 2 in log-scale
     xlow = 0.001
     xhigh = 100
@@ -61,11 +62,11 @@ def makePlot_isolation(histo : TH1):
     return histo_rebinned
 
 
-def defineXrangeAuto(histo : TH1, includeUnderflow : bool = True, includeOverflow : bool = True):
+def defineXrangeAuto(histo: TH1, includeUnderflow: bool = True, includeOverflow: bool = True):
     # Decide if underflow and overflow bins should be included in the plot
     includeUnderflow = histo.GetBinContent(0) > 0.01*histo.GetBinContent(1)
     includeOverflow = histo.GetBinContent(histo.GetNbinsX()+1) > 0.01*histo.GetBinContent(histo.GetNbinsX()+1)
-    
+
     # Loop over the bin content and find the fist bin with data in it
     beginBin = 0 if includeUnderflow else 1
     for i in range(beginBin, histo.GetNbinsX()+2):
@@ -85,17 +86,17 @@ def defineXrangeAuto(histo : TH1, includeUnderflow : bool = True, includeOverflo
     return {'uFlow': includeUnderflow, 'oFlow': includeOverflow}
 
 
-def makeBinLabel(histo : TH1, binNumber : int, label : str):
+def makeBinLabel(histo: TH1, binNumber: int, label: str):
     x = histo.GetXaxis().GetBinLowEdge(binNumber)
     y = histo.GetBinContent(binNumber)
     labelobj = ROOT.TText(x, y, label)
     return labelobj
 
 
-def makeGoodSinglePlotAuto(histo : TH1):
+def makeGoodSinglePlotAuto(histo: TH1):
     if 'iso' in histo.GetTitle():
         histo = makePlot_isolation(histo)
-    
+
     objectList = [histo]
 
     # The optimal x-range is defined as the first and the last bin
@@ -103,12 +104,12 @@ def makeGoodSinglePlotAuto(histo : TH1):
     binDecisions = defineXrangeAuto(histo)
 
     histo.SetLineWidth(4)
-    if(binDecisions['uFlow']):
+    if (binDecisions['uFlow']):
         ulabel = makeBinLabel(histo, 0, 'UFLOW')
         ulabel.SetTextAngle(90)
         ulabel.SetTextAlign(13)
         objectList.append(ulabel)
-    if(binDecisions['oFlow']):
+    if (binDecisions['oFlow']):
         olabel = makeBinLabel(histo, histo.GetNbinsX()+1, 'OFLOW')
         olabel.SetTextAngle(90)
         olabel.SetTextAlign(13)
@@ -191,7 +192,12 @@ def generateColorPalette(ncolours):
     return colours
 
 
-def makePngPlot(histList, outputDir:str, plotkey:str, legList=[]):
+def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
+
+    if histList[0].Integral() == 0:
+        warnings.warn(
+            f"Null integral for (atleast) first histogram in list. Skipping drawing histogram: {histList[0].GetName()}")
+        return
 
     if plotkey == 'autoSinglePlot':
         histObj = histList[0]
@@ -225,7 +231,7 @@ def makePngPlot(histList, outputDir:str, plotkey:str, legList=[]):
     if plotkey == 'autoCompPlot':
         if len(legList) != len(histList):
             raise RuntimeError("Legend list length unequal with length of histogram list!")
-        
+
         histlist_copied = [hist.Clone() for hist in histList]
 
         histMetaName = histList[0].GetName()
@@ -248,7 +254,7 @@ def makePngPlot(histList, outputDir:str, plotkey:str, legList=[]):
         pad_plot.SetLogy(logy)
         # if logy:
         #     drawableObjectList[0].SetMinimum(0.9)
-        
+
         colours = generateColorPalette(len(legList))
         drawableObjectList[0].SetLineColor(colours[0])
         drawableObjectList[0].DrawNormalized('HIST E1')

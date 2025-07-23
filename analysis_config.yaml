@@ -13,9 +13,9 @@ samples:
     input_file_pattern: DYToLL_M50_PU200/FP/v142Xv1/perfNano_*.root
     type: 'dytoll'
 
-  MinBias_PU200:
-    input_file_pattern: MinBias_PU200/FP/v142Xv1/perfNano_*.root
-    type: 'qcd'
+  # MinBias_PU200:
+  #   input_file_pattern: MinBias_PU200/FP/v142Xv1/perfNano_*.root
+  #   type: 'qcd'
 
   # QCD_Pt20To30:
   #   input_file_pattern: QCD_Pt20To30/FP/v142Xv1/perfNano_*.root

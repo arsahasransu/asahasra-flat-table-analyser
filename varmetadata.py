@@ -1,18 +1,18 @@
 linkvartohist = {
-    'n': (51, -1, 50, 'multiplicity'), 
-    
+    'n': (51, -1, 50, 'multiplicity'),
+
     'mass': (500, 0, 0.5, 'mass [GeV]'),
 
     'e': (221, -1, 220, 'energy [GeV]'),
-    'pt': (221, -1, 220, 'p_{T} [GeV]'), # hw precision = 0.25 GeV
+    'pt': (221, -1, 220, 'p_{T} [GeV]'),  # hw precision = 0.25 GeV
     'tkPt': (101, -1, 100, 'track p_{T} [GeV]'),
 
-    'eta': (54, -2.7, 2.7, '#eta'), # hw precision = 0.00436 GeV
+    'eta': (54, -2.7, 2.7, '#eta'),  # hw precision = 0.00436 GeV
     'caloeta': (54, -2.7, 2.7, 'calo. #eta'),
-    'caloEta': (54, -2.7, 2.7, 'calo. #eta'),  
+    'caloEta': (54, -2.7, 2.7, 'calo. #eta'),
     'tkEta': (54, -2.7, 2.7, 'track #eta'),
 
-    'phi': (66, -3.3, 3.3, '#phi'), # hw precision = 0.00436 GeV
+    'phi': (66, -3.3, 3.3, '#phi'),  # hw precision = 0.00436 GeV
     'calophi': (66, -3.3, 3.3, 'calo. #phi'),
     'caloPhi': (66, -3.3, 3.3, 'calo. #phi'),
     'tkPhi': (66, -3.3, 3.3, 'track #phi'),
