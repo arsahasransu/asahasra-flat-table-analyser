@@ -47,20 +47,56 @@ def plotter():
         files = [ROOT.TFile.Open(f'{fdir}/{fname}') for fname in fnames]
 
         # Use v['hist_tag'] to open the right collection name and gather attributes to plot
-        colls = v['hist_tag'][0]
-        for row in v['hist_tag'][1:]:
-            colls_copied = copy.deepcopy(colls)
-            colls.clear()
-            for colsub in row:
-                for col in colls_copied:
-                    colls.append(f'{col}_{colsub}')
+        pfxs = v['hist_tag']['prefix']
+        colls = v['hist_tag']['collection']
 
-        for coll in colls:
-            hnames = [hkey.GetName() for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(coll)]
-            for hname in hnames:
-                hobjs = [file.Get(hname) for file in files]
+        if v['type'] == 'same_sample_different_collection':
+            for fname, folder in zip(fnames, legend):
+                pathlib.Path(k+'/'+folder).mkdir(parents=True, exist_ok=True)
+                file = ROOT.TFile.Open(f'{fdir}/{fname}')
+                for coll in colls:
+                    plotleg = []
+                    collnames = []
+                    for pfxk, pfxv in pfxs.items():
+                        plotleg.append(pfxk)
+                        collnames.append(coll.format(tag=pfxv))
+                    varnames = [hkey.GetName().split('_')[-1] for hkey in file.GetListOfKeys()if hkey.GetName().startswith(collnames[0]+'_')]
+                    for varname in varnames:
+                        hnames = [collname+'_'+varname for collname in collnames]
+                        print(fname)
+                        hobjs = [file.Get(hname) for hname in hnames]
 
-                makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
+                        makePngPlot(hobjs, f'{k}/{folder}', 'autoCompPlot', plotleg)
+                file.Close()
+
+        # The default behaviour is to plot for same collection different samples            
+        else:
+            for coll in colls:
+                file0_hname = f'{pfxs[legend[0]]}_{coll}'
+                exactcolls = ['_'.join(hkey.GetName().split('_')[:-1]) for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(file0_hname)]
+                exactcolls = list(set(exactcolls))
+                for exactcoll in exactcolls:
+                    varnames = [hkey.GetName().split('_')[-1] for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(exactcoll+'_')]
+                    for varname in varnames:
+                        collname = '_'.join(exactcoll.split('_')[1:])
+                        hnames = [f'{pfxs[leg]}_{collname}_{varname}' for leg in legend]
+                        hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
+
+                        makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
+
+        # for row in v['hist_tag'][1:]:
+        #     colls_copied = copy.deepcopy(colls)
+        #     colls.clear()
+        #     for colsub in row:
+        #         for col in colls_copied:
+        #             colls.append(f'{col}_{colsub}')
+
+        # for coll in colls:
+        #     hnames = [hkey.GetName() for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(coll)]
+        #     for hname in hnames:
+        #         hobjs = [file.Get(hname) for file in files]
+
+        #         makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
 
     # Legacy Efficiency Plot Maker
 

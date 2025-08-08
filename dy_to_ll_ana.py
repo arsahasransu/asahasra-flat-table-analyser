@@ -25,19 +25,38 @@ def dy_to_ll_ana_main(df: RDataFrame):
 
     # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
     # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
-    ###########################################################
+    ##########################################################
 
-    df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.6', 'DYP')
+    df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt>=2 && abs({sufGen}_eta)<2.6', 'DYP')
 
-    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
-    rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
-    add_puppicands_by_pdg(dfGenP, histograms, '')
+    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
+    # Step 1_2_0: Enable for plots in "Gen selection" section
+    ##########################################################
+    # rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
+    # add_puppicands_by_pdg(dfGenP, histograms, '')
+    ##########################################################
+
+    # SPLIT INTO EB AND EE BASED ON TKEL
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 1.6 && abs({sufEl}_eta) <= 2.1', 'EE')
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 2.1', 'EF')
+
+    # Step 2_0_0: GEN MATCH BLOCK
+    ##########################################################
+    for ERegion in ['EB', 'EM', 'EE', 'EF']:
+        dfGenER = dfGenP.Filter(f'{sufEl}_{ERegion}_n > 0', f'genDYPel{ERegion}')
+        dfGenER = ut.angdiff_hists(dfGenER, f'{sufGen}_DYP', f'{sufEl}_{ERegion}')
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGen}_DYP_{sufEl}_{ERegion}')
+
+
+
+    ##########################################################
+
     return histograms
 
     #### GEN MATCH BLOCK ###
 
-    dfgenEB = ut.angdiff_hists(dfgenEB, f'{sufGen}_DYEB', sufEl)
-    rdf_g.add_hists_singlecollection(dfgenEB, histograms, f'{sufGen}_DYEB_{sufEl}')
 
     dfgenEB = ut.do_gen_match(dfgenEB,  f'{sufGen}_DYEB', sufEl)
     dfgenEB = rdf_g.define_newcollection(dfgenEB, f'{sufGen}_DYEB', f'{sufGen}_DYEB_recoidx != -1', 'MCH')

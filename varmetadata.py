@@ -3,8 +3,8 @@ linkvartohist = {
 
     'mass': (500, 0, 0.5, 'mass [GeV]'),
 
-    'e': (221, -1, 220, 'energy [GeV]'),
-    'pt': (221, -1, 220, 'p_{T} [GeV]'),  # hw precision = 0.25 GeV
+    'e': (101, -1, 100, 'energy [GeV]'),
+    'pt': (101, -1, 100, 'p_{T} [GeV]'),  # hw precision = 0.25 GeV
     'tkPt': (101, -1, 100, 'track p_{T} [GeV]'),
 
     'eta': (54, -2.7, 2.7, '#eta'),  # hw precision = 0.00436 GeV
@@ -33,7 +33,10 @@ linkvartohist = {
     'pdgId': (500, -250, 250, 'pid'),
     'puppiWeight': (110, 0, 1.1, 'puppi weight'),
 
-    'deta': (400, -0.2, 0.2, '#Delta#eta'),
-    'dphi': (400, -0.02, 0.02, '#Delta#phi'),
-    'dR': (400, 0, 0.4, '#DeltaR')
+    'deta': (140, -7, 7, '#Delta#eta'),
+    'dphi': (140, -1, 6, '#Delta#phi'),
+    'dR': (1000, 0, 10, '#DeltaR')
+    # 'deta': (100, -0.2, 0.2, '#Delta#eta'),
+    # 'dphi': (50, -0.1, 0.4, '#Delta#phi'),
+    # 'dR': (100, 0, 0.4, '#DeltaR')
 }

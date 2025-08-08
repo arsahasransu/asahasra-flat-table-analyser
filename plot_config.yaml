@@ -1,10 +1,37 @@
 general:
   hist_folder: ./OutHistoFiles/
 
-comparePU_DYM50:
+# compareGen_DYM50_PromptAndEtaSel:
+#   samples: 
+#     DY_noPU: hists_DYToLL_M50_PU0.root
+#     DY_PU200: hists_DYToLL_M50_PU200.root
+#   hist_tag:
+#     prefix:
+#       DY_noPU: genDYP
+#       DY_PU200: genDYP
+#     collection: ['GenEl_DYP']
+
+# comparePU_DYM50_MinBias:
+#   samples: 
+#     MinBias: hists_MinBias_PU200.root
+#     DY_noPU: hists_DYToLL_M50_PU0.root
+#     DY_PU200: hists_DYToLL_M50_PU200.root
+#   hist_tag:
+#     prefix:
+#       MinBias: base
+#       DY_noPU: genDYP
+#       DY_PU200: genDYP
+#     collection: ['TkEleL2', 'L1PuppiCands']
+
+compareERegion_DYM50_GenMatching:
+  type: same_sample_different_collection
   samples: 
-    DY_noPU: hists_DYToLL_M50_PU0.root
-    DY_PU200: hists_DYToLL_M50_PU200.root
-  hist_tag: 
-    - ['genDYP']
-    - ['GenEl_DYP', 'TkEleL2', 'L1PuppiCands']
+    DYnoPU: hists_DYToLL_M50_PU0.root
+    DYPU200: hists_DYToLL_M50_PU200.root
+  hist_tag:
+    prefix:
+      EM: EM
+      EF: EF
+      EE: EE
+      EB: EB
+    collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}']

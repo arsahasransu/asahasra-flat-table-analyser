@@ -4,6 +4,7 @@ import calc_puppi_iso as reiso
 import rdf_generic as rdf_g
 import an_specific_utilities as ut
 from an_specific_utilities import sufEl, sufPu
+from an_specific_utilities import add_puppicands_by_pdg
 
 
 @ut.time_eval
@@ -15,6 +16,7 @@ def qcd_ana_main(df: RDataFrame):
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
     rdf_g.add_hists_multiplecolls(df, histograms, [sufEl, sufPu])
+    add_puppicands_by_pdg(df, histograms, '')
 
     # df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479', 'TkElEBPt10')
     # dfTkElEBPt10 = df.Filter(f'{sufEl}_TkElEBPt10_n > 0', 'tkelEBpt10')

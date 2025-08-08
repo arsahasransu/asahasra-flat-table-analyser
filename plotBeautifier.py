@@ -176,6 +176,7 @@ def autoModifyHists(histlist, histref):
             bin_edges = np.array([xmin + i * (xmax - xmin) / nbins for i in range(nbins + 1)], dtype='float64')
 
         hist_rebinned = hist.Rebin(len(bin_edges)-1, hist.GetName(), bin_edges)
+        hist_rebinned.GetXaxis().SetRange(histref.GetXaxis().GetFirst(), histref.GetXaxis().GetLast())
         hist_rebinned.SetLineWidth(4)
         hist_rebinned.GetXaxis().SetTitle(hist_rebinned.GetTitle())
         hist_rebinned.SetTitle('')
@@ -186,7 +187,7 @@ def autoModifyHists(histlist, histref):
 
 def generateColorPalette(ncolours):
 
-    ROOT.gStyle.SetPalette(ROOT.kFruitPunch)
+    ROOT.gStyle.SetPalette(ROOT.kCubehelix)
 
     colours = [ROOT.gStyle.GetColorPalette(int((i+1) * 255/ncolours)) for i in range(ncolours)]
     return colours
@@ -252,12 +253,15 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
 
         logy, _ = auto_ylog_decision(drawableObjectList[0])
         pad_plot.SetLogy(logy)
+        
         # if logy:
         #     drawableObjectList[0].SetMinimum(0.9)
 
         colours = generateColorPalette(len(legList))
         drawableObjectList[0].SetLineColor(colours[0])
-        drawableObjectList[0].DrawNormalized('HIST E1')
+        drawableObjectList[0].Scale(1.0 / drawableObjectList[0].Integral())
+        drawableObjectList[0].SetMaximum(1.1)
+        drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
 
         for i, hist in enumerate(rebinnedhistlist):
@@ -272,7 +276,7 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
             res = canvconds[0](histname)
             if res:
                 canvconds[1](pad_plot)
-
+        
         pad_leg.cd()
         leg.SetBorderSize(0)
         leg.Draw()

@@ -21,7 +21,7 @@ def define_cpp_utils():
                 for (int j = 0; j < eta.size(); j++) {
                     double deta = geta[i] - eta[j];
                     double dphi = gphi[i] - phi[j];
-                    dphi = abs(dphi) > M_PI ? dphi - 2 * M_PI : dphi;
+                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
                     double dR = sqrt(deta * deta + dphi * dphi);
                     if (dR < min_dR) min_dR = dR;
                     if (fabs(deta) < fabs(min_deta)) min_deta = deta;
@@ -52,7 +52,7 @@ def define_cpp_utils():
                 for (int j = 0; j < eta.size(); j++) {
                     double deta = geta[i] - eta[j];
                     double dphi = gphi[i] - phi[j];
-                    dphi = dphi > M_PI ? dphi - 2 * M_PI : dphi;
+                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
                     double dR = sqrt(deta * deta + dphi * dphi);
                     if (dR < min_dR && dR < dRcut) {
                         min_dR = dR;
@@ -83,7 +83,7 @@ def define_cpp_utils():
                 for (int j = 0; j < bkg_pt.size(); j++) {
                     float deta = sig_eta[i] - bkg_eta[j];
                     float dphi = sig_phi[i] - bkg_phi[j];
-                    dphi = abs(dphi) > M_PI ? dphi - 2 * M_PI : dphi;
+                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
                     float dR = sqrt(deta * deta + dphi * dphi);
                     if (dR > dRmin && dR < dRmax) {
                         sum += bkg_pt[j];
@@ -115,8 +115,8 @@ def define_cpp_utils():
                 float dcaloeta = sig_calo_eta - bkg_eta[i];
                 float dphi = sig_phi - bkg_phi[i];
                 float dcalophi = sig_calo_phi - bkg_phi[i];
-                dphi = abs(dphi) > M_PI ? dphi - 2 * M_PI : dphi;
-                dcalophi = abs(dcalophi) > M_PI ? dcalophi - 2 * M_PI : dcalophi;
+                dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
+                dcalophi = abs(dcalophi) > M_PI ? abs(2 * M_PI - abs(dcalophi)) : abs(dcalophi);
                 float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ?
                            sqrt(dcaloeta * dcaloeta + dcalophi * dcalophi) : sqrt(deta * deta + dphi * dphi);
                 if (dR > dRmin && dR < dRmax) {

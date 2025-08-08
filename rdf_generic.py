@@ -8,7 +8,7 @@ from varmetadata import linkvartohist
 # Filter on a single collections with a list of potential variables
 def define_newcollection(df: RDataFrame, collection: str, selection: str, sid: str):
     dfcolumnnames = list(df.GetColumnNames())
-    collkey_vars = [columnname.split('_')[-1] for columnname in dfcolumnnames if columnname.startswith(collection)]
+    collkey_vars = list(set([columnname.split('_')[-1] for columnname in dfcolumnnames if columnname.startswith(collection+'_')]))
     for var in collkey_vars:
         if (f'{collection}_{var}' in dfcolumnnames) and ('RVec' in df.GetColumnType(f'{collection}_{var}')):
             df = df.Define(f'{collection}_{sid}_{var}',
@@ -16,7 +16,6 @@ def define_newcollection(df: RDataFrame, collection: str, selection: str, sid: s
 
     if df.GetColumnType(f'{collection}_{sid}_pt').startswith('ROOT::VecOps::RVec'):
         df = df.Define(f'{collection}_{sid}_n', f'{collection}_{sid}_pt.size()')
-
     return df
 
 
