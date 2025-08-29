@@ -63,7 +63,6 @@ def plotter():
                     varnames = [hkey.GetName().split('_')[-1] for hkey in file.GetListOfKeys()if hkey.GetName().startswith(collnames[0]+'_')]
                     for varname in varnames:
                         hnames = [collname+'_'+varname for collname in collnames]
-                        print(fname)
                         hobjs = [file.Get(hname) for hname in hnames]
 
                         makePngPlot(hobjs, f'{k}/{folder}', 'autoCompPlot', plotleg)

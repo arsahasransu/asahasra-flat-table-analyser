@@ -1,3 +1,22 @@
+# Fast Run-through of Repo
+
+### Dependencies
+The repo depends on the following packages, all of which are part of the (LCG package)[https://lcginfo.cern.ch] releases.
+ - `python` - Atleast v3.9
+ - `pyROOT` - ROOT with python bindings
+
+The repo has been test run successfully with the following releases.
+|Package|Version|
+|:------|:-----:|
+|`python`|3.13|
+|`ROOT`|6.36|
+
+### To run the analysis
+
+```shell
+# Needs pyROOT, yaml
+python analyser.py analysis_config.yaml
+```
 # Introduction
 
 Note on the files in this directory.
@@ -13,9 +32,3 @@ Note on the files in this directory.
  - `plotter.py` - 
  - `utilities.py` - 
 
-#### To run the analysis
-
-```shell
-# Needs pyROOT, yaml
-python analyser.py analysis_config.yaml
-```

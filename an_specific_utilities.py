@@ -1,4 +1,5 @@
 import time
+import warnings
 
 from ROOT import RDataFrame
 
@@ -40,10 +41,10 @@ def angdiff_hists(df: RDataFrame, referencecoll: str, targetcoll: str):
     return df
 
 
-def do_gen_match(df: RDataFrame, gencoll: str, recocoll: str):
+def do_gen_match(df: RDataFrame, gencoll: str, recocoll: str, dRcut: float):
 
     perform_genmatch_str = f'getmatchedidxs({gencoll}_eta, {gencoll}_phi,\
-                                            {recocoll}_eta, {recocoll}_phi, 0.02)'
+                                            {recocoll}_eta, {recocoll}_phi, {dRcut})'
     df = df.Define(f'{gencoll}_recoidx', f'std::get<0>({perform_genmatch_str})')
     df = df.Define(f'{recocoll}_genidx', f'std::get<1>({perform_genmatch_str})')
 
@@ -74,19 +75,24 @@ def add_puppicands_by_pdg(df, histograms, collsuf):
 
     add_hists_multiplecolls(df, histograms, [f'{sufPu}{k}:{collsuf}' for k in pdict.keys()])
 
-# threep_vars = ['pt', 'eta', 'phi']
 
+def add_genmatching_efficiency_with_dRcut(histograms, coll):
+    orighistobj = [h for h in histograms if h.GetName() == f'{coll}_dR']
+    hist = orighistobj[0].Clone()
 
-# charged_threep_vars = threep_vars + ['charge', 'vz']
-
-
-# genel_vars = charged_threep_vars + ['caloeta', 'calophi', 'prompt']
-
-
-# tkell2_vars = charged_threep_vars + ['hwQual', 'tkPt', 'caloEta',
-#                                      'tkEta', 'caloPhi', 'tkPhi',
-#                                      'pfIso', 'puppiIso', 'tkIso']
-
-
-# puppi_vars = threep_vars + ['mass', 'hwTkQuality', 'pdgId',
-#                             'puppiWeight', 'z0']
+    uflow = hist.GetBinContent(0)
+    oflow = hist.GetBinContent(hist.GetNbinsX()+1)
+    integral = hist.Integral()+uflow+oflow
+    if integral != 0:
+        hist.Scale(1.0 / integral)
+        hist_integral = hist.GetCumulative(True, 'cumulative')
+        binc = [hist_integral.GetBinContent(i) for i in range(hist_integral.GetNbinsX()+1)]
+        bine = [hist_integral.GetBinError(i) for i in range(hist_integral.GetNbinsX()+1)]
+        nseek = int(0.1*hist_integral.GetNbinsX())
+        bindec = [binc[i]+bine[i] > binc[i+nseek] for i in range(hist_integral.GetNbinsX()+1-nseek)]
+        stablebinpos = next((i for i, v in enumerate(bindec) if v), -1)
+        print(f'In hist {hist.GetName()}, efficiency stabilises for:'\
+              f' {hist_integral.GetBinCenter(stablebinpos):.4f} at {hist_integral.GetBinContent(stablebinpos):.4f}')
+        histograms.append(hist_integral)
+    else:
+        warnings.warn(f"Integral for hist {hist.GetName()} null. Unable to produce gen matching efficiency with dR cut")

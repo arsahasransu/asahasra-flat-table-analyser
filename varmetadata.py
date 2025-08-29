@@ -33,10 +33,10 @@ linkvartohist = {
     'pdgId': (500, -250, 250, 'pid'),
     'puppiWeight': (110, 0, 1.1, 'puppi weight'),
 
-    'deta': (140, -7, 7, '#Delta#eta'),
-    'dphi': (140, -1, 6, '#Delta#phi'),
-    'dR': (1000, 0, 10, '#DeltaR')
-    # 'deta': (100, -0.2, 0.2, '#Delta#eta'),
-    # 'dphi': (50, -0.1, 0.4, '#Delta#phi'),
-    # 'dR': (100, 0, 0.4, '#DeltaR')
+    # 'deta': (140, -7, 7, '#Delta#eta'),
+    # 'dphi': (140, -1, 6, '#Delta#phi'),
+    # 'dR': (140, 0, 7, '#DeltaR')
+    'deta': (1000, -0.2, 0.2, '#Delta#eta'),
+    'dphi': (500, -0.1, 0.4, '#Delta#phi'),
+    'dR': (1000, 0, 0.2, '#DeltaR')
 }

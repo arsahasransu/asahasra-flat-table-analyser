@@ -34,4 +34,5 @@ compareERegion_DYM50_GenMatching:
       EF: EF
       EE: EE
       EB: EB
-    collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}']
+    collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}',
+                 'genDYPel{tag}_GenEl_DYP_MCH_TkEleL2_{tag}_MCH']

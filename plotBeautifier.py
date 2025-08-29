@@ -38,7 +38,8 @@ from ROOT import TH1
 
 
 canvas_customisation_conds = [
-    (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx())]
+    (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx())
+]
 
 
 def makePlot_isolation(histo: TH1):
@@ -195,10 +196,13 @@ def generateColorPalette(ncolours):
 
 def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
 
-    if histList[0].Integral() == 0:
-        warnings.warn(
-            f"Null integral for (atleast) first histogram in list. Skipping drawing histogram: {histList[0].GetName()}")
-        return
+    try:
+        if histList[0].Integral() == 0:
+            warnings.warn(
+                f"Null integral for (atleast) first histogram in list. Skipping drawing histogram: {histList[0].GetName()}")
+            return
+    except AttributeError as e:
+        raise f"{histList[0].GetName()} is of type {histList[0].ClassName()} not TH1"
 
     if plotkey == 'autoSinglePlot':
         histObj = histList[0]
@@ -259,14 +263,19 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
 
         colours = generateColorPalette(len(legList))
         drawableObjectList[0].SetLineColor(colours[0])
-        drawableObjectList[0].Scale(1.0 / drawableObjectList[0].Integral())
+        name = drawableObjectList[0].GetName()
+        scalefactor = 1.0 / drawableObjectList[0].Integral() if not(name.endswith('cumulative')) else 1.0
+        drawableObjectList[0].Scale(scalefactor)
         drawableObjectList[0].SetMaximum(1.1)
         drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
 
         for i, hist in enumerate(rebinnedhistlist):
             hist.SetLineColor(colours[i+1])
-            hist.DrawNormalized('HIST E1 SAME')
+            name = hist.GetName()
+            scalefactor = 1.0 / hist.Integral() if not(name.endswith('cumulative')) else 1.0
+            hist.Scale(scalefactor)
+            hist.Draw('HIST E1 SAME')
             leg.AddEntry(hist, legList[i+1], 'lep')
 
         for i in range(1, len(drawableObjectList)):

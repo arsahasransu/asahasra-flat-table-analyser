@@ -14,7 +14,7 @@ import an_specific_utilities as ut
 @ut.time_eval
 def analyser():
 
-    ROOT.EnableImplicitMT()
+    # ROOT.EnableImplicitMT()
     define_cpp_utils()
 
     # Get arguments
