@@ -2,6 +2,7 @@ import copy
 import glob
 import os
 import pathlib
+import re
 import shutil
 import yaml
 
@@ -31,6 +32,8 @@ def plotter():
         config = yaml.safe_load(config_file)
 
     fdir = config['general']['hist_folder']
+    samples = config['general']['samples']
+
     for k, v in config.items():
         if k == 'general':
             continue
@@ -41,17 +44,13 @@ def plotter():
             shutil.rmtree(pdir)
         pdir.mkdir(parents=True, exist_ok=True)
 
-        # Use v['samples'] to open the right root file
-        legend = list(v['samples'].keys())
-        fnames = v['samples'].values()
-        files = [ROOT.TFile.Open(f'{fdir}/{fname}') for fname in fnames]
-
         # Use v['hist_tag'] to open the right collection name and gather attributes to plot
-        pfxs = v['hist_tag']['prefix']
-        colls = v['hist_tag']['collection']
+        if 'type' in list(v.keys()) and v['type'] == 'same_sample_different_collection':
+            pfxs = v['hist_tag']['prefix']
+            colls = v['hist_tag']['collection']
 
-        if v['type'] == 'same_sample_different_collection':
-            for fname, folder in zip(fnames, legend):
+            for folder in v['ftags']:
+                fname = samples[folder]
                 pathlib.Path(k+'/'+folder).mkdir(parents=True, exist_ok=True)
                 file = ROOT.TFile.Open(f'{fdir}/{fname}')
                 for coll in colls:
@@ -68,34 +67,44 @@ def plotter():
                         makePngPlot(hobjs, f'{k}/{folder}', 'autoCompPlot', plotleg)
                 file.Close()
 
-        # The default behaviour is to plot for same collection different samples            
+        # The default behaviour is to plot for same/analogous collection different samples            
         else:
-            for coll in colls:
-                file0_hname = f'{pfxs[legend[0]]}_{coll}'
-                exactcolls = ['_'.join(hkey.GetName().split('_')[:-1]) for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(file0_hname)]
-                exactcolls = list(set(exactcolls))
-                for exactcoll in exactcolls:
-                    varnames = [hkey.GetName().split('_')[-1] for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(exactcoll+'_')]
-                    for varname in varnames:
-                        collname = '_'.join(exactcoll.split('_')[1:])
-                        hnames = [f'{pfxs[leg]}_{collname}_{varname}' for leg in legend]
-                        hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
+            files = []
+            fcollnames = []
+            legend = []
+            sel_col_re = re.compile(r"^([A-Za-z0-9_]+)\[([A-Za-z0-9_, ]+)\]$")
+            alphanum_re = re.compile(r"^[A-Za-z0-9_]+$")
 
-                        makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
-
-        # for row in v['hist_tag'][1:]:
-        #     colls_copied = copy.deepcopy(colls)
-        #     colls.clear()
-        #     for colsub in row:
-        #         for col in colls_copied:
-        #             colls.append(f'{col}_{colsub}')
-
-        # for coll in colls:
-        #     hnames = [hkey.GetName() for hkey in files[0].GetListOfKeys() if hkey.GetName().startswith(coll)]
-        #     for hname in hnames:
-        #         hobjs = [file.Get(hname) for file in files]
-
-        #         makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
+            for ftag, colls in v['hist_tag'].items():
+                legend.append(ftag)
+                files.append(ROOT.TFile.Open(f'{fdir}/{samples[ftag]}'))
+                getselmatch = sel_col_re.match(colls)
+                if getselmatch:
+                    sel = getselmatch.group(1)
+                    allcolls = map(str.strip, getselmatch.group(2).split(','))
+                    for i, coll in enumerate(allcolls):
+                        if len(fcollnames) <= i:
+                            fcollnames.append([])
+                        fcollnames[i].append(f"{sel}{coll}")
+                elif alphanum_re.match(colls):
+                    if len(fcollnames) == 0:
+                        fcollnames.append([])
+                    fcollnames[0].append(colls)
+                else:
+                    raise RuntimeError("Bad collection name format: ", colls)
+            fcollnames_rowlength = [len(row) for row in fcollnames]
+            if len(set(fcollnames_rowlength)) > 1:
+                raise RuntimeError("Inconsistent number of collections given to plot between the ftags: ",\
+                                   fcollnames_rowlength)
+            for collnames in fcollnames:
+                allkeys = [hkey.GetName() for hkey in files[0].GetListOfKeys()]
+                vars = [hkey.split('_')[-1] for hkey in allkeys if hkey.startswith(collnames[0]+'_')]
+                for var in vars:
+                    hnames = [f'{collname}_{var}' for collname in collnames]
+                    hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
+                    if not all(isinstance(hobj, ROOT.TH1) for hobj in hobjs):
+                        raise RuntimeWarning("TH1 object not found for at least one of the following names: ", hnames)
+                    makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
 
     # Legacy Efficiency Plot Maker
 

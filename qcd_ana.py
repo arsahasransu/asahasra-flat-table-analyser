@@ -16,7 +16,10 @@ def qcd_ana_main(df: RDataFrame):
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
     rdf_g.add_hists_multiplecolls(df, histograms, [sufEl, sufPu])
+    rdf_g.add_hists_multiplecolls(df, histograms, [sufEl])
     add_puppicands_by_pdg(df, histograms, '')
+
+    return histograms
 
     # df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479', 'TkElEBPt10')
     # dfTkElEBPt10 = df.Filter(f'{sufEl}_TkElEBPt10_n > 0', 'tkelEBpt10')
@@ -33,4 +36,3 @@ def qcd_ana_main(df: RDataFrame):
     # rdf_g.add_hists_singlecollection(dfTkElEBPt10, histograms, f'{sufEl}_TkElEBPt10_El1_Re',\
     #                                  'dRmin\\d_\\d{1,2}_dRmax\\d_\\d{1,2}_[a-z0-9]+')
 
-    return histograms

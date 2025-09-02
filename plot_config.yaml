@@ -1,33 +1,27 @@
 general:
   hist_folder: ./OutHistoFiles/
+  samples:
+    MinBias: hists_MinBias_PU200.root
+    DY_noPU: hists_DYToLL_M50_PU0.root
+    DY_PU200: hists_DYToLL_M50_PU200.root
 
-# compareGen_DYM50_PromptAndEtaSel:
-#   samples: 
-#     DY_noPU: hists_DYToLL_M50_PU0.root
-#     DY_PU200: hists_DYToLL_M50_PU200.root
-#   hist_tag:
-#     prefix:
-#       DY_noPU: genDYP
-#       DY_PU200: genDYP
-#     collection: ['GenEl_DYP']
+# AN plots for STEP 1_0_0
+compareGen_DYM50_PromptAndEtaSel:
+  hist_tag:
+    DY_noPU: genDYP_GenEl_DYP
+    DY_PU200: genDYP_GenEl_DYP
 
-# comparePU_DYM50_MinBias:
-#   samples: 
-#     MinBias: hists_MinBias_PU200.root
-#     DY_noPU: hists_DYToLL_M50_PU0.root
-#     DY_PU200: hists_DYToLL_M50_PU200.root
-#   hist_tag:
-#     prefix:
-#       MinBias: base
-#       DY_noPU: genDYP
-#       DY_PU200: genDYP
-#     collection: ['TkEleL2', 'L1PuppiCands']
+# AN plots for STEP 1_2_0
+comparePU_DYM50_MinBias:
+  hist_tag:
+    MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 
+# AN plots for STEP 2_0_0
 compareERegion_DYM50_GenMatching:
   type: same_sample_different_collection
-  samples: 
-    DYnoPU: hists_DYToLL_M50_PU0.root
-    DYPU200: hists_DYToLL_M50_PU200.root
+  ftags: ['DY_noPU', 'DY_PU200']
   hist_tag:
     prefix:
       EM: EM
@@ -36,3 +30,10 @@ compareERegion_DYM50_GenMatching:
       EB: EB
     collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}',
                  'genDYPel{tag}_GenEl_DYP_MCH_TkEleL2_{tag}_MCH']
+
+# AN plots for STEP 3_0_0
+compare_DYM50GENMCH_MinBias:
+  hist_tag:
+    MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_noPU: genDYPTkElMCHEB_[TkEleL2_EB_MCH, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_PU200: genDYPTkElMCHEB_[TkEleL2_EB_MCH, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]

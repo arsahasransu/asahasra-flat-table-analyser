@@ -96,3 +96,13 @@ def add_genmatching_efficiency_with_dRcut(histograms, coll):
         histograms.append(hist_integral)
     else:
         warnings.warn(f"Integral for hist {hist.GetName()} null. Unable to produce gen matching efficiency with dR cut")
+
+
+def check_histogram_for_value(histograms, histname, *, bin):
+    hist = [h for h in histograms if h.GetName() == histname]
+    if len(hist) > 0:
+        hist = hist[0]
+    if(hist.GetBinContent(bin) != 0):
+        return True
+
+    return False

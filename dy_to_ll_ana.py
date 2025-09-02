@@ -16,24 +16,24 @@ def dy_to_ll_ana_main(df: RDataFrame):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    # Step 1_0_0: Enable for plots in "Gen properties" section
+    # STEP 1_0_0: Enable for plots in "Gen properties" section
     ##########################################################
-    # rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
+    rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
 
-    # df_genstudy1 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==1', 'GENST1')
-    # rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
+    df_genstudy1 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==1', 'GENST1')
+    rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
 
-    # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
-    # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
+    df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
+    rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
     ##########################################################
 
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt>=2 && abs({sufGen}_eta)<2.6', 'DYP')
 
     dfGenP = df.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
-    # Step 1_2_0: Enable for plots in "Gen selection" section
+    # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
-    # rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
-    # add_puppicands_by_pdg(dfGenP, histograms, '')
+    rdf_g.add_hists_multiplecolls(dfGenP, histograms, [f'{sufGen}_DYP', sufEl, sufPu])
+    add_puppicands_by_pdg(dfGenP, histograms, '')
     ##########################################################
 
     # SPLIT ETA REGIONS BASED ON TKEL
@@ -45,16 +45,17 @@ def dy_to_ll_ana_main(df: RDataFrame):
     dRcuts = {'EB': 0.02, 'EM': 0.025, 'EE': 0.04, 'EF': 0.05}
 
     for ERegion in ['EB', 'EM', 'EE', 'EF']:
+    # for ERegion in ['EB']:
         sufGenDYP = f'{sufGen}_DYP'
         sufElER = f'{sufEl}_{ERegion}'
         dfGenER = dfGenP.Filter(f'{sufElER}_n > 0', f'genDYPel{ERegion}')
 
-        # Step 2_0_0: GEN MATCH BLOCK
-        ##########################################################
+        # STEP 2_0_0: GEN MATCH BLOCK
+        #########################################################
         # PRE GEN MATCH
-        # dfGenER = ut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
-        # ut.add_genmatching_efficiency_with_dRcut(histograms, f'genDYPel{ERegion}_{sufGenDYP}_{sufElER}')
+        dfGenER = ut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
+        ut.add_genmatching_efficiency_with_dRcut(histograms, f'genDYPel{ERegion}_{sufGenDYP}_{sufElER}')
 
         # GEN MATCH
         dfGenER = ut.do_gen_match(dfGenER, sufGenDYP, sufElER, dRcuts[ERegion])
@@ -66,16 +67,24 @@ def dy_to_ll_ana_main(df: RDataFrame):
         rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufGenMch, sufElMch])
 
         # POST GEN MATCH
-        # dfGenER = ut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
+        dfGenER = ut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
         ##########################################################
 
-    return histograms
+        # Filter for atleast one gen-match TkEl in the defined eta region
+        dfGenER = dfGenER.Filter(f'{sufElMch}_n > 0', f'genDYPTkElMCH{ERegion}')
+        rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufElMch])
 
-    # Checked for pT sorting of the TkEl collection
-    # dfgenEB = dfgenEB.Define(f'{sufEl}_MCH_isptsorted', f'checksorting<float>({sufEl}_MCH_pt, true)')
-    # histograms.append( dfgenEB.Histo1D((f'genDYEB_{sufEl}_MCH_isptsorted', 'ptsorting', 6, -2, 4),\
-    # f'{sufEl}_MCH_isptsorted') )
+        # # Checked for pT sorting of the TkEl collection
+        dfGenER = dfGenER.Define(f'{sufElMch}_pt_sorted', f'checksorting<float>({sufElMch}_pt, true)')
+        histograms.append( dfGenER.Histo1D((f'{sufElMch}_pt_sorted', 'pt_sort', 6, -2, 4), f'{sufElMch}_pt_sorted') )
+        cp_pt_sort = ut.check_histogram_for_value(histograms, f'{sufElMch}_pt_sorted', bin=3) # bin 3 = value 0
+        if cp_pt_sort:
+            raise RuntimeError("The Track Electrons pT's are not sorted from highest to lowest")
+
+        add_puppicands_by_pdg(dfGenER, histograms, '')
+
+    return histograms
 
     # Calculate puppi iso
     # dfgenEB = reiso.recalculate_puppi_iso(dfgenEB, f'{sufEl}_MCH', sufPu)

@@ -12,6 +12,14 @@ import an_specific_utilities as ut
 
 
 @ut.time_eval
+def writehists_to_file(ofname, histograms):
+    outfile = ROOT.TFile(ofname, 'RECREATE')
+    for hist in histograms:
+        hist.Write()
+    outfile.Close()
+
+
+@ut.time_eval
 def analyser():
 
     # ROOT.EnableImplicitMT()
@@ -46,21 +54,16 @@ def analyser():
 
         # Run the analysers depending on the samples
         histograms = []
-        hists = []
         if s_info['type'] == 'dytoll':
-            hists = dy_to_ll_ana.dy_to_ll_ana_main(df)
+            histograms = dy_to_ll_ana.dy_to_ll_ana_main(df)
         elif s_info['type'] == 'qcd':
-            hists = qcd_ana.qcd_ana_main(df)
+            histograms = qcd_ana.qcd_ana_main(df)
         else:
             print(f"Unknown sample type {s_info['type']}")
             continue
-        histograms.extend(hists)
 
         # Write histograms to output root file
-        outfile = ROOT.TFile(f'{opts['output_dir']}/hists_{s_name}.root', 'RECREATE')
-        for hist in histograms:
-            hist.Write()
-        outfile.Close()
+        writehists_to_file(f'{opts['output_dir']}/hists_{s_name}.root', histograms)
 
 
 # Main function

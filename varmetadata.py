@@ -31,7 +31,7 @@ linkvartohist = {
     'tkIso': (100000, 0, 100, 'track rel. iso.'),
 
     'pdgId': (500, -250, 250, 'pid'),
-    'puppiWeight': (110, 0, 1.1, 'puppi weight'),
+    'puppiWeight': (110, 0.5, 1.05, 'puppi weight'),
 
     # 'deta': (140, -7, 7, '#Delta#eta'),
     # 'dphi': (140, -1, 6, '#Delta#phi'),
