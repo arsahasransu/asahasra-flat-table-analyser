@@ -5,35 +5,156 @@ general:
     DY_noPU: hists_DYToLL_M50_PU0.root
     DY_PU200: hists_DYToLL_M50_PU200.root
 
-# AN plots for STEP 1_0_0
-compareGen_DYM50_PromptAndEtaSel:
+# # AN plots for STEP 1_0_0
+# compareGen_DYM50_PromptAndEtaSel:
+#   hist_tag:
+#     DY_noPU: genDYP_GenEl_DYP
+#     DY_PU200: genDYP_GenEl_DYP
+
+comparebase_DYM50_MinBias:
   hist_tag:
-    DY_noPU: genDYP_GenEl_DYP
-    DY_PU200: genDYP_GenEl_DYP
+    MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_noPU: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_PU200: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+
+# compare_DYM50GENMCH_MinBias_base:
+#   hist_tag:
+#     MinBias: >
+#       base_[
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_noPU: >
+#       base_[
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_PU200: >
+#       base_[
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
 
 # AN plots for STEP 1_2_0
-comparePU_DYM50_MinBias:
+compareGenDYP_DYM50_MinBias:
   hist_tag:
     MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
     DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
     DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 
-# AN plots for STEP 2_0_0
-compareERegion_DYM50_GenMatching:
-  type: same_sample_different_collection
-  ftags: ['DY_noPU', 'DY_PU200']
-  hist_tag:
-    prefix:
-      EM: EM
-      EF: EF
-      EE: EE
-      EB: EB
-    collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}',
-                 'genDYPel{tag}_GenEl_DYP_MCH_TkEleL2_{tag}_MCH']
+# # AN plots for STEP 2_0_0
+# compareERegion_DYM50_GenMatching:
+#   type: same_sample_different_collection
+#   ftags: ['DY_noPU', 'DY_PU200']
+#   hist_tag:
+#     prefix:
+#       EM: EM
+#       EF: EF
+#       EE: EE
+#       EB: EB
+#     collection: ['genDYPel{tag}_GenEl_DYP_TkEleL2_{tag}',
+#                  'genDYPel{tag}_GenEl_DYP_MCH_TkEleL2_{tag}_MCH']
 
-# AN plots for STEP 3_0_0
-compare_DYM50GENMCH_MinBias:
-  hist_tag:
-    MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_noPU: genDYPTkElMCHEB_[TkEleL2_EB_MCH, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_PU200: genDYPTkElMCHEB_[TkEleL2_EB_MCH, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+# # AN plots for STEP 3_0_0
+# compare_DYM50GENMCH_MinBias_EB:
+#   hist_tag:
+#     MinBias: >
+#       elEB_[TkEleL2_EB,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_noPU: >
+#       genDYPTkElMCHEB_[TkEleL2_EB_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_PU200: >
+#       genDYPTkElMCHEB_[TkEleL2_EB_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+
+# compare_DYM50GENMCH_MinBias_EM:
+#   hist_tag:
+#     MinBias: >
+#       elEM_[TkEleL2_EM,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_noPU: >
+#       genDYPTkElMCHEM_[TkEleL2_EM_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_PU200: >
+#       genDYPTkElMCHEM_[TkEleL2_EM_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+
+# compare_DYM50GENMCH_MinBias_EE:
+#   hist_tag:
+#     MinBias: >
+#       elEE_[TkEleL2_EE,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_noPU: >
+#       genDYPTkElMCHEE_[TkEleL2_EE_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_PU200: >
+#       genDYPTkElMCHEE_[TkEleL2_EE_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+
+# compare_DYM50GENMCH_MinBias_EF:
+#   hist_tag:
+#     MinBias: >
+#       elEF_[TkEleL2_EF,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_noPU: >
+#       genDYPTkElMCHEF_[TkEleL2_EF_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+#     DY_PU200: >
+#       genDYPTkElMCHEF_[TkEleL2_EF_MCH,
+#       L1PuppiCandsEl_0p0dR0p1, L1PuppiCandsMu_0p0dR0p1, L1PuppiCandsCh_0p0dR0p1, L1PuppiCandsNh_0p0dR0p1, L1PuppiCandsPh_0p0dR0p1,
+#       L1PuppiCandsEl_0p1dR0p2, L1PuppiCandsMu_0p1dR0p2, L1PuppiCandsCh_0p1dR0p2, L1PuppiCandsNh_0p1dR0p2, L1PuppiCandsPh_0p1dR0p2,
+#       L1PuppiCandsEl_0p2dR0p3, L1PuppiCandsMu_0p2dR0p3, L1PuppiCandsCh_0p2dR0p3, L1PuppiCandsNh_0p2dR0p3, L1PuppiCandsPh_0p2dR0p3,
+#       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
+#       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
+

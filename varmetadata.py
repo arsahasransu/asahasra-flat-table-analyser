@@ -22,9 +22,10 @@ linkvartohist = {
     'z0': (500, -100, 100, 'z0'),
 
     'prompt': (5, -1, 4, 'prompt status'),
+    'mask': (5, -1, 4, 'boolean mask'),
 
     'hwQual': (10, -1, 9, 'HW qual.'),
-    'hwTkQuality': (10, -1, 9, 'HQ track quality'),
+    'hwTkQuality': (10, -1, 9, 'HW track quality'),
 
     'pfIso': (100000, 0, 100, 'PF rel. iso.'),
     'puppiIso': (100000, 0, 100, 'puppi rel. iso.'),

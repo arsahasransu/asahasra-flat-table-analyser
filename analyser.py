@@ -26,12 +26,14 @@ def analyser():
     define_cpp_utils()
 
     # Get arguments
-    parser = argparse.ArgumentParser(description="Analyse the data")
-    parser.add_argument("config", help="Path to the configuration file")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(description="Analyse the data")
+    # parser.add_argument("config", help="Path to the configuration file")
+    # args = parser.parse_args()
+    # cfile = args.config
+    cfile = "analysis_config.yaml"
 
     # Open the analysis config file
-    with open(args.config, "r") as config_file:
+    with open(cfile, "r") as config_file:
         config = yaml.safe_load(config_file)
 
     opts = config['general']

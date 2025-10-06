@@ -2,10 +2,21 @@ import ROOT
 
 
 def define_cpp_utils():
+    STRCPPFUNC_getdR = """
+        float getdR(float eta1, float eta2, float phi1, float phi2) {
+            float deta = eta1 - eta2;
+            float dphi = phi1 - phi2;
+            dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
+            float dR = sqrt(deta*deta + dphi*dphi);
+            return dR;
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_getdR)
 
     STRCPPFUNC_getminangs = """
         std::tuple< ROOT::VecOps::RVec<double>, ROOT::VecOps::RVec<double>,
-            ROOT::VecOps::RVec<double> > getminangs(ROOT::VecOps::RVec<float> &geta,
+            ROOT::VecOps::RVec<double> > getminangs(ROOT::VecOps::RVec<float> &geta, // the output is of the size of geta
                                                     ROOT::VecOps::RVec<float> &gphi,
                                                     ROOT::VecOps::RVec<float> &eta,
                                                     ROOT::VecOps::RVec<float> &phi) {
@@ -22,7 +33,7 @@ def define_cpp_utils():
                     double deta = geta[i] - eta[j];
                     double dphi = gphi[i] - phi[j];
                     dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-                    double dR = sqrt(deta * deta + dphi * dphi);
+                    double dR = getdR(geta[i], eta[j], gphi[i], phi[j]);
                     if (dR < min_dR) min_dR = dR;
                     if (fabs(deta) < fabs(min_deta)) min_deta = deta;
                     if (fabs(dphi) < fabs(min_dphi)) min_dphi = dphi;
@@ -50,10 +61,7 @@ def define_cpp_utils():
             for (int i = 0; i < geta.size(); i++) {
                 double min_dR = 99999;
                 for (int j = 0; j < eta.size(); j++) {
-                    double deta = geta[i] - eta[j];
-                    double dphi = gphi[i] - phi[j];
-                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-                    double dR = sqrt(deta * deta + dphi * dphi);
+                    double dR = getdR(geta[i], eta[j], gphi[i], phi[j]);
                     if (dR < min_dR && dR < dRcut) {
                         min_dR = dR;
                         gidxs[j] = i;
@@ -81,10 +89,7 @@ def define_cpp_utils():
             for (int i = 0; i < sig_pt.size(); i++) {
                 float sum = 0;
                 for (int j = 0; j < bkg_pt.size(); j++) {
-                    float deta = sig_eta[i] - bkg_eta[j];
-                    float dphi = sig_phi[i] - bkg_phi[j];
-                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-                    float dR = sqrt(deta * deta + dphi * dphi);
+                    float dR = getdR(sig_eta[i], bkg_eta[j], sig_phi[i], bkg_phi[j]);
                     if (dR > dRmin && dR < dRmax) {
                         sum += bkg_pt[j];
                     }
@@ -111,14 +116,9 @@ def define_cpp_utils():
                                                                   float dRmin, float dRmax) {
             float isotot = 0.0, iso11 = 0.0, iso13 = 0.0, iso22 = 0.0, iso130 = 0.0, iso211 = 0.0, isooth = 0.0;
             for(int i=0; i<bkg_pt.size(); i++) {
-                float deta = sig_eta - bkg_eta[i];
-                float dcaloeta = sig_calo_eta - bkg_eta[i];
-                float dphi = sig_phi - bkg_phi[i];
-                float dcalophi = sig_calo_phi - bkg_phi[i];
-                dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-                dcalophi = abs(dcalophi) > M_PI ? abs(2 * M_PI - abs(dcalophi)) : abs(dcalophi);
-                float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ?
-                           sqrt(dcaloeta * dcaloeta + dcalophi * dcalophi) : sqrt(deta * deta + dphi * dphi);
+                float calodR = getdR(sig_calo_eta, bkg_eta[i], sig_calo_phi, bkg_phi[i]);
+                float nonCalodR = getdR(sig_eta, bkg_eta[i], sig_phi, bkg_phi[i]);
+                float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ? calodR : nonCalodR;
                 if (dR > dRmin && dR < dRmax) {
                         isotot += bkg_pt[i];
                         if( fabs(bkg_pid[i]) == 11 ) iso11 += bkg_pt[i];
@@ -156,3 +156,32 @@ def define_cpp_utils():
     """
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_checksorting)
+
+    STRCPPFUNC_getmask_annulardR = """
+        ROOT::VecOps::RVec<bool> getpuppimask_annulardR(ROOT::VecOps::RVec<float> &alleta,
+                                                        ROOT::VecOps::RVec<float> &allphi,
+                                                        ROOT::VecOps::RVec<float> &allpid,
+                                                        ROOT::VecOps::RVec<float> &refeta,
+                                                        ROOT::VecOps::RVec<float> &refcaloeta,
+                                                        ROOT::VecOps::RVec<float> &refphi,
+                                                        ROOT::VecOps::RVec<float> &refcalophi,
+                                                        float dRmin=0.1, float dRmax=0.4) {
+            ROOT::VecOps::RVec<bool> mask(alleta.size(), false);
+
+            for(unsigned int mcnt=0; mcnt<alleta.size(); mcnt++) {
+                for(unsigned int rcnt=0; rcnt<refeta.size(); rcnt++) {
+                    float nonCalodR = getdR(alleta[mcnt], refeta[rcnt], allphi[mcnt], refphi[rcnt]);
+                    float calodR = getdR(alleta[mcnt], refcaloeta[rcnt], allphi[mcnt], refcalophi[rcnt]);
+                    float dR = (fabs(allpid[mcnt]) == 22) || (fabs(allpid[mcnt]) == 130) ? calodR : nonCalodR;
+                    if(dR > dRmin && dR < dRmax) {
+                        mask[mcnt] = true;
+                        break;
+                    }
+                }
+            }
+            
+            return mask;
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_getmask_annulardR)

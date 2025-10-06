@@ -41,7 +41,7 @@ def add_hists_singlecollection(df: RDataFrame, histograms: list, collection: str
         dfcolumn_regmatchobj = [re.fullmatch(selection_regex, str(dfcolname)) for dfcolname in dfcolumnnames]
         histograms.extend([df.Histo1D((f'{fid}{m.group(0)}', linkvartohist[m.group(3)][3],
                            linkvartohist[m.group(3)][0], linkvartohist[m.group(3)][1], linkvartohist[m.group(3)][2]),
-                           f'{m.group(0)}') for m in dfcolumn_regmatchobj if m is not None])
+                           f'{m.group(0)}') for m in dfcolumn_regmatchobj if m is not None and m.group(3) in linkvartohist])
     else:
         collkey_vars = [columnname.split('_')[-1] for columnname in dfcolumnnames if columnname.startswith(collkey+'_')]
         histograms.extend([df.Histo1D((f'{fid}{collkey}_{var}', linkvartohist[var][3],

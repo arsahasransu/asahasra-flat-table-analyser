@@ -1,9 +1,12 @@
+import math as m
+import numpy as np
 import time
 import warnings
 
 from ROOT import RDataFrame
 
-from rdf_generic import add_hists_multiplecolls
+import rdf_generic as rdf_g
+from rdf_generic import add_hists_multiplecolls, define_newcollection
 from varmetadata import linkvartohist as v2h
 
 # Define suffixes for different collections
@@ -51,7 +54,7 @@ def do_gen_match(df: RDataFrame, gencoll: str, recocoll: str, dRcut: float):
     return df
 
 
-def add_puppicands_by_pdg(df, histograms, collsuf):
+def add_puppicands_by_pdg(df, histograms, collsuf, *, tkelobj=None):
     collection = sufPu if collsuf == '' else f'{sufPu}_{collsuf}'
 
     dfcolumnnames = list(df.GetColumnNames())
@@ -65,15 +68,30 @@ def add_puppicands_by_pdg(df, histograms, collsuf):
         for var in collkey_vars:
             if ('RVec' in df.GetColumnType(f'{collection}_{var}')):
                 df = df.Define(f'{psuf}_{var}', f'{collection}_{var}[{sel}]')
-                # if var in v2h:
-                #     histograms.append(df.Histo1D((f'{psuf}_{var}', v2h[var][3],
-                #                 v2h[var][0], v2h[var][1], v2h[var][2]), f'{psuf}_{var}'))
+
         if df.GetColumnType(f'{psuf}_pt').startswith('ROOT::VecOps::RVec'):
             df = df.Define(f'{psuf}_n', f'{psuf}_pt.size()')
-            # histograms.append(df.Histo1D((f'{psuf}_n', v2h['n'][3],
-            #                     v2h['n'][0], v2h['n'][1], v2h['n'][2]), f'{psuf}_n'))
 
-    add_hists_multiplecolls(df, histograms, [f'{sufPu}{k}:{collsuf}' for k in pdict.keys()])
+    rdf_g.add_hists_multiplecolls(df, histograms, [f'{sufPu}{k}:{collsuf}' for k in pdict.keys()])
+
+    if tkelobj is not None:
+        for k, v in pdict.items():
+            psuf = f'{sufPu}{k}' if collsuf == '' else f'{sufPu}{k}_{collsuf}'
+            psuf2 = f'{sufPu}dRTkEl{k}' if collsuf == '' else f'{sufPu}dRTkEl{k}_{collsuf}'
+
+            get_angdiffs_str = f'getminangs({psuf}_eta, {psuf}_phi,\
+                                            {tkelobj}_eta, {tkelobj}_phi)'
+            if v == 22 or v == 130:
+                get_angdiffs_str = f'getminangs({psuf}_eta, {psuf}_phi,\
+                                                {tkelobj}_caloEta, {tkelobj}_caloPhi)'
+            df = df.Define(f'{psuf}_dR', f'std::get<{2}>({get_angdiffs_str})')
+
+            for var in collkey_vars:
+                dRsel = f"{psuf}_dR > 0.01"
+                if ('RVec' in df.GetColumnType(f'{psuf}_{var}')):
+                    df = df.Define(f'{psuf2}_{var}', f'{psuf}_{var}[{dRsel}]')
+
+        rdf_g.add_hists_multiplecolls(df, histograms, [f'{sufPu}dRTkEl{k}:{collsuf}' for k in pdict.keys()])
 
 
 def add_genmatching_efficiency_with_dRcut(histograms, coll):
@@ -106,3 +124,30 @@ def check_histogram_for_value(histograms, histname, *, bin):
         return True
 
     return False
+
+
+ndRbins = 10
+ang_lsb = m.pi/720
+d_ang = np.arange(ndRbins)*ang_lsb
+fw_dRbins = [round(m.sqrt(e + p), 6) for e in d_ang**2 for p in d_ang**2]
+fw_dRbins = sorted(list(set(fw_dRbins)))
+
+
+def make_puppi_by_angdiff_from_tkel(df, refEg, histograms):
+    dRs = [[0.0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 10]]
+    # dRs = [[0.2, 0.3]]
+
+    for dRrange in dRs:
+        dRmin = dRrange[0]
+        dRmax = dRrange[1]
+        dRstr = f'{str(dRmin).replace('.', 'p')}dR{str(dRmax).replace('.', 'p')}'
+
+        getpuppimask_annulardr_str = f"getpuppimask_annulardR({sufPu}_eta, {sufPu}_phi, {sufPu}_pdgId,\
+            {refEg}_eta, {refEg}_caloEta, {refEg}_phi, {refEg}_caloPhi, {dRmin}, {dRmax})"
+    
+        df = df.Define(f'{sufPu}_mask{dRstr}', getpuppimask_annulardr_str)
+
+        df = rdf_g.define_newcollection(df, sufPu, f'{sufPu}_mask{dRstr} == 1', dRstr)
+        add_puppicands_by_pdg(df, histograms, dRstr)
+
+    return df

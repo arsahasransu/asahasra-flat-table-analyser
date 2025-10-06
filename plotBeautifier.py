@@ -262,18 +262,21 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
         #     drawableObjectList[0].SetMinimum(0.9)
 
         colours = generateColorPalette(len(legList))
-        drawableObjectList[0].SetLineColor(colours[0])
+        drawableObjectList[0].SetLineColorAlpha(colours[0], 0.35)
+        drawableObjectList[0].SetFillColorAlpha(colours[0], 0.25)
         name = drawableObjectList[0].GetName()
         scalefactor = 1.0 / drawableObjectList[0].Integral() if not(name.endswith('cumulative')) else 1.0
         drawableObjectList[0].Scale(scalefactor)
-        drawableObjectList[0].SetMaximum(1.1)
+        y_maximum = max([drawableObjectList[0].GetBinContent(i) for i in range(drawableObjectList[0].GetNbinsX())]) 
+        y_maximum = (15 if logy else 1.5)*y_maximum if y_maximum < 0.25 else 1.1
+        drawableObjectList[0].SetMaximum(y_maximum)
         drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
 
         for i, hist in enumerate(rebinnedhistlist):
             hist.SetLineColor(colours[i+1])
             name = hist.GetName()
-            scalefactor = 1.0 / hist.Integral() if not(name.endswith('cumulative')) else 1.0
+            scalefactor = 1.0 / hist.Integral() if not(name.endswith('cumulative')) and hist.Integral()!=0 else 1.0
             hist.Scale(scalefactor)
             hist.Draw('HIST E1 SAME')
             leg.AddEntry(hist, legList[i+1], 'lep')
