@@ -11,11 +11,53 @@ general:
 #     DY_noPU: genDYP_GenEl_DYP
 #     DY_PU200: genDYP_GenEl_DYP
 
-comparebase_DYM50_MinBias:
+# # AN plots for STEP 1_0_0
+# comapreGenSel_DYM50:
+#   type: same_sample_different_collection
+#   ftags: ['DY_noPU', 'DY_PU200']
+#   hist_tag:
+#     prefix:
+#       'all': GenEl
+#       'status = 0': GenEl_GENST0
+#       'status = 1': GenEl_GENST1
+#       'status = 2': GenEl_GENST2
+#       'status = 2, |#eta| < 2.4': GenEl_DYP
+#     collection: ['base_{tag}']
+
+# AN plots for STEP 1_2_0
+compareGenDYP_DYM50_MinBias:
   hist_tag:
     MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_noPU: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_PU200: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+
+# AN plots for STEP 1_2_0
+# TkEl_Puppi_Duplicate_GenDYPDYM50_MB:
+#   hist_tag:
+#     MinBias: >
+#       el[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+#     DY_noPU: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+#     DY_PU200: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+
+# comparebase_DYM50_MinBias:
+#   hist_tag:
+#     MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+#     DY_noPU: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+#     DY_PU200: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 
 # compare_DYM50GENMCH_MinBias_base:
 #   hist_tag:
@@ -41,12 +83,90 @@ comparebase_DYM50_MinBias:
 #       L1PuppiCandsEl_0p3dR0p4, L1PuppiCandsMu_0p3dR0p4, L1PuppiCandsCh_0p3dR0p4, L1PuppiCandsNh_0p3dR0p4, L1PuppiCandsPh_0p3dR0p4,
 #       L1PuppiCandsEl_0p4dR10, L1PuppiCandsMu_0p4dR10, L1PuppiCandsCh_0p4dR10, L1PuppiCandsNh_0p4dR10, L1PuppiCandsPh_0p4dR10]
 
-# AN plots for STEP 1_2_0
-compareGenDYP_DYM50_MinBias:
-  hist_tag:
-    MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-    DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+# AN plots for STEP 1_2_0 and STEP 3_1_0
+# compareGenDYP_DYM50_MinBias:
+#   hist_tag:
+#     MinBias: base_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+#     DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+#     DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+
+# AN plots for STEP 1_2_0 and STEP 3_1_0
+# TkEl_Puppi_Duplicate_GenDYPDYM50_MB:
+#   hist_tag:
+#     MinBias: >
+#       el[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+#     DY_noPU: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+#     DY_PU200: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsEl, EB_L1PuppiCandsPh, EB_L1PuppiCandsCh, EB_L1PuppiCandsNh, EB_L1PuppiCandsMu,
+#       EM_L1PuppiCandsEl, EM_L1PuppiCandsPh, EM_L1PuppiCandsCh, EM_L1PuppiCandsNh, EM_L1PuppiCandsMu,
+#       EE_L1PuppiCandsEl, EE_L1PuppiCandsPh, EE_L1PuppiCandsCh, EE_L1PuppiCandsNh, EE_L1PuppiCandsMu,
+#       EF_L1PuppiCandsEl, EF_L1PuppiCandsPh, EF_L1PuppiCandsCh, EF_L1PuppiCandsNh, EF_L1PuppiCandsMu]
+
+# TkEl_Puppi_NoDuplicate_GenDYPDYM50_MB:
+#   hist_tag:
+#     MinBias: >
+#       el[
+#       EB_L1PuppiCandsNoTkElDEl, EB_L1PuppiCandsNoTkElDPh, EB_L1PuppiCandsNoTkElDCh, EB_L1PuppiCandsNoTkElDNh, EB_L1PuppiCandsNoTkElDMu,
+#       EM_L1PuppiCandsNoTkElDEl, EM_L1PuppiCandsNoTkElDPh, EM_L1PuppiCandsNoTkElDCh, EM_L1PuppiCandsNoTkElDNh, EM_L1PuppiCandsNoTkElDMu,
+#       EE_L1PuppiCandsNoTkElDEl, EE_L1PuppiCandsNoTkElDPh, EE_L1PuppiCandsNoTkElDCh, EE_L1PuppiCandsNoTkElDNh, EE_L1PuppiCandsNoTkElDMu,
+#       EF_L1PuppiCandsNoTkElDEl, EF_L1PuppiCandsNoTkElDPh, EF_L1PuppiCandsNoTkElDCh, EF_L1PuppiCandsNoTkElDNh, EF_L1PuppiCandsNoTkElDMu]
+#     DY_noPU: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsNoTkElDEl, EB_L1PuppiCandsNoTkElDPh, EB_L1PuppiCandsNoTkElDCh, EB_L1PuppiCandsNoTkElDNh, EB_L1PuppiCandsNoTkElDMu,
+#       EM_L1PuppiCandsNoTkElDEl, EM_L1PuppiCandsNoTkElDPh, EM_L1PuppiCandsNoTkElDCh, EM_L1PuppiCandsNoTkElDNh, EM_L1PuppiCandsNoTkElDMu,
+#       EE_L1PuppiCandsNoTkElDEl, EE_L1PuppiCandsNoTkElDPh, EE_L1PuppiCandsNoTkElDCh, EE_L1PuppiCandsNoTkElDNh, EE_L1PuppiCandsNoTkElDMu,
+#       EF_L1PuppiCandsNoTkElDEl, EF_L1PuppiCandsNoTkElDPh, EF_L1PuppiCandsNoTkElDCh, EF_L1PuppiCandsNoTkElDNh, EF_L1PuppiCandsNoTkElDMu]
+#     DY_PU200: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsNoTkElDEl, EB_L1PuppiCandsNoTkElDPh, EB_L1PuppiCandsNoTkElDCh, EB_L1PuppiCandsNoTkElDNh, EB_L1PuppiCandsNoTkElDMu,
+#       EM_L1PuppiCandsNoTkElDEl, EM_L1PuppiCandsNoTkElDPh, EM_L1PuppiCandsNoTkElDCh, EM_L1PuppiCandsNoTkElDNh, EM_L1PuppiCandsNoTkElDMu,
+#       EE_L1PuppiCandsNoTkElDEl, EE_L1PuppiCandsNoTkElDPh, EE_L1PuppiCandsNoTkElDCh, EE_L1PuppiCandsNoTkElDNh, EE_L1PuppiCandsNoTkElDMu,
+#       EF_L1PuppiCandsNoTkElDEl, EF_L1PuppiCandsNoTkElDPh, EF_L1PuppiCandsNoTkElDCh, EF_L1PuppiCandsNoTkElDNh, EF_L1PuppiCandsNoTkElDMu]
+
+# compareDuplicateRemoval:
+#   type: same_sample_different_collection
+#   ftags: ['DY_noPU', 'DY_PU200']
+#   hist_tag:
+#     prefix:
+#       dR < 0.5: PuppiCandsInTkEl
+#       0.005 < dR < 0.5: PuppiCandsNoTkElD
+#       All: PuppiCands
+#     collection: [
+#       'genDYPTkElMCHEB_L1{tag}El', 'genDYPTkElMCHEB_L1{tag}Ph', 'genDYPTkElMCHEB_L1{tag}Ch', 'genDYPTkElMCHEB_L1{tag}Nh', 'genDYPTkElMCHEB_L1{tag}Mu',
+#       'genDYPTkElMCHEM_L1{tag}El', 'genDYPTkElMCHEM_L1{tag}Ph', 'genDYPTkElMCHEM_L1{tag}Ch', 'genDYPTkElMCHEM_L1{tag}Nh', 'genDYPTkElMCHEM_L1{tag}Mu',
+#       'genDYPTkElMCHEE_L1{tag}El', 'genDYPTkElMCHEE_L1{tag}Ph', 'genDYPTkElMCHEE_L1{tag}Ch', 'genDYPTkElMCHEE_L1{tag}Nh', 'genDYPTkElMCHEE_L1{tag}Mu',
+#       'genDYPTkElMCHEF_L1{tag}El', 'genDYPTkElMCHEF_L1{tag}Ph', 'genDYPTkElMCHEF_L1{tag}Ch', 'genDYPTkElMCHEF_L1{tag}Nh', 'genDYPTkElMCHEF_L1{tag}Mu']
+
+# compareDuplicateRemoved_DYM50_MinBias:
+#   hist_tag:
+#     MinBias: >
+#       el[
+#       EB_L1PuppiCandsInTkElEl, EB_L1PuppiCandsInTkElPh, EB_L1PuppiCandsInTkElCh, EB_L1PuppiCandsInTkElNh, EB_L1PuppiCandsInTkElMu,
+#       EM_L1PuppiCandsInTkElEl, EM_L1PuppiCandsInTkElPh, EM_L1PuppiCandsInTkElCh, EM_L1PuppiCandsInTkElNh, EM_L1PuppiCandsInTkElMu,
+#       EE_L1PuppiCandsInTkElEl, EE_L1PuppiCandsInTkElPh, EE_L1PuppiCandsInTkElCh, EE_L1PuppiCandsInTkElNh, EE_L1PuppiCandsInTkElMu,
+#       EF_L1PuppiCandsInTkElEl, EF_L1PuppiCandsInTkElPh, EF_L1PuppiCandsInTkElCh, EF_L1PuppiCandsInTkElNh, EF_L1PuppiCandsInTkElMu]
+#     DY_noPU: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsNoTkElDEl, EB_L1PuppiCandsNoTkElDPh, EB_L1PuppiCandsNoTkElDCh, EB_L1PuppiCandsNoTkElDNh, EB_L1PuppiCandsNoTkElDMu,
+#       EM_L1PuppiCandsNoTkElDEl, EM_L1PuppiCandsNoTkElDPh, EM_L1PuppiCandsNoTkElDCh, EM_L1PuppiCandsNoTkElDNh, EM_L1PuppiCandsNoTkElDMu,
+#       EE_L1PuppiCandsNoTkElDEl, EE_L1PuppiCandsNoTkElDPh, EE_L1PuppiCandsNoTkElDCh, EE_L1PuppiCandsNoTkElDNh, EE_L1PuppiCandsNoTkElDMu,
+#       EF_L1PuppiCandsNoTkElDEl, EF_L1PuppiCandsNoTkElDPh, EF_L1PuppiCandsNoTkElDCh, EF_L1PuppiCandsNoTkElDNh, EF_L1PuppiCandsNoTkElDMu]
+#     DY_PU200: >
+#       genDYPTkElMCH[
+#       EB_L1PuppiCandsNoTkElDEl, EB_L1PuppiCandsNoTkElDPh, EB_L1PuppiCandsNoTkElDCh, EB_L1PuppiCandsNoTkElDNh, EB_L1PuppiCandsNoTkElDMu,
+#       EM_L1PuppiCandsNoTkElDEl, EM_L1PuppiCandsNoTkElDPh, EM_L1PuppiCandsNoTkElDCh, EM_L1PuppiCandsNoTkElDNh, EM_L1PuppiCandsNoTkElDMu,
+#       EE_L1PuppiCandsNoTkElDEl, EE_L1PuppiCandsNoTkElDPh, EE_L1PuppiCandsNoTkElDCh, EE_L1PuppiCandsNoTkElDNh, EE_L1PuppiCandsNoTkElDMu,
+#       EF_L1PuppiCandsNoTkElDEl, EF_L1PuppiCandsNoTkElDPh, EF_L1PuppiCandsNoTkElDCh, EF_L1PuppiCandsNoTkElDNh, EF_L1PuppiCandsNoTkElDMu]
 
 # # AN plots for STEP 2_0_0
 # compareERegion_DYM50_GenMatching:

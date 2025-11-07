@@ -7,10 +7,10 @@ linkvartohist = {
     'pt': (101, -1, 100, 'p_{T} [GeV]'),  # hw precision = 0.25 GeV
     'tkPt': (101, -1, 100, 'track p_{T} [GeV]'),
 
-    'eta': (54, -2.7, 2.7, '#eta'),  # hw precision = 0.00436 GeV
-    'caloeta': (54, -2.7, 2.7, 'calo. #eta'),
-    'caloEta': (54, -2.7, 2.7, 'calo. #eta'),
-    'tkEta': (54, -2.7, 2.7, 'track #eta'),
+    'eta': (62, -3.1, 3.1, '#eta'),  # hw precision = 0.00436 GeV
+    'caloeta': (62, -3.1, 3.1, 'calo. #eta'),
+    'caloEta': (62, -3.1, 3.1, 'calo. #eta'),
+    'tkEta': (62, -3.1, 3.1, 'track #eta'),
 
     'phi': (66, -3.3, 3.3, '#phi'),  # hw precision = 0.00436 GeV
     'calophi': (66, -3.3, 3.3, 'calo. #phi'),
@@ -18,7 +18,8 @@ linkvartohist = {
     'tkPhi': (66, -3.3, 3.3, 'track #phi'),
 
     'charge': (5, -2, 3, 'charge'),
-    'vz': (500, -100, 100, 'v_{z} [cm]'),
+    'vz': (50, -25, 25, 'v_{z} [cm]'),
+    # 'vz': (100, -100, 100, 'v_{z} [cm]'),
     'z0': (500, -100, 100, 'z0'),
 
     'prompt': (5, -1, 4, 'prompt status'),
@@ -36,8 +37,10 @@ linkvartohist = {
 
     # 'deta': (140, -7, 7, '#Delta#eta'),
     # 'dphi': (140, -1, 6, '#Delta#phi'),
-    # 'dR': (140, 0, 7, '#DeltaR')
+    # 'dR': (1000, 0, 10, '#DeltaR')
     'deta': (1000, -0.2, 0.2, '#Delta#eta'),
     'dphi': (500, -0.1, 0.4, '#Delta#phi'),
-    'dR': (1000, 0, 0.2, '#DeltaR')
+    'dR': (100, 0.0, 0.4, '#DeltaR'),
+
+    'bin2dR': (5000, 0.0, 0.5, '#DeltaR')
 }

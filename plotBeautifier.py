@@ -7,6 +7,10 @@ import warnings
 import ROOT
 from ROOT import TH1
 
+from an_specific_utilities import customisation_conds as cc
+from an_specific_utilities import conditionally_modify_plots
+
+
 # TODO INCOMPLETE
 # def adjustBinContentAuto(histo: TH1):
 #     # For bins with low stats - adjust bin content to have atleast
@@ -35,11 +39,6 @@ from ROOT import TH1
 #     print(len(binlowedge))
 
 #     return histo
-
-
-canvas_customisation_conds = [
-    (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx())
-]
 
 
 def makePlot_isolation(histo: TH1):
@@ -142,8 +141,8 @@ def auto_ylog_decision(hist):
     tolerance = 5
     binentries = [hist.GetBinContent(i) for i in range(hist.GetNbinsX())]
     nonzerobinentries = [binentry for binentry in binentries if binentry != 0]
-    binentrymax = max(nonzerobinentries)
-    binentrymin = min(nonzerobinentries)
+    binentrymax = max(nonzerobinentries) if len(nonzerobinentries)!=0 else hist.GetNbinsX()+1
+    binentrymin = min(nonzerobinentries) if len(nonzerobinentries)!=0 else 0
     if binentrymin < tolerance * 0.01 * binentrymax:
         logy = True
 
@@ -181,6 +180,7 @@ def autoModifyHists(histlist, histref):
         hist_rebinned.SetLineWidth(4)
         hist_rebinned.GetXaxis().SetTitle(hist_rebinned.GetTitle())
         hist_rebinned.SetTitle('')
+
         newhistlist.append(hist_rebinned)
 
     return newhistlist
@@ -195,6 +195,8 @@ def generateColorPalette(ncolours):
 
 
 def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
+
+    histList = conditionally_modify_plots(histList)
 
     try:
         if histList[0].Integral() == 0:
@@ -224,7 +226,7 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
         for i in range(1, len(drawableObjectList)):
             drawableObjectList[i].Draw()
 
-        for canvconds in canvas_customisation_conds:
+        for canvconds in cc['canvas']:
             res = canvconds[0](histname)
             if res:
                 canvconds[1](c1)
@@ -284,7 +286,7 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
         for i in range(1, len(drawableObjectList)):
             drawableObjectList[i].Draw()
 
-        for canvconds in canvas_customisation_conds:
+        for canvconds in cc['canvas']:
             res = canvconds[0](histname)
             if res:
                 canvconds[1](pad_plot)

@@ -15,22 +15,26 @@ def qcd_ana_main(df: RDataFrame):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
+    # STEP 1_2_0: Enable for plots in "Gen selection" section
+    ##########################################################
+    rdf_g.add_hists_singlecollection(df, histograms, sufEl)
     add_puppicands_by_pdg(df, histograms, '')
+    ##########################################################
     # df = ut.make_puppi_by_angdiff_from_tkel(df, sufEl, histograms)
     
-    df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
-    df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
-    df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.6 && abs({sufEl}_eta) <= 2.1', 'EE')
-    df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 2.1', 'EF')
+    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
+    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
+    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.6 && abs({sufEl}_eta) <= 2.1', 'EE')
+    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 2.1', 'EF')
 
-    for ERegion in ['EB', 'EM', 'EE', 'EF']:
+    # for ERegion in ['EB', 'EM', 'EE', 'EF']:
     # for ERegion in ['EB']:
-        sufElER = f'{sufEl}_{ERegion}'
-        dfER = df.Filter(f'{sufElER}_n > 0', f'el{ERegion}')
+        # sufElER = f'{sufEl}_{ERegion}'
+        # dfER = df.Filter(f'{sufElER}_n > 0', f'el{ERegion}')
 
         # rdf_g.add_hists_multiplecolls(df, histograms, [sufElER, sufPu])
-        add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
-        rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElER])
+        # add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
+        # rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElER])
 
         # dfER = ut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
 

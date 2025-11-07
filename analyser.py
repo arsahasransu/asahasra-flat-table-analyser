@@ -22,7 +22,7 @@ def writehists_to_file(ofname, histograms):
 @ut.time_eval
 def analyser():
 
-    # ROOT.EnableImplicitMT()
+    ROOT.EnableImplicitMT()
     define_cpp_utils()
 
     # Get arguments

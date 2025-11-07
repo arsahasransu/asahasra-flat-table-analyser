@@ -185,3 +185,45 @@ def define_cpp_utils():
     """
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_getmask_annulardR)
+
+    STRCPPFUNC_getmindR_PuppiCandSize_TkElRef = """
+        ROOT::VecOps::RVec<double> getmindR_PuppiCandSize_TkElRef(ROOT::VecOps::RVec<float> &peta, // the output is of the size of peta
+                                                                  ROOT::VecOps::RVec<float> &pphi,
+                                                                  ROOT::VecOps::RVec<float> &ppdg,
+                                                                  ROOT::VecOps::RVec<float> &eta,
+                                                                  ROOT::VecOps::RVec<float> &phi,
+                                                                  ROOT::VecOps::RVec<float> &caloeta,
+                                                                  ROOT::VecOps::RVec<float> &calophi) {
+
+            ROOT::VecOps::RVec<double> mindr_vals(peta.size(), -0.01);
+
+            // std::cout<<"Start of a new event"<<std::endl;
+            // for(int i=0; i<peta.size(); i++) {
+            //     std::cout<<ppdg[i]<<"\t"<<peta[i]<<"\t"<<pphi[i]<<std::endl;
+            // }
+
+            for(int tki=0; tki<eta.size(); tki++) {
+                int psize = peta.size();
+                if(psize > 0) {
+                    int mindr_idx = 0;
+                    double mindr = (ppdg[0] == 22 or ppdg[0] == 130) ? getdR(peta[0], caloeta[tki], pphi[0], calophi[tki])
+                                                                     : getdR(peta[0], eta[tki], pphi[0], phi[tki]);
+
+                    for(int pi=1; pi<psize; pi++) {
+                        double dr = (ppdg[pi] == 22 or ppdg[pi] == 130) ? getdR(peta[pi], caloeta[tki], pphi[pi], calophi[tki])
+                                                                        : getdR(peta[pi], eta[tki], pphi[pi], phi[tki]);
+                        if(abs(dr) < abs(mindr)) {
+                            mindr = dr;
+                            mindr_idx = pi;
+                        }
+                    }
+                    mindr_vals[mindr_idx] = mindr;
+                }
+            }
+
+            return mindr_vals;
+
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_getmindR_PuppiCandSize_TkElRef)
