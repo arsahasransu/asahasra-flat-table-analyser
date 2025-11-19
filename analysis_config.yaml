@@ -5,15 +5,15 @@ general:
   tree_name: Events
 
 samples:
-  DYToLL_M50_PU0:
+  DY_noPU:
     input_file_pattern: DYToLL_M50_PU0/FP/v151Xv1/perfNano_*.root
     type: 'dytoll'
 
-  DYToLL_M50_PU200:
+  DY_PU200:
     input_file_pattern: DYToLL_M50_PU200/FP/v151Xv1/perfNano_*.root
     type: 'dytoll'
 
-  MinBias_PU200:
+  MinBias:
     input_file_pattern: MinBias_PU200/FP/v151Xv1/perfNano_*.root
     type: 'qcd'
 

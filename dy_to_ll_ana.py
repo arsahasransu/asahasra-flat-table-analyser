@@ -1,10 +1,11 @@
 from ROOT import RDataFrame
 
-import calc_puppi_iso as reiso
-import rdf_generic as rdf_g
-import an_specific_utilities as ut
+import an_specific_utilities as anut
 from an_specific_utilities import sufEl, sufGen, sufPu
 from an_specific_utilities import add_puppicands_by_pdg
+import calc_puppi_iso as reiso
+import my_py_generic_utils as ut
+import rdf_generic as rdf_g
 
 
 @ut.time_eval
@@ -33,7 +34,16 @@ def dy_to_ll_ana_main(df: RDataFrame):
     # rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
     ##########################################################
 
-    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
+    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
+    Ncut_gen = dfGenP.Count().GetValue()
+    print("Applying selection >0 Gen electron with prompt status 2 and |eta| < 2.4...")
+    print(f"Remaining event count = {Ncut_gen}/{df.Count().GetValue()} "\
+          f"({round(Ncut_gen*100/df.Count().GetValue(), 3)}%)")
+    dfGenP = dfGenP.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
+    Ncut_tkelgt0 = dfGenP.Count().GetValue()
+    print("Applying selection >0 reconstructed TkEl...")
+    print(f"Remaining event count = {Ncut_tkelgt0}/{Ncut_gen} "\
+          f"({round(Ncut_tkelgt0*100/Ncut_gen, 3)}%)")
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
@@ -58,12 +68,12 @@ def dy_to_ll_ana_main(df: RDataFrame):
         # STEP 2_0_0: GEN MATCH BLOCK
         #########################################################
         # # PRE GEN MATCH
-        # dfGenER = ut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
+        # dfGenER = anut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
         # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
-        # ut.add_genmatching_efficiency_with_dRcut(histograms, f'genDYPel{ERegion}_{sufGenDYP}_{sufElER}')
+        # anut.add_genmatching_efficiency_with_dRcut(histograms, f'genDYPel{ERegion}_{sufGenDYP}_{sufElER}')
 
         # GEN MATCH
-        # dfGenER = ut.do_gen_match(dfGenER, sufGenDYP, sufElER, gen_dRcuts[ERegion])
+        # dfGenER = anut.do_gen_match(dfGenER, sufGenDYP, sufElER, gen_dRcuts[ERegion])
         # dfGenER = rdf_g.define_newcollection(dfGenER, sufGenDYP, f'{sufGenDYP}_recoidx != -1', 'MCH')
         # dfGenER = rdf_g.define_newcollection(dfGenER, sufElER, f'{sufElER}_genidx != -1', 'MCH')\
         
@@ -71,7 +81,7 @@ def dy_to_ll_ana_main(df: RDataFrame):
         # sufElMch = f'{sufElER}_MCH'
 
         # # POST GEN MATCH
-        # dfGenER = ut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
+        # dfGenER = anut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
         # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
         ##########################################################
 
@@ -83,13 +93,13 @@ def dy_to_ll_ana_main(df: RDataFrame):
         # # # Checked for pT sorting of the TkEl collection
         # dfGenER = dfGenER.Define(f'{sufElMch}_pt_sorted', f'checksorting<float>({sufElMch}_pt, true)')
         # histograms.append( dfGenER.Histo1D((f'{sufElMch}_pt_sorted', 'pt_sort', 6, -2, 4), f'{sufElMch}_pt_sorted') )
-        # cp_pt_sort = ut.check_histogram_for_value(histograms, f'{sufElMch}_pt_sorted', bin=3) # bin 3 = value 0
+        # cp_pt_sort = anut.check_histogram_for_value(histograms, f'{sufElMch}_pt_sorted', bin=3) # bin 3 = value 0
         # if cp_pt_sort:
         #     raise RuntimeError("The Track Electrons pT's are not sorted from highest to lowest")
 
         # For each TkEl, observe the feature of PuppiCandidates around the TkEl in annular dR window
         # add_puppicands_by_pdg(dfGenER, histograms, '', tkelobj=sufElMch)
-        # dfGenER = ut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElMch, histograms)
+        # dfGenER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElMch, histograms)
 
         # dfGenER.Describe().Print()
 

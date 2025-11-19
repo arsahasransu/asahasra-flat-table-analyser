@@ -1,14 +1,14 @@
-import copy
 import glob
 import os
 import pathlib
 import re
-import shutil
 import yaml
 
 import ROOT
 from ROOT import TCanvas, TEfficiency, TH1D, TFile
 
+from an_specific_utilities import make_plotnorm_by_scheme
+from my_py_generic_utils import recreate_dir
 from plotBeautifier import makePngPlot
 
 # Enable batch mode
@@ -33,25 +33,30 @@ def plotter():
 
     fdir = config['general']['hist_folder']
     samples = config['general']['samples']
+    norm_scheme = {'method': 'default_no_norm'}
 
-    for k, v in config.items():
-        if k == 'general':
+    for plotdir, plotconfig in config.items():
+        if plotdir == 'general':
             continue
 
-        # Use k to create a directory
-        pdir = pathlib.Path(f'{k}')
-        if pdir.exists() and pdir.is_dir():
-            shutil.rmtree(pdir)
-        pdir.mkdir(parents=True, exist_ok=True)
+        try:
+            recreate_dir(plotdir)
+        except Exception as e:
+            print(f"Exception {e} occurred while creating plot directory {plotdir}")
 
-        # Use v['hist_tag'] to open the right collection name and gather attributes to plot
-        if 'type' in list(v.keys()) and v['type'] == 'same_sample_different_collection':
-            pfxs = v['hist_tag']['prefix']
-            colls = v['hist_tag']['collection']
+        if "norm_scheme" in plotconfig.keys():
+            norm_scheme = plotconfig['norm_scheme']
+        else:
+            norm_scheme = {'method': 'default_no_norm'}
 
-            for folder in v['ftags']:
+        # Use plotconfig['hist_tag'] to open the right collection name and gather attributes to plot
+        if 'type' in list(plotconfig.keys()) and plotconfig['type'] == 'same_sample_different_collection':
+            pfxs = plotconfig['hist_tag']['prefix']
+            colls = plotconfig['hist_tag']['collection']
+
+            for folder in plotconfig['ftags']:
                 fname = samples[folder]
-                pathlib.Path(k+'/'+folder).mkdir(parents=True, exist_ok=True)
+                pathlib.Path(plotdir+'/'+folder).mkdir(parents=True, exist_ok=True)
                 file = ROOT.TFile.Open(f'{fdir}/{fname}')
                 for coll in colls:
                     plotleg = []
@@ -64,7 +69,8 @@ def plotter():
                         hnames = [collname+'_'+varname for collname in collnames]
                         hobjs = [file.Get(hname) for hname in hnames]
 
-                        makePngPlot(hobjs, f'{k}/{folder}', 'autoCompPlot', plotleg)
+                        normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
+                        makePngPlot(hobjs, f'{plotdir}/{folder}', 'autoCompPlot', plotleg, normcnt)
                 file.Close()
 
         # The default behaviour is to plot for same/analogous collection different samples            
@@ -75,7 +81,7 @@ def plotter():
             sel_col_re = re.compile(r"^([A-Za-z0-9_]+)\[([A-Za-z0-9_, ]+)\]$")
             alphanum_re = re.compile(r"^[A-Za-z0-9_]+$")
 
-            for ftag, colls in v['hist_tag'].items():
+            for ftag, colls in plotconfig['hist_tag'].items():
                 legend.append(ftag)
                 files.append(ROOT.TFile.Open(f'{fdir}/{samples[ftag]}'))
                 getselmatch = sel_col_re.match(colls)
@@ -104,7 +110,9 @@ def plotter():
                     hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
                     if not all(isinstance(hobj, ROOT.TH1) for hobj in hobjs):
                         raise RuntimeWarning("TH1 object not found for at least one of the following names: ", hnames)
-                    makePngPlot(hobjs, f'{k}', 'autoCompPlot', legend)
+                    
+                    normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
+                    makePngPlot(hobjs, f'{plotdir}', 'autoCompPlot', legend, normcnt)
 
     # Legacy Efficiency Plot Maker
 
@@ -137,10 +145,10 @@ def auto_singlehist_plotter():
         file_prefix = basefilename[:-5]
 
         # Remake the histogram autoplot directory
-        outdir = pathlib.Path(f'{file_prefix}/autoplots')
-        if outdir.exists() and outdir.is_dir():
-            shutil.rmtree(outdir)
-        outdir.mkdir(parents=True, exist_ok=True)
+        try:
+            recreate_dir(f'{file_prefix}/autoplots')
+        except Exception as e:
+            print(f"Exception {e} occurred while creating plot directory {file_prefix}/autoplots")
 
         for histKey in file.GetListOfKeys():
             histObj = histKey.ReadObj()

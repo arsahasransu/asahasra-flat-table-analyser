@@ -1,10 +1,11 @@
 from ROOT import RDataFrame
 
-import calc_puppi_iso as reiso
-import rdf_generic as rdf_g
-import an_specific_utilities as ut
+import an_specific_utilities as anut
 from an_specific_utilities import sufEl, sufPu
 from an_specific_utilities import add_puppicands_by_pdg
+import calc_puppi_iso as reiso
+import my_py_generic_utils as ut
+import rdf_generic as rdf_g
 
 
 @ut.time_eval
@@ -15,12 +16,18 @@ def qcd_ana_main(df: RDataFrame):
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
+    Ncut_beforeall = df.Count().GetValue()
+    df = df.Filter(f'{sufEl}_n > 0', 'tke1')
+    print("Applying selection >0 reconstructed TkEl...")
+    print(f"Remaining event count = {df.Count().GetValue()}/{Ncut_beforeall} "\
+          f"({round(df.Count().GetValue()*100/Ncut_beforeall, 3)}%)")
+
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
     rdf_g.add_hists_singlecollection(df, histograms, sufEl)
     add_puppicands_by_pdg(df, histograms, '')
     ##########################################################
-    # df = ut.make_puppi_by_angdiff_from_tkel(df, sufEl, histograms)
+    # df = anut.make_puppi_by_angdiff_from_tkel(df, sufEl, histograms)
     
     # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
     # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
@@ -36,7 +43,7 @@ def qcd_ana_main(df: RDataFrame):
         # add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
         # rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElER])
 
-        # dfER = ut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
+        # dfER = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
 
     return histograms
 

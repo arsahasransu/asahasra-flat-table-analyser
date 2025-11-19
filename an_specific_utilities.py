@@ -1,7 +1,6 @@
 import array
 import math as m
 import numpy as np
-import time
 import warnings
 
 from ROOT import RDataFrame
@@ -19,21 +18,10 @@ sufPu = 'L1PuppiCands'
 customisation_conds = {
     'canvas': [
         (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx()),
+        # (lambda histname: histname.endswith('eta') or histname.endswith('Eta'), lambda canvas: canvas.SetLogy(False))
         # (lambda histname: 'bin2dR' in histname, lambda canvas: canvas.SetLogx())
     ]
 }
-
-
-# Decorator to measure the execution time of a function
-def time_eval(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Execution time of function {func.__name__}: {execution_time:.6f} seconds")
-        return result
-    return wrapper
 
 
 # Order of the variables matters here
@@ -194,3 +182,12 @@ def conditionally_modify_plots(histlist):
         newhistlist.append(hist)
 
     return newhistlist
+
+
+def make_plotnorm_by_scheme(hobjs, scheme):
+
+    if scheme == "default_no_norm":
+        return [1.0]*len(hobjs)
+        
+    if scheme == "hist_integral" or scheme == "summed_components":
+        return [h.Integral() for h in hobjs]

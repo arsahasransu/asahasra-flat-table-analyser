@@ -138,7 +138,7 @@ def auto_ylog_decision(hist):
 
     # If the minimum non-zero bin entry is less than tolerance percentage
     # of the maximum bin entry, plot in log scale
-    tolerance = 5
+    tolerance = 15
     binentries = [hist.GetBinContent(i) for i in range(hist.GetNbinsX())]
     nonzerobinentries = [binentry for binentry in binentries if binentry != 0]
     binentrymax = max(nonzerobinentries) if len(nonzerobinentries)!=0 else hist.GetNbinsX()+1
@@ -194,9 +194,14 @@ def generateColorPalette(ncolours):
     return colours
 
 
-def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
+def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[]):
 
     histList = conditionally_modify_plots(histList)
+    if len(normlist) == 0:
+        normlist = [1.0]*len(histList)
+    for normv,histv in zip(normlist, histList):
+        if normv == 0.0:
+            warnings.warn(f"Found null normalisation. Skipping drawing histogram: {histv.GetName()}")
 
     try:
         if histList[0].Integral() == 0:
@@ -267,10 +272,10 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
         drawableObjectList[0].SetLineColorAlpha(colours[0], 0.35)
         drawableObjectList[0].SetFillColorAlpha(colours[0], 0.25)
         name = drawableObjectList[0].GetName()
-        scalefactor = 1.0 / drawableObjectList[0].Integral() if not(name.endswith('cumulative')) else 1.0
+        scalefactor = 1.0/normlist[0] if not(name.endswith('cumulative')) else 1.0
         drawableObjectList[0].Scale(scalefactor)
         y_maximum = max([drawableObjectList[0].GetBinContent(i) for i in range(drawableObjectList[0].GetNbinsX())]) 
-        y_maximum = (15 if logy else 1.5)*y_maximum if y_maximum < 0.25 else 1.1
+        y_maximum = (15 if logy else 1.5)*y_maximum if y_maximum < 0.25 else (2 if logy else 1.1)
         drawableObjectList[0].SetMaximum(y_maximum)
         drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
@@ -278,7 +283,7 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[]):
         for i, hist in enumerate(rebinnedhistlist):
             hist.SetLineColor(colours[i+1])
             name = hist.GetName()
-            scalefactor = 1.0 / hist.Integral() if not(name.endswith('cumulative')) and hist.Integral()!=0 else 1.0
+            scalefactor = 1.0 / normlist[i+1] if not(name.endswith('cumulative')) and hist.Integral()!=0 else 1.0
             hist.Scale(scalefactor)
             hist.Draw('HIST E1 SAME')
             leg.AddEntry(hist, legList[i+1], 'lep')
