@@ -51,13 +51,17 @@ def makePlot_isolation(histo: TH1):
     bins = list(np.sort(list(set(bins))))
     bins.append(100)
     bins_array = np.array(bins, dtype='float64')
+    old_bw = histo.GetBinWidth(1)
     histo.SetBinContent(2, histo.GetBinContent(1))
     histo.SetBinContent(1, 0)
     histo_rebinned = histo.Rebin(len(bins)-1, histo.GetName()+'_rebinned', bins_array)
-    for bin in range(1, histo_rebinned.GetNbinsX()+1):
+    for bin in range(0, histo_rebinned.GetNbinsX()+2):
         binc = histo_rebinned.GetBinContent(bin)
-        bw = np.round(histo_rebinned.GetBinWidth(bin), 3)
-        histo_rebinned.SetBinContent(bin, binc/bw)
+        bine = histo_rebinned.GetBinError(bin)
+        bw = histo_rebinned.GetBinWidth(bin)
+        ncombined_bins = bw/old_bw
+        histo_rebinned.SetBinContent(bin, binc/ncombined_bins)
+        histo_rebinned.SetBinError(bin, bine/ncombined_bins)
     histo_rebinned.GetYaxis().SetTitle('Events / bin width')
     return histo_rebinned
 

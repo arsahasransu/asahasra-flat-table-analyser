@@ -119,20 +119,6 @@ def plotter():
                     print(normcnt)
                     makePngPlot(groupbyvar_hist, f'{plotdir}', 'autoCompPlot', legend, normcnt)
 
-                # for var in vars:
-                #     hnames = [f'{collname}_{var}' for collname in collnames]
-                #     hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
-
-            # for collnames in fcollnames:
-            #     for var in vars:
-            #         hnames = [f'{collname}_{var}' for collname in collnames]
-            #         hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
-            #         if not all(isinstance(hobj, ROOT.TH1) for hobj in hobjs):
-            #             raise RuntimeWarning("TH1 object not found for at least one of the following names: ", hnames)
-                    
-            #         normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
-            #         makePngPlot(hobjs, f'{plotdir}', 'autoCompPlot', legend, normcnt)
-
     # Legacy Efficiency Plot Maker
 
     # for fname in file_list:
