@@ -278,9 +278,14 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[])
         name = drawableObjectList[0].GetName()
         scalefactor = 1.0/normlist[0] if not(name.endswith('cumulative')) else 1.0
         drawableObjectList[0].Scale(scalefactor)
-        y_maximum = max([drawableObjectList[0].GetBinContent(i) for i in range(drawableObjectList[0].GetNbinsX())]) 
-        y_maximum = (15 if logy else 1.5)*y_maximum if y_maximum < 0.25 else (2 if logy else 1.1)
-        drawableObjectList[0].SetMaximum(y_maximum)
+
+        y_max_0 = max([drawableObjectList[0].GetBinContent(i) for i in range(drawableObjectList[0].GetNbinsX()+2)]) 
+        y_max_list = [max([h.GetBinContent(i) for i in range(h.GetNbinsX())])/normlist[i+1] for i,h in enumerate(rebinnedhistlist)]
+        y_max_list.append(y_max_0)
+        y_max = max(y_max_list)
+        y_max = (15 if logy else 1.5)*y_max if y_max < 0.25 else (2 if logy else 1.1)
+        drawableObjectList[0].SetMaximum(y_max)
+        
         drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
 
