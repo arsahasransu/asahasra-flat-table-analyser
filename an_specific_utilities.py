@@ -233,5 +233,4 @@ def make_plotnorm_by_scheme(hcoll_2d, scheme, *, summed_sample_pos=None, byevent
             else:
                 norm.append([f_nh(h) for h in hcoll_1d])
 
-        print(norm)
         return norm

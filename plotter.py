@@ -53,6 +53,9 @@ def plotter():
         if 'type' in list(plotconfig.keys()) and plotconfig['type'] == 'same_sample_different_collection':
             pfxs = plotconfig['hist_tag']['prefix']
             colls = plotconfig['hist_tag']['collection']
+            if norm_scheme['method'] == "summed_components":
+                raise NotImplementedError("Unsupported normalisation scheme \"summed_components\" for "\
+                                          f"plotting type \"same_sample_different_collection\" in {plotdir}")
 
             for folder in plotconfig['ftags']:
                 fname = samples[folder]
@@ -65,12 +68,11 @@ def plotter():
                         plotleg.append(pfxk)
                         collnames.append(coll.format(tag=pfxv))
                     varnames = list(set([hkey.GetName().split('_')[-1] for hkey in file.GetListOfKeys()if hkey.GetName().startswith(collnames[0]+'_')]))
-                    for varname in varnames:
-                        hnames = [collname+'_'+varname for collname in collnames]
-                        hobjs = [file.Get(hname) for hname in hnames]
-
-                        normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
-                        makePngPlot(hobjs, f'{plotdir}/{folder}', 'autoCompPlot', plotleg, normcnt)
+                    hists = [[file.Get(f'{collname}_{varname}') for collname in collnames] for varname in varnames]
+                    normcnts = make_plotnorm_by_scheme(hists, norm_scheme['method'])
+                    
+                    for hist, normcnt in zip(hists, normcnts):
+                        makePngPlot(hist, f'{plotdir}/{folder}', 'autoCompPlot', plotleg, normcnt)
                 file.Close()
 
         # The default behaviour is to plot for same/analogous collection different samples            
@@ -108,7 +110,6 @@ def plotter():
                 vars = list(set([hkey.split('_')[-1] for hkey in allkeys if hkey.startswith(collnames[0]+'_')]))
 
                 groupbyvars_hists = [[file.Get(f'{collname}_{var}') for file,collname in zip(files,collnames)] for var in vars]
-                print(len(groupbyvars_hists), len(groupbyvars_hists[0]))
                 if(norm_scheme['method'] == "summed_components"):
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'],
                                                        summed_sample_pos=2, byevent_vartag='n')
@@ -116,7 +117,6 @@ def plotter():
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'])
 
                 for groupbyvar_hist,normcnt in zip(groupbyvars_hists,normcnts):
-                    print(normcnt)
                     makePngPlot(groupbyvar_hist, f'{plotdir}', 'autoCompPlot', legend, normcnt)
 
     # Legacy Efficiency Plot Maker
