@@ -64,7 +64,7 @@ def plotter():
                     for pfxk, pfxv in pfxs.items():
                         plotleg.append(pfxk)
                         collnames.append(coll.format(tag=pfxv))
-                    varnames = [hkey.GetName().split('_')[-1] for hkey in file.GetListOfKeys()if hkey.GetName().startswith(collnames[0]+'_')]
+                    varnames = list(set([hkey.GetName().split('_')[-1] for hkey in file.GetListOfKeys()if hkey.GetName().startswith(collnames[0]+'_')]))
                     for varname in varnames:
                         hnames = [collname+'_'+varname for collname in collnames]
                         hobjs = [file.Get(hname) for hname in hnames]
@@ -84,6 +84,7 @@ def plotter():
             for ftag, colls in plotconfig['hist_tag'].items():
                 legend.append(ftag)
                 files.append(ROOT.TFile.Open(f'{fdir}/{samples[ftag]}'))
+                # Make the individual collection names from the composite input
                 getselmatch = sel_col_re.match(colls)
                 if getselmatch:
                     sel = getselmatch.group(1)
@@ -104,15 +105,33 @@ def plotter():
                                    fcollnames_rowlength)
             for collnames in fcollnames:
                 allkeys = [hkey.GetName() for hkey in files[0].GetListOfKeys()]
-                vars = [hkey.split('_')[-1] for hkey in allkeys if hkey.startswith(collnames[0]+'_')]
-                for var in vars:
-                    hnames = [f'{collname}_{var}' for collname in collnames]
-                    hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
-                    if not all(isinstance(hobj, ROOT.TH1) for hobj in hobjs):
-                        raise RuntimeWarning("TH1 object not found for at least one of the following names: ", hnames)
+                vars = list(set([hkey.split('_')[-1] for hkey in allkeys if hkey.startswith(collnames[0]+'_')]))
+
+                groupbyvars_hists = [[file.Get(f'{collname}_{var}') for file,collname in zip(files,collnames)] for var in vars]
+                print(len(groupbyvars_hists), len(groupbyvars_hists[0]))
+                if(norm_scheme['method'] == "summed_components"):
+                    normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'],
+                                                       summed_sample_pos=2, byevent_var='n')
+                else:
+                    normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'])
+
+                for groupbyvar_hist,normcnt in zip(groupbyvars_hists,normcnts):
+                    print(normcnt)
+                    makePngPlot(groupbyvar_hist, f'{plotdir}', 'autoCompPlot', legend, normcnt)
+
+                # for var in vars:
+                #     hnames = [f'{collname}_{var}' for collname in collnames]
+                #     hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
+
+            # for collnames in fcollnames:
+            #     for var in vars:
+            #         hnames = [f'{collname}_{var}' for collname in collnames]
+            #         hobjs = [file.Get(hname) for file, hname in zip(files, hnames)]
+            #         if not all(isinstance(hobj, ROOT.TH1) for hobj in hobjs):
+            #             raise RuntimeWarning("TH1 object not found for at least one of the following names: ", hnames)
                     
-                    normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
-                    makePngPlot(hobjs, f'{plotdir}', 'autoCompPlot', legend, normcnt)
+            #         normcnt = make_plotnorm_by_scheme(hobjs, norm_scheme['method'])
+            #         makePngPlot(hobjs, f'{plotdir}', 'autoCompPlot', legend, normcnt)
 
     # Legacy Efficiency Plot Maker
 

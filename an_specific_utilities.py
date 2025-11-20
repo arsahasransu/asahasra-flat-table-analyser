@@ -184,10 +184,51 @@ def conditionally_modify_plots(histlist):
     return newhistlist
 
 
-def make_plotnorm_by_scheme(hobjs, scheme):
+def make_plotnorm_by_scheme(twod_hists_collection, scheme, *, summed_sample_pos=None, byevent_var='n'):
 
     if scheme == "default_no_norm":
-        return [1.0]*len(hobjs)
+        return [[1.0 for h in oned_hs] for oned_hs in twod_hists_collection]
         
-    if scheme == "hist_integral" or scheme == "summed_components":
-        return [h.Integral() for h in hobjs]
+    if scheme == "hist_integral":
+        return [[h.Integral(0, h.GetNbinsX()+1) for h in oned_hs] for oned_hs in twod_hists_collection]
+    
+    if scheme == "summed_components":
+        if summed_sample_pos == None:
+            raise ValueError("Reference summed sample index not provided to normalise with \"summed_componenets\" strategy!")
+        if summed_sample_pos > len(twod_hists_collection[0]):
+            raise ValueError("Reference summed sample index larger than the length of the histogram list for each variable."\
+                             "Potentially forgot to deduct 1 for array indexing or "\
+                             "accumulated histograms along the wrong dimension of the histogram list.")
+        check_byevent_var_collection = False
+        eventcounts = []
+        alleventcounts = []
+        for oned_hs in twod_hists_collection:
+            oned_hs_names = [h.GetName() for h in oned_hs]
+            check_names = [name.endswith("_"+byevent_var) for name in oned_hs_names]
+            result_check_names = all(check_names)
+            eventcounts = [h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs) if i != summed_sample_pos]
+            alleventcounts = [(h.Integral(0, h.GetNbinsX()+1) if i != summed_sample_pos else -1.0) for i,h in enumerate(oned_hs)]
+
+            if result_check_names:
+                check_byevent_var_collection = True
+                break
+
+        if not check_byevent_var_collection:
+            raise AttributeError("Did not find the variable for event count while trying \"summed_component\" normalisation.")
+        
+        entrycounts = [[h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs) if i != summed_sample_pos] for oned_hs in twod_hists_collection]
+        normentrycounts = [[entrycount/eventcount for entrycount,eventcount in zip(onevar_entrycounts, eventcounts)] for onevar_entrycounts in entrycounts]
+        sumnormentries = [sum(onevarnormentrycount) for onevarnormentrycount in normentrycounts]
+
+        normfactor = []
+        for sumnormentry,oned_hs in zip(sumnormentries,twod_hists_collection):
+            oned_hs_names = [h.GetName() for h in oned_hs]
+            check_names = [name.endswith("_"+byevent_var) for name in oned_hs_names]
+
+            if not all(check_names):
+                normfactor.append([(alleventcounts[i]*sumnormentry if i != summed_sample_pos else h.Integral(0, h.GetNbinsX()+1)) for i,h in enumerate(oned_hs)])
+            else:
+                normfactor.append([h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs)])
+
+        print(normfactor)
+        return normfactor

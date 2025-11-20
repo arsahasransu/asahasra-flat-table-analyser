@@ -32,7 +32,7 @@ general:
 compareGenDYP_DYM50_MinBias:
   norm_scheme:
     method: 'summed_components'
-    components: ['DY_PU200', 'DY_noPU', 'MinBias']
+    norm_config: {refsample: DY_PU200}
   hist_tag:
     MinBias: tke1_TkEleL2
     DY_noPU: genDYP_TkEleL2
