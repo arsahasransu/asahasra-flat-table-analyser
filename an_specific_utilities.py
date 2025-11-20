@@ -184,51 +184,54 @@ def conditionally_modify_plots(histlist):
     return newhistlist
 
 
-def make_plotnorm_by_scheme(twod_hists_collection, scheme, *, summed_sample_pos=None, byevent_var='n'):
+def make_plotnorm_by_scheme(hcoll_2d, scheme, *, summed_sample_pos=None, byevent_vartag='n'):
 
     if scheme == "default_no_norm":
-        return [[1.0 for h in oned_hs] for oned_hs in twod_hists_collection]
-        
+        return [[1.0 for h in hcoll_1d] for hcoll_1d in hcoll_2d]
+
     if scheme == "hist_integral":
-        return [[h.Integral(0, h.GetNbinsX()+1) for h in oned_hs] for oned_hs in twod_hists_collection]
-    
+        return [[h.Integral(0, h.GetNbinsX()+1) for h in hcoll_1d] for hcoll_1d in hcoll_2d]
+
     if scheme == "summed_components":
         if summed_sample_pos == None:
             raise ValueError("Reference summed sample index not provided to normalise with \"summed_componenets\" strategy!")
-        if summed_sample_pos > len(twod_hists_collection[0]):
+        if summed_sample_pos > len(hcoll_2d[0]):
             raise ValueError("Reference summed sample index larger than the length of the histogram list for each variable."\
                              "Potentially forgot to deduct 1 for array indexing or "\
                              "accumulated histograms along the wrong dimension of the histogram list.")
-        check_byevent_var_collection = False
-        eventcounts = []
-        alleventcounts = []
-        for oned_hs in twod_hists_collection:
-            oned_hs_names = [h.GetName() for h in oned_hs]
-            check_names = [name.endswith("_"+byevent_var) for name in oned_hs_names]
-            result_check_names = all(check_names)
-            eventcounts = [h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs) if i != summed_sample_pos]
-            alleventcounts = [(h.Integral(0, h.GetNbinsX()+1) if i != summed_sample_pos else -1.0) for i,h in enumerate(oned_hs)]
+        ssp = summed_sample_pos
+        f_nh = lambda h: h.Integral(0, h.GetNbinsX()+1)
 
-            if result_check_names:
-                check_byevent_var_collection = True
+        check_byevent_vartag_collection = False
+        notag_nev = []
+        nev = []
+        for hcoll_1d in hcoll_2d:
+            name_h1d = [h.GetName() for h in hcoll_1d]
+            compare_vartag = [n.endswith("_"+byevent_vartag) for n in name_h1d]
+
+            if all(compare_vartag):
+                notag_nev = [f_nh(h) for i,h in enumerate(hcoll_1d) if i != ssp]
+                nev = [(f_nh(h) if i != ssp else -1.0) for i,h in enumerate(hcoll_1d)]
+                check_byevent_vartag_collection = True
                 break
 
-        if not check_byevent_var_collection:
-            raise AttributeError("Did not find the variable for event count while trying \"summed_component\" normalisation.")
-        
-        entrycounts = [[h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs) if i != summed_sample_pos] for oned_hs in twod_hists_collection]
-        normentrycounts = [[entrycount/eventcount for entrycount,eventcount in zip(onevar_entrycounts, eventcounts)] for onevar_entrycounts in entrycounts]
-        sumnormentries = [sum(onevarnormentrycount) for onevarnormentrycount in normentrycounts]
+        if not check_byevent_vartag_collection:
+            raise AttributeError("Did not find the variable for event count while "\
+                                 "trying \"summed_component\" normalisation.")
 
-        normfactor = []
-        for sumnormentry,oned_hs in zip(sumnormentries,twod_hists_collection):
-            oned_hs_names = [h.GetName() for h in oned_hs]
-            check_names = [name.endswith("_"+byevent_var) for name in oned_hs_names]
+        notag_nh = [[f_nh(h) for i,h in enumerate(h1d) if i != ssp] for h1d in hcoll_2d]
+        notag_normh = [[nh/ne for nh,ne in zip(nh1var, notag_nev)] for nh1var in notag_nh]
+        notag_norms = [sum(normh1var) for normh1var in notag_normh]
 
-            if not all(check_names):
-                normfactor.append([(alleventcounts[i]*sumnormentry if i != summed_sample_pos else h.Integral(0, h.GetNbinsX()+1)) for i,h in enumerate(oned_hs)])
+        norm = []
+        for notag_norm,hcoll_1d in zip(notag_norms,hcoll_2d):
+            name_h1d = [h.GetName() for h in hcoll_1d]
+            compare_vartag = [name.endswith("_"+byevent_vartag) for name in name_h1d]
+
+            if not all(compare_vartag):
+                norm.append([(nev[i]*notag_norm if i != ssp else f_nh(h)) for i,h in enumerate(hcoll_1d)])
             else:
-                normfactor.append([h.Integral(0, h.GetNbinsX()+1) for i,h in enumerate(oned_hs)])
+                norm.append([f_nh(h) for h in hcoll_1d])
 
-        print(normfactor)
-        return normfactor
+        print(norm)
+        return norm

@@ -111,7 +111,7 @@ def plotter():
                 print(len(groupbyvars_hists), len(groupbyvars_hists[0]))
                 if(norm_scheme['method'] == "summed_components"):
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'],
-                                                       summed_sample_pos=2, byevent_var='n')
+                                                       summed_sample_pos=2, byevent_vartag='n')
                 else:
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'])
 
