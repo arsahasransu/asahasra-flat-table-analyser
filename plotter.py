@@ -82,8 +82,12 @@ def plotter():
             legend = []
             sel_col_re = re.compile(r"^([A-Za-z0-9_]+)\[([A-Za-z0-9_, ]+)\]$")
             alphanum_re = re.compile(r"^[A-Za-z0-9_]+$")
+            summed_component = norm_scheme['norm_config']['refsample'] if norm_scheme['method'] == "summed_components" else -1
+            summed_component_pos = -1
 
-            for ftag, colls in plotconfig['hist_tag'].items():
+            for i, (ftag, colls) in enumerate(plotconfig['hist_tag'].items()):
+                if summed_component == ftag:
+                    summed_component_pos = i
                 legend.append(ftag)
                 files.append(ROOT.TFile.Open(f'{fdir}/{samples[ftag]}'))
                 # Make the individual collection names from the composite input
@@ -101,10 +105,14 @@ def plotter():
                     fcollnames[0].append(colls)
                 else:
                     raise RuntimeError("Bad collection name format: ", colls)
+            
             fcollnames_rowlength = [len(row) for row in fcollnames]
             if len(set(fcollnames_rowlength)) > 1:
                 raise RuntimeError("Inconsistent number of collections given to plot between the ftags: ",\
                                    fcollnames_rowlength)
+            if norm_scheme['method'] == "summed_components" and summed_component_pos < 0:
+                raise RuntimeError('Summed component index not found in sample list to perform correct normalisation')
+
             for collnames in fcollnames:
                 allkeys = [hkey.GetName() for hkey in files[0].GetListOfKeys()]
                 vars = list(set([hkey.split('_')[-1] for hkey in allkeys if hkey.startswith(collnames[0]+'_')]))
@@ -112,7 +120,7 @@ def plotter():
                 groupbyvars_hists = [[file.Get(f'{collname}_{var}') for file,collname in zip(files,collnames)] for var in vars]
                 if(norm_scheme['method'] == "summed_components"):
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'],
-                                                       summed_sample_pos=2, byevent_vartag='n')
+                                                       summed_sample_pos=summed_component_pos, byevent_vartag='n')
                 else:
                     normcnts = make_plotnorm_by_scheme(groupbyvars_hists, norm_scheme['method'])
 
