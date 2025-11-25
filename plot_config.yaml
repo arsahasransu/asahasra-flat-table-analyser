@@ -34,9 +34,6 @@ compareGenDYP_DYM50_MinBias:
     method: 'summed_components'
     norm_config: {refsample: DY_PU200} 
   hist_tag:
-    # MinBias: tke1_TkEleL2
-    # DY_noPU: genDYP_TkEleL2
-    # DY_PU200: genDYP_TkEleL2
     MinBias: tke1_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
     DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
     DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]

@@ -273,7 +273,7 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[])
         #     drawableObjectList[0].SetMinimum(0.9)
 
         colours = generateColorPalette(len(legList))
-        drawableObjectList[0].SetLineColorAlpha(colours[0], 0.35)
+        drawableObjectList[0].SetLineWidth(0)
         drawableObjectList[0].SetFillColorAlpha(colours[0], 0.25)
         name = drawableObjectList[0].GetName()
         scalefactor = 1.0/normlist[0] if not(name.endswith('cumulative')) else 1.0
@@ -287,10 +287,10 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[])
         drawableObjectList[0].SetMaximum(y_max)
         
         drawableObjectList[0].Draw('HIST E1')
-        leg.AddEntry(drawableObjectList[0], legList[0], 'lep')
+        leg.AddEntry(drawableObjectList[0], legList[0], 'f')
 
         for i, hist in enumerate(rebinnedhistlist):
-            hist.SetLineColor(colours[i+1])
+            hist.SetLineColorAlpha(colours[i+1], 0.35)
             name = hist.GetName()
             scalefactor = 1.0 / normlist[i+1] if not(name.endswith('cumulative')) and hist.Integral()!=0 else 1.0
             hist.Scale(scalefactor)
