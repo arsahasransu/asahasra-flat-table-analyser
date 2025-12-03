@@ -14,7 +14,7 @@ general:
 #     DY_PU200: base_GenEl_DYP
 
 # # AN plots for STEP 1_0_0
-# comapreGenSel_DYM50:
+# compareGenSel_DYM50:
 #   type: same_sample_different_collection
 #   norm_scheme:
 #     method: 'hist_integral'

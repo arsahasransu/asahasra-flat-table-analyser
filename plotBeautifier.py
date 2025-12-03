@@ -49,19 +49,28 @@ def makePlot_isolation(histo: TH1):
     step = (m.log10(xhigh) - m.log10(xlow))/nbins
     bins = [np.round(10**i, 3) for i in np.arange(m.log10(xlow), m.log10(xhigh), step)]
     bins = list(np.sort(list(set(bins))))
-    bins.append(100)
+    bins.append(xhigh)
     bins_array = np.array(bins, dtype='float64')
     old_bw = histo.GetBinWidth(1)
-    histo.SetBinContent(2, histo.GetBinContent(1))
+
+    # Set isolation value 0 to the first bin to enable log x-axis
+    histo.SetBinContent(2, histo.GetBinContent(0) + histo.GetBinContent(1) + histo.GetBinContent(2))
     histo.SetBinContent(1, 0)
+    histo.SetBinContent(0, 0)
+
     histo_rebinned = histo.Rebin(len(bins)-1, histo.GetName()+'_rebinned', bins_array)
-    for bin in range(0, histo_rebinned.GetNbinsX()+2):
+    # Combine overflow into last bin
+    lbin = histo_rebinned.GetNbinsX()
+    histo_rebinned.SetBinContent(lbin, histo_rebinned.GetBinContent(lbin)+histo_rebinned.GetBinContent(lbin+1))
+    histo_rebinned.SetBinError(lbin, histo_rebinned.GetBinError(lbin)+histo_rebinned.GetBinError(lbin+1))
+    for bin in range(0, histo_rebinned.GetNbinsX()+1):
         binc = histo_rebinned.GetBinContent(bin)
         bine = histo_rebinned.GetBinError(bin)
         bw = histo_rebinned.GetBinWidth(bin)
         ncombined_bins = bw/old_bw
         histo_rebinned.SetBinContent(bin, binc/ncombined_bins)
         histo_rebinned.SetBinError(bin, bine/ncombined_bins)
+
     histo_rebinned.GetYaxis().SetTitle('Events / bin width')
     return histo_rebinned
 
