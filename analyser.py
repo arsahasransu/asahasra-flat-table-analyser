@@ -53,7 +53,8 @@ def analyser():
         except FileNotFoundError as err:
             print(f"Could not load the data for sample {s_name}: {err}")
             continue
-        print(f"Processing {df.Count().GetValue()} events in sample {s_name}")
+        print("\n")
+        print(f"PROCESSING {df.Count().GetValue()} EVENTS IN SAMPLE {s_name.upper()}")
 
         # Run the analysers depending on the samples
         histograms = []

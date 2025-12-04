@@ -24,7 +24,6 @@ customisation_conds = {
 }
 
 
-# Order of the variables matters here
 # Identical order as getminangs() in define_cpp_utils.py
 angdiff_vars = ['deta', 'dphi', 'dR']
 
@@ -36,7 +35,7 @@ def angdiff_hists(df: RDataFrame, referencecoll: str, targetcoll: str):
                                     {targetcoll}_eta, {targetcoll}_phi)'
 
     for i, var in enumerate(angdiff_vars):
-        df = df.Define(f'{collectionkey}_{var}', f'std::get<{i}>({get_angdiffs_str})')
+        df = df.Define(f'{collectionkey}_{var}', f'{get_angdiffs_str}.at("{var}")')
 
     return df
 
@@ -120,7 +119,7 @@ def add_genmatching_efficiency_with_dRcut(histograms, coll):
         hist_integral = hist.GetCumulative(True, 'cumulative')
         binc = [hist_integral.GetBinContent(i) for i in range(hist_integral.GetNbinsX()+1)]
         bine = [hist_integral.GetBinError(i) for i in range(hist_integral.GetNbinsX()+1)]
-        nseek = int(0.1*hist_integral.GetNbinsX())
+        nseek = int(0.05*hist_integral.GetNbinsX())
         bindec = [binc[i]+bine[i] > binc[i+nseek] for i in range(hist_integral.GetNbinsX()+1-nseek)]
         stablebinpos = next((i for i, v in enumerate(bindec) if v), -1)
         print(f'In hist {hist.GetName()}, efficiency stabilises for:'\

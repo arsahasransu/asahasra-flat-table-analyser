@@ -4,18 +4,16 @@ import ROOT
 def define_cpp_utils():
     STRCPPFUNC_getdR = """
         float getdR(float eta1, float eta2, float phi1, float phi2) {
-            float deta = eta1 - eta2;
-            float dphi = phi1 - phi2;
-            dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-            float dR = sqrt(deta*deta + dphi*dphi);
-            return dR;
+            ROOT::Math::PtEtaPhiMVector p1(1.0, eta1, phi1, 1.0);
+            ROOT::Math::PtEtaPhiMVector p2(1.0, eta2, phi2, 1.0);
+            return ROOT::Math::VectorUtil::DeltaR(p1, p2);
         }
     """
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_getdR)
 
     STRCPPFUNC_getminangs = """
-        std::tuple< ROOT::VecOps::RVec<double>, ROOT::VecOps::RVec<double>,
+        std::unordered_map< std::string,
             ROOT::VecOps::RVec<double> > getminangs(ROOT::VecOps::RVec<float> &geta, // the output is of the size of geta
                                                     ROOT::VecOps::RVec<float> &gphi,
                                                     ROOT::VecOps::RVec<float> &eta,
@@ -29,11 +27,19 @@ def define_cpp_utils():
                 double min_dR = 99999;
                 double min_deta = 99999;
                 double min_dphi = 99999;
-                for (int j = 0; j < eta.size(); j++) {
+                if(eta.size() == 0) continue;
+
+                ROOT::Math::PtEtaPhiMVector pi(1.0, geta[i], gphi[i], 1.0);
+                ROOT::Math::PtEtaPhiMVector pj0(1.0, eta[0], phi[0], 1.0);
+                min_dR = ROOT::Math::VectorUtil::DeltaR(pi, pj0);
+                min_deta = geta[i] - eta[0];
+                min_dphi = ROOT::Math::VectorUtil::DeltaPhi(pi, pj0);
+
+                for (int j = 1; j < eta.size(); j++) {
+                    ROOT::Math::PtEtaPhiMVector pj(1.0, eta[j], phi[j], 1.0);
                     double deta = geta[i] - eta[j];
-                    double dphi = gphi[i] - phi[j];
-                    dphi = abs(dphi) > M_PI ? abs(2 * M_PI - abs(dphi)) : abs(dphi);
-                    double dR = getdR(geta[i], eta[j], gphi[i], phi[j]);
+                    double dphi = ROOT::Math::VectorUtil::DeltaPhi(pi, pj);
+                    double dR = ROOT::Math::VectorUtil::DeltaR(pi, pj);
                     if (dR < min_dR) min_dR = dR;
                     if (fabs(deta) < fabs(min_deta)) min_deta = deta;
                     if (fabs(dphi) < fabs(min_dphi)) min_dphi = dphi;
@@ -42,7 +48,12 @@ def define_cpp_utils():
                 mindphi.push_back(min_dphi);
                 mindR.push_back(min_dR);
             }
-            return std::make_tuple(mindeta, mindphi, mindR);
+
+            std::unordered_map< std::string, ROOT::VecOps::RVec<double> > angs;
+            angs["deta"] = mindeta;
+            angs["dphi"] = mindphi;
+            angs["dR"] = mindR;
+            return angs;
         }
     """
 

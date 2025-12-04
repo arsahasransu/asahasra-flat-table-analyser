@@ -30,59 +30,53 @@ def dy_to_ll_ana_main(df: RDataFrame):
     # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
     # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
     
-    df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.4', 'DYP')
+    df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.5', 'DYP')
     # rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
     ##########################################################
 
-    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
-    Ncut_gen = dfGenP.Count().GetValue()
-    print("Applying selection >0 Gen electron with prompt status 2 and |eta| < 2.4...")
-    print(f"Remaining event count = {Ncut_gen}/{df.Count().GetValue()} "\
-          f"({round(Ncut_gen*100/df.Count().GetValue(), 3)}%)")
-    dfGenP = dfGenP.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
-    Ncut_tkelgt0 = dfGenP.Count().GetValue()
-    print("Applying selection >0 reconstructed TkEl...")
-    print(f"Remaining event count = {Ncut_tkelgt0}/{Ncut_gen} "\
-          f"({round(Ncut_tkelgt0*100/Ncut_gen, 3)}%)")
+    dfGenPS = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
+    ut.create_rdf_checkpint(df, dfGenPS, "Applying selection: >0 Gen electron with prompt status 2 and |eta| < 2.5...")
+
+    dfGenP = dfGenPS.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
+    ut.create_rdf_checkpint(dfGenPS, dfGenP, "Applying selection: >0 reconstructed TkEl...")
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
-    rdf_g.add_hists_singlecollection(dfGenP, histograms, sufEl)
-    add_puppicands_by_pdg(dfGenP, histograms, '') # Also for STEP 3_1_0
+    # rdf_g.add_hists_singlecollection(dfGenP, histograms, sufEl)
+    # add_puppicands_by_pdg(dfGenP, histograms, '')
     ##########################################################
 
     # SPLIT ETA REGIONS BASED ON TKEL
-    # dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
-    # dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
-    # dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 1.6 && abs({sufEl}_eta) <= 2.1', 'EE')
-    # dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 2.1', 'EF')
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) <= 1.5', 'EB')
+    dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) > 1.5 && abs({sufEl}_eta) <= 2.5', 'EE')
 
-    # gen_dRcuts = {'EB': 0.02, 'EM': 0.025, 'EE': 0.04, 'EF': 0.05}
+    gen_dRcuts = {'EB': 0.04, 'EE': 0.05}
 
-    # for ERegion in ['EB', 'EM', 'EE', 'EF']:
+    for ERegion in ['EB', 'EE']:
     # for ERegion in ['EB']:
-        # sufGenDYP = f'{sufGen}_DYP'
-        # sufElER = f'{sufEl}_{ERegion}'
-        # dfGenER = dfGenP.Filter(f'{sufElER}_n > 0', f'genDYPel{ERegion}')
+        sufGenDYP = f'{sufGen}_DYP'
+        sufElER = f'{sufEl}_{ERegion}'
+        dfGenER = dfGenP.Filter(f'{sufElER}_n > 0', f'DYP{ERegion}')
+        ut.create_rdf_checkpint(dfGenP, dfGenER, f"Applying selection: > 0 TkEl in region {ERegion}...")
 
         # STEP 2_0_0: GEN MATCH BLOCK
         #########################################################
-        # # PRE GEN MATCH
-        # dfGenER = anut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
-        # anut.add_genmatching_efficiency_with_dRcut(histograms, f'genDYPel{ERegion}_{sufGenDYP}_{sufElER}')
+        # PRE GEN MATCH
+        dfGenER = anut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
+        anut.add_genmatching_efficiency_with_dRcut(histograms, f'DYP{ERegion}_{sufGenDYP}_{sufElER}')
 
         # GEN MATCH
-        # dfGenER = anut.do_gen_match(dfGenER, sufGenDYP, sufElER, gen_dRcuts[ERegion])
-        # dfGenER = rdf_g.define_newcollection(dfGenER, sufGenDYP, f'{sufGenDYP}_recoidx != -1', 'MCH')
-        # dfGenER = rdf_g.define_newcollection(dfGenER, sufElER, f'{sufElER}_genidx != -1', 'MCH')\
+        dfGenER = anut.do_gen_match(dfGenER, sufGenDYP, sufElER, gen_dRcuts[ERegion])
+        dfGenER = rdf_g.define_newcollection(dfGenER, sufGenDYP, f'{sufGenDYP}_recoidx != -1', 'MCH')
+        dfGenER = rdf_g.define_newcollection(dfGenER, sufElER, f'{sufElER}_genidx != -1', 'MCH')\
         
-        # sufGenMch = f'{sufGenDYP}_MCH'
-        # sufElMch = f'{sufElER}_MCH'
+        sufGenMch = f'{sufGenDYP}_MCH'
+        sufElMch = f'{sufElER}_MCH'
 
-        # # POST GEN MATCH
-        # dfGenER = anut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
+        # POST GEN MATCH
+        dfGenER = anut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
         ##########################################################
 
         # Filter for atleast one gen-match TkEl in the defined eta region

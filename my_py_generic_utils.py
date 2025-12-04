@@ -32,6 +32,16 @@ def time_eval(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
+        print("\n##############################")
         print(f"Execution time of function {func.__name__}: {execution_time:.6f} seconds")
         return result
     return wrapper
+
+
+# Create RDataFrame checkpoint
+def create_rdf_checkpint(ref_df, filt_df, msg):
+    refcount = ref_df.Count().GetValue()
+    filtcount = filt_df.Count().GetValue()
+    print(f"\n{msg}")
+    print(f"Remaining event count = {filtcount}/{refcount} "\
+          f"({round(filtcount*100/refcount, 3)}%)")

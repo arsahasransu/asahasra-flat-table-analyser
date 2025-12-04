@@ -17,15 +17,13 @@ def qcd_ana_main(df: RDataFrame):
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
     Ncut_beforeall = df.Count().GetValue()
-    df = df.Filter(f'{sufEl}_n > 0', 'tke1')
-    print("Applying selection >0 reconstructed TkEl...")
-    print(f"Remaining event count = {df.Count().GetValue()}/{Ncut_beforeall} "\
-          f"({round(df.Count().GetValue()*100/Ncut_beforeall, 3)}%)")
+    dfE = df.Filter(f'{sufEl}_n > 0', 'tke1')
+    ut.create_rdf_checkpint(df, dfE, "Applying selection: >0 reconstructed TkEl...")
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
-    rdf_g.add_hists_singlecollection(df, histograms, sufEl)
-    add_puppicands_by_pdg(df, histograms, '')
+    rdf_g.add_hists_singlecollection(dfE, histograms, sufEl)
+    add_puppicands_by_pdg(dfE, histograms, '')
     ##########################################################
     # df = anut.make_puppi_by_angdiff_from_tkel(df, sufEl, histograms)
     

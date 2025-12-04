@@ -36,11 +36,11 @@ linkvartohist = {
     'puppiWeight': (110, 0.5, 1.05, 'puppi weight'),
 
     # 'deta': (140, -7, 7, '#Delta#eta'),
-    # 'dphi': (140, -1, 6, '#Delta#phi'),
-    # 'dR': (1000, 0, 10, '#DeltaR')
-    'deta': (1000, -0.2, 0.2, '#Delta#eta'),
-    'dphi': (500, -0.1, 0.4, '#Delta#phi'),
-    'dR': (100, 0.0, 0.4, '#DeltaR'),
+    # 'dphi': (280, -7, 7, '#Delta#phi'),
+    # 'dR': (280, 0, 7, '#DeltaR'),
+    'deta': (200, -0.2, 0.2, '#Delta#eta'),
+    'dphi': (200, -0.4, 0.4, '#Delta#phi'),
+    'dR': (100, 0.0, 0.2, '#DeltaR'),
 
     'bin2dR': (5000, 0.0, 0.5, '#DeltaR')
 }
