@@ -5,38 +5,38 @@ general:
     DY_noPU: hists_DY_noPU.root
     DY_PU200: hists_DY_PU200.root
 
-# # AN plots for STEP 1_0_0
-# compareGen_DYM50_PromptAndEtaSel:
-#   norm_scheme:
-#     method: 'hist_integral'
-#   hist_tag:
-#     DY_noPU: base_GenEl_DYP
-#     DY_PU200: base_GenEl_DYP
+# AN plots for STEP 1_0_0
+compareGen_DYM50_PromptAndEtaSel:
+  norm_scheme:
+    method: 'hist_integral'
+  hist_tag:
+    DY_noPU: base_GenEl_DYP
+    DY_PU200: base_GenEl_DYP
 
-# # AN plots for STEP 1_0_0
-# compareGenSel_DYM50:
-#   type: same_sample_different_collection
-#   norm_scheme:
-#     method: 'hist_integral'
-#   ftags: ['DY_noPU', 'DY_PU200']
-#   hist_tag:
-#     prefix:
-#       'all': GenEl
-#       'status = 0': GenEl_GENST0
-#       'status = 1': GenEl_GENST1
-#       'status = 2': GenEl_GENST2
-#       'status = 2, |#eta| < 2.5': GenEl_DYP
-#     collection: ['base_{tag}']
+# AN plots for STEP 1_0_0
+compareGenSel_DYM50:
+  type: same_sample_different_collection
+  norm_scheme:
+    method: 'hist_integral'
+  ftags: ['DY_noPU', 'DY_PU200']
+  hist_tag:
+    prefix:
+      'all': GenEl
+      'status = 0': GenEl_GENST0
+      'status = 1': GenEl_GENST1
+      'status = 2': GenEl_GENST2
+      'status = 2, |#eta| < 2.5': GenEl_DYP
+    collection: ['base_{tag}']
 
-# # AN plots for STEP 1_2_0
-# compareGenDYP_DYM50_MinBias:
-#   norm_scheme:
-#     method: 'summed_components'
-#     norm_config: {refsample: DY_PU200} 
-#   hist_tag:
-#     MinBias: tke1_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-#     DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
-#     DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+# AN plots for STEP 1_2_0
+compareGenDYP_DYM50_MinBias:
+  norm_scheme:
+    method: 'summed_components'
+    norm_config: {refsample: DY_PU200} 
+  hist_tag:
+    MinBias: tke1_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+    DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 
 # AN plots for STEP 2_0_0
 compareERegion_DYM50_GenMatching:
@@ -51,6 +51,17 @@ compareERegion_DYM50_GenMatching:
     collection: ['DYP{tag}_GenEl_DYP_TkEleL2_{tag}',
                  'DYP{tag}_GenEl_DYP_MCH_TkEleL2_{tag}_MCH']
 
+# AN plots for STEP 2_1_0
+compareTkEl_inER_DYM50_GenMatched:
+  type: same_sample_different_collection
+  norm_scheme:
+    method: default_no_norm
+  ftags: ['DY_noPU', 'DY_PU200']
+  hist_tag:
+    prefix:
+      All: ''
+      EB: _MCH
+    collection: ['DYPEB_TkEleL2_EB{tag}', 'DYPEE_TkEleL2_EE{tag}']
 
 
 

@@ -292,8 +292,8 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[])
         y_max_list = [max([h.GetBinContent(i) for i in range(h.GetNbinsX())])/normlist[i+1] for i,h in enumerate(rebinnedhistlist)]
         y_max_list.append(y_max_0)
         y_max = max(y_max_list)
-        y_max = (15 if logy else 1.5)*y_max if y_max < 0.25 else (2 if logy else 1.1)
-        drawableObjectList[0].SetMaximum(y_max)
+        # y_max = (15 if logy else 1.5)*y_max if y_max < 0.25 else (2 if logy else 1.1)
+        drawableObjectList[0].SetMaximum(15*y_max if logy else 1.1*y_max)
         
         drawableObjectList[0].Draw('HIST E1')
         leg.AddEntry(drawableObjectList[0], legList[0], 'f')

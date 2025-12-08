@@ -19,19 +19,19 @@ def dy_to_ll_ana_main(df: RDataFrame):
 
     # STEP 1_0_0: Enable for plots in "Gen properties" section
     ##########################################################
-    # rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
+    rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
 
-    # df_genstudy2 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2', 'GENST2')
-    # rdf_g.add_hists_singlecollection(df_genstudy2, histograms, f'{sufGen}_GENST2')
+    df_genstudy2 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2', 'GENST2')
+    rdf_g.add_hists_singlecollection(df_genstudy2, histograms, f'{sufGen}_GENST2')
 
-    # df_genstudy1 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==1', 'GENST1')
-    # rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
+    df_genstudy1 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==1', 'GENST1')
+    rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
 
-    # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
-    # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
+    df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
+    rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
     
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.5', 'DYP')
-    # rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
+    rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
     ##########################################################
 
     dfGenPS = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
@@ -42,8 +42,8 @@ def dy_to_ll_ana_main(df: RDataFrame):
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
-    # rdf_g.add_hists_singlecollection(dfGenP, histograms, sufEl)
-    # add_puppicands_by_pdg(dfGenP, histograms, '')
+    rdf_g.add_hists_singlecollection(dfGenP, histograms, sufEl)
+    add_puppicands_by_pdg(dfGenP, histograms, '')
     ##########################################################
 
     # SPLIT ETA REGIONS BASED ON TKEL
@@ -78,6 +78,15 @@ def dy_to_ll_ana_main(df: RDataFrame):
         dfGenER = anut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
         rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
         ##########################################################
+
+        # STEP 2_1_0: For comparing all TkEl to gen-matched TkEl
+        #########################################################
+        rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufElER, sufElMch])
+
+        # Filter for atleast one gen-match TkEl in the defined eta region
+        # dfGenMER = dfGenER.Filter(f'{sufElMch}_n > 0', f'GM')
+        # ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
+        #########################################################
 
         # Filter for atleast one gen-match TkEl in the defined eta region
         # dfGenER = dfGenER.Filter(f'{sufElMch}_n > 0', f'genDYPTkElMCH{ERegion}')
