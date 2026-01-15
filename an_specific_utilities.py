@@ -3,8 +3,9 @@ import math as m
 import numpy as np
 import warnings
 
-from ROOT import RDataFrame
+from ROOT import RDataFrame, TFile
 
+import my_py_generic_utils as ut
 import rdf_generic as rdf_g
 from rdf_generic import add_hists_multiplecolls, define_newcollection
 from varmetadata import linkvartohist as v2h
@@ -22,6 +23,43 @@ customisation_conds = {
         # (lambda histname: 'bin2dR' in histname, lambda canvas: canvas.SetLogx())
     ]
 }
+
+
+class SampleRDFManager:
+    def __init__(self, file_pattern: str, s_name:str, *, tree_name: str = "Events"):
+        self.s_name = s_name
+        self.file_pattern = file_pattern
+        self.tree_name = tree_name
+
+        self.parent_df = self.load_rdf()
+        self.df_dict = {}
+        self.histograms = []
+
+    def load_rdf(self):
+        try:
+            df = RDataFrame(self.tree_name, self.file_pattern)
+            print("\n")
+            print(f"PROCESSING {df.Count().GetValue()} EVENTS IN SAMPLE {self.s_name.upper()}")
+            return df
+        except FileNotFoundError as err:
+            raise FileNotFoundError(f"Could not find files for sample {self.s_name} in path {self.file_pattern}: {err}")
+        except Exception as e:
+            raise Exception(f"An error occurred while loading the RDF for sample {self.s_name}: {e}")
+    
+    def add_dataframe(self, key: str, df: RDataFrame):
+        self.df_dict[key] = df
+
+    def get_dataframe(self, key: str) -> RDataFrame:
+        if key not in self.df_dict:
+            raise KeyError(f"DataFrame with key '{key}' not found.")
+        
+        return self.df_dict.get(key)
+    
+    def add_histograms(self, histolist: list):
+        self.histograms.extend(histolist)
+
+    def get_histograms(self) -> list:
+        return self.histograms
 
 
 # Identical order as getminangs() in define_cpp_utils.py
@@ -233,3 +271,11 @@ def make_plotnorm_by_scheme(hcoll_2d, scheme, *, summed_sample_pos=None, byevent
                 norm.append([f_nh(h) for h in hcoll_1d])
 
         return norm
+
+
+@ut.time_eval
+def writehists_to_file(ofname, histograms):
+    outfile = TFile(ofname, 'RECREATE')
+    for hist in histograms:
+        hist.Write()
+    outfile.Close()

@@ -6,18 +6,12 @@ import yaml
 
 import ROOT
 
+import an_specific_utilities as anautil
 from define_cpp_utils import define_cpp_utils
 import dy_to_ll_ana
 import my_py_generic_utils as ut
+from post_analysis_persample import post_analysis_persample
 import qcd_ana
-
-
-@ut.time_eval
-def writehists_to_file(ofname, histograms):
-    outfile = ROOT.TFile(ofname, 'RECREATE')
-    for hist in histograms:
-        hist.Write()
-    outfile.Close()
 
 
 @ut.time_eval
@@ -48,26 +42,28 @@ def analyser():
 
     # Loop on simulation samples
     for s_name, s_info in samples.items():
-        try:
-            df = ROOT.RDataFrame(opts['tree_name'], opts['input_dir_prefix']+'/'+s_info['input_file_pattern'])
-        except FileNotFoundError as err:
-            print(f"Could not load the data for sample {s_name}: {err}")
-            continue
-        print("\n")
-        print(f"PROCESSING {df.Count().GetValue()} EVENTS IN SAMPLE {s_name.upper()}")
+
+        anamanager = anautil.SampleRDFManager(opts['input_dir_prefix']+'/'+s_info['input_file_pattern'], s_name, tree_name=opts['tree_name'])
 
         # Run the analysers depending on the samples
         histograms = []
         if s_info['type'] == 'dytoll':
-            histograms = dy_to_ll_ana.dy_to_ll_ana_main(df)
+            dy_to_ll_ana.dy_to_ll_ana_main(anamanager)
+            histograms = anamanager.get_histograms()
         elif s_info['type'] == 'qcd':
-            histograms = qcd_ana.qcd_ana_main(df)
+            qcd_ana.qcd_ana_main(anamanager)
+            histograms = anamanager.get_histograms()
         else:
             print(f"Unknown sample type {s_info['type']}")
             continue
 
         # Write histograms to output root file
-        writehists_to_file(f'{opts['output_dir']}/hists_{s_name}.root', histograms)
+        anautil.writehists_to_file(f'{opts['output_dir']}/hists_{s_name}.root', histograms)
+
+        # Run post-analysis special code
+        # post_analysis_persample(s_name, df)
+
+
 
 
 # Main function

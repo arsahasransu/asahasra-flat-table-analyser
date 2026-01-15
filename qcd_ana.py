@@ -1,4 +1,5 @@
 from ROOT import RDataFrame
+import ROOT
 
 import an_specific_utilities as anut
 from an_specific_utilities import sufEl, sufPu
@@ -9,33 +10,34 @@ import rdf_generic as rdf_g
 
 
 @ut.time_eval
-def qcd_ana_main(df: RDataFrame):
+def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
 
     histograms = []
 
+    df = ana_man.parent_df
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    Ncut_beforeall = df.Count().GetValue()
     dfE = df.Filter(f'{sufEl}_n > 0', 'tke1')
     ut.create_rdf_checkpint(df, dfE, "Applying selection: >0 reconstructed TkEl...")
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
-    rdf_g.add_hists_singlecollection(dfE, histograms, sufEl)
-    add_puppicands_by_pdg(dfE, histograms, '')
+    # rdf_g.add_hists_singlecollection(dfE, histograms, sufEl)
+    # add_puppicands_by_pdg(dfE, histograms, '')
     ##########################################################
     # df = anut.make_puppi_by_angdiff_from_tkel(df, sufEl, histograms)
     
-    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) <= 1.4', 'EB')
-    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.4 && abs({sufEl}_eta) <= 1.6', 'EM')
-    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 1.6 && abs({sufEl}_eta) <= 2.1', 'EE')
-    # df = rdf_g.define_newcollection(df, sufEl, f'abs({sufEl}_eta) > 2.1', 'EF')
+    dfE = rdf_g.define_newcollection(dfE, sufEl, f'abs({sufEl}_eta) <= 1.5', 'EB')
+    dfE = rdf_g.define_newcollection(dfE, sufEl, f'abs({sufEl}_eta) > 1.5 && abs({sufEl}_eta) <= 2.5', 'EE')
 
-    # for ERegion in ['EB', 'EM', 'EE', 'EF']:
-    # for ERegion in ['EB']:
-        # sufElER = f'{sufEl}_{ERegion}'
-        # dfER = df.Filter(f'{sufElER}_n > 0', f'el{ERegion}')
+    # for ERegion in ['EB', 'EE']:
+    for ERegion in ['EB']:
+        sufElER = f'{sufEl}_{ERegion}'
+        dfER = dfE.Filter(f'{sufElER}_n > 0', ERegion)
+        ut.create_rdf_checkpint(dfE, dfER, f"Applying selection: > 0 TkEl in region {ERegion}...")
+
+        rdf_g.add_hists_singlecollection(dfER, histograms, sufElER)
 
         # rdf_g.add_hists_multiplecolls(df, histograms, [sufElER, sufPu])
         # add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
@@ -43,7 +45,8 @@ def qcd_ana_main(df: RDataFrame):
 
         # dfER = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
 
-    return histograms
+    ana_man.add_histograms(histograms)
+    return ana_man
 
     # df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479', 'TkElEBPt10')
     # dfTkElEBPt10 = df.Filter(f'{sufEl}_TkElEBPt10_n > 0', 'tkelEBpt10')
