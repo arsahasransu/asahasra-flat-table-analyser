@@ -4,3 +4,6 @@ hists_*/
 puppiIsoData/
 nb_plots/*
 *.png
+*.DS_Store
+*.parquet
+env_report.json
