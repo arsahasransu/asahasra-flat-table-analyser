@@ -35,11 +35,11 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     # rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
     ##########################################################
 
-    dfGenPS = df.Filter(f'{sufGen}_DYP_n > 0', 'genDYP')
-    ut.create_rdf_checkpint(df, dfGenPS, "Applying selection: >0 Gen electron with prompt status 2 and |eta| < 2.5...")
+    dfGenP = df.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
+    ana_man.add_dataframe(key='genDYP', df=dfGenP)
+    ut.create_rdf_checkpint(df, dfGenP, "Applying selection: >0 Gen electron with prompt "
+                                        "status 2 and |eta| < 2.5... \n>0 reconstructed TkEl...")
 
-    dfGenP = dfGenPS.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
-    ut.create_rdf_checkpint(dfGenPS, dfGenP, "Applying selection: >0 reconstructed TkEl...")
 
     # STEP 1_2_0: Enable for plots in "Gen selection" section
     ##########################################################
@@ -83,6 +83,7 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         # STEP 2_1_0: For comparing all TkEl to gen-matched TkEl
         #########################################################
         rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufElER, sufElMch])
+        ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
 
         # Filter for atleast one gen-match TkEl in the defined eta region
         # dfGenMER = dfGenER.Filter(f'{sufElMch}_n > 0', f'GM')

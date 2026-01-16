@@ -61,9 +61,7 @@ def analyser():
         anautil.writehists_to_file(f'{opts['output_dir']}/hists_{s_name}.root', histograms)
 
         # Run post-analysis special code
-        # post_analysis_persample(s_name, df)
-
-
+        post_analysis_persample(anamanager)
 
 
 # Main function
