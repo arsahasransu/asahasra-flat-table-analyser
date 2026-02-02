@@ -43,7 +43,7 @@ def analyser():
     # Loop on simulation samples
     for s_name, s_info in samples.items():
 
-        anamanager = anautil.SampleRDFManager(opts['input_dir_prefix']+'/'+s_info['input_file_pattern'], s_name, tree_name=opts['tree_name'])
+        anamanager = anautil.SampleRDFManager(s_name, s_info, opts=opts)
 
         # Run the analysers depending on the samples
         histograms = []

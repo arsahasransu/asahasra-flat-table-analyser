@@ -31,22 +31,24 @@ def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     dfE = rdf_g.define_newcollection(dfE, sufEl, f'abs({sufEl}_eta) <= 1.5', 'EB')
     dfE = rdf_g.define_newcollection(dfE, sufEl, f'abs({sufEl}_eta) > 1.5 && abs({sufEl}_eta) <= 2.5', 'EE')
 
-    # for ERegion in ['EB', 'EE']:
-    for ERegion in ['EB']:
+    for ERegion in ['EB', 'EE']:
+    # for ERegion in ['EB']:
         sufElER = f'{sufEl}_{ERegion}'
         dfER = dfE.Filter(f'{sufElER}_n > 0', ERegion)
         ut.create_rdf_checkpint(dfE, dfER, f"Applying selection: > 0 TkEl in region {ERegion}...")
 
+        # STEP 3_0_0: sufElER necessary to make reference ROC curves for tkIso
         rdf_g.add_hists_singlecollection(dfER, histograms, sufElER)
-
-        # rdf_g.add_hists_multiplecolls(df, histograms, [sufElER, sufPu])
-        # add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
-        # rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElER])
-
-        # dfER = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
+        ana_man.add_dataframe(key=ERegion, df=dfER)
 
     ana_man.add_histograms(histograms)
     return ana_man
+
+    # rdf_g.add_hists_multiplecolls(df, histograms, [sufElER, sufPu])
+    # add_puppicands_by_pdg(dfER, histograms, '', tkelobj=sufElER)
+    # rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElER])
+
+    # dfER = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElER, histograms)
 
     # df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt > 10 && abs({sufEl}_eta) < 1.479', 'TkElEBPt10')
     # dfTkElEBPt10 = df.Filter(f'{sufEl}_TkElEBPt10_n > 0', 'tkelEBpt10')

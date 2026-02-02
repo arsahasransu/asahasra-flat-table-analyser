@@ -26,10 +26,17 @@ customisation_conds = {
 
 
 class SampleRDFManager:
-    def __init__(self, file_pattern: str, s_name:str, *, tree_name: str = "Events"):
+    def __init__(self, s_name:str, s_opts:dict, *,
+                 opts = None,
+                 tree_name: str = "Events"):
         self.s_name = s_name
-        self.file_pattern = file_pattern
-        self.tree_name = tree_name
+        self.file_pattern = (opts['input_dir_prefix'] if opts is not None else '')+'/'+s_opts['input_file_pattern']
+        self._opts = opts
+        if self._opts is not None:
+            self.tree_name = self._opts.get('tree_name', tree_name)
+        else:
+            self.tree_name = tree_name
+        self.max_events = s_opts.get('max_events', 0)
 
         self.parent_df = self.load_rdf()
         self.df_dict = {}

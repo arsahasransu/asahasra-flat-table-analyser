@@ -53,8 +53,8 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
 
     gen_dRcuts = {'EB': 0.04, 'EE': 0.05}
 
-    # for ERegion in ['EB', 'EE']:
-    for ERegion in ['EB']:
+    for ERegion in ['EB', 'EE']:
+    # for ERegion in ['EB']:
         sufGenDYP = f'{sufGen}_DYP'
         sufElER = f'{sufEl}_{ERegion}'
         dfGenER = dfGenP.Filter(f'{sufElER}_n > 0', f'DYP{ERegion}')
@@ -82,6 +82,7 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
 
         # STEP 2_1_0: For comparing all TkEl to gen-matched TkEl
         #########################################################
+        # STEP 3_0_0: sufElMch necessary for generating reference tkiso ROC curves
         rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufElER, sufElMch])
         ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
 
@@ -90,21 +91,21 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         # ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
         #########################################################
 
-        # # # Checked for pT sorting of the TkEl collection
-        # dfGenER = dfGenER.Define(f'{sufElMch}_pt_sorted', f'checksorting<float>({sufElMch}_pt, true)')
-        # histograms.append( dfGenER.Histo1D((f'{sufElMch}_pt_sorted', 'pt_sort', 6, -2, 4), f'{sufElMch}_pt_sorted') )
-        # cp_pt_sort = anut.check_histogram_for_value(histograms, f'{sufElMch}_pt_sorted', bin=3) # bin 3 = value 0
-        # if cp_pt_sort:
-        #     raise RuntimeError("The Track Electrons pT's are not sorted from highest to lowest")
-
-        # For each TkEl, observe the feature of PuppiCandidates around the TkEl in annular dR window
-        # add_puppicands_by_pdg(dfGenER, histograms, '', tkelobj=sufElMch)
-        # dfGenER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElMch, histograms)
-
         # dfGenER.Describe().Print()
 
     ana_man.add_histograms(histograms)
     return ana_man
+
+    # # # Checked for pT sorting of the TkEl collection
+    # dfGenER = dfGenER.Define(f'{sufElMch}_pt_sorted', f'checksorting<float>({sufElMch}_pt, true)')
+    # histograms.append( dfGenER.Histo1D((f'{sufElMch}_pt_sorted', 'pt_sort', 6, -2, 4), f'{sufElMch}_pt_sorted') )
+    # cp_pt_sort = anut.check_histogram_for_value(histograms, f'{sufElMch}_pt_sorted', bin=3) # bin 3 = value 0
+    # if cp_pt_sort:
+    #     raise RuntimeError("The Track Electrons pT's are not sorted from highest to lowest")
+
+    # For each TkEl, observe the feature of PuppiCandidates around the TkEl in annular dR window
+    # add_puppicands_by_pdg(dfGenER, histograms, '', tkelobj=sufElMch)
+    # dfGenER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElMch, histograms)
 
     # Calculate puppi iso
     # dfgenEB = reiso.recalculate_puppi_iso(dfgenEB, f'{sufEl}_MCH', sufPu)

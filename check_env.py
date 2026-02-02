@@ -50,8 +50,6 @@ REQUIRED: Dict[str, Optional[str]] = {
 
     # HEP / ROOT
     "ROOT": None,                # presence-only (PyROOT often isn't semantically versioned the same way)
-    "awkward": "2.8.0",          # Awkward Array v2
-    "pyarrow": "22.0.0",        # Apache Arrow / Parquet - Dependency of awkward
 
     "yaml": "6.0.0",
     "IPython": "9.7.0"
