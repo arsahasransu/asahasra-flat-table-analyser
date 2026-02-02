@@ -7,3 +7,4 @@ nb_plots/*
 *.DS_Store
 *.parquet
 env_report.json
+*.pkl
