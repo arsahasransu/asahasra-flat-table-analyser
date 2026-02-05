@@ -9,21 +9,29 @@ def post_analysis_persample(anamanager: SampleRDFManager):
     if sname == 'DY_PU200':
         print(f"\nRunning post-analysis for {sname} sample...")
 
-        DYPEB_df = anamanager.get_dataframe('DYPEB')
-        cols = ['TkEleL2_EB_MCH_pt', 'TkEleL2_EB_MCH_tkIso', 'TkEleL2_EB_MCH_puppiIso']
+        # STEP 3_0_0, X_X_X: For ROC curves
+        DYPEB_df = anamanager.get_dataframe('DYPMEB')
+        cols = ['TkEleL2_EB_MCH_pt', 'TkEleL2_EB_MCH_tkIso', 'TkEleL2_EB_MCH_puppiIso',
+                'TkEleL2_EB_MCH_reiso_dRmin0_01_tot_puppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(DYPEB_df, cols, sname, recreate=True)
 
-        DYPEE_df = anamanager.get_dataframe('DYPEE')
-        cols = ['TkEleL2_EE_MCH_pt', 'TkEleL2_EE_MCH_tkIso', 'TkEleL2_EE_MCH_puppiIso']
+        # STEP 3_0_0, X_X_X: For ROC curves
+        DYPEE_df = anamanager.get_dataframe('DYPMEE')
+        cols = ['TkEleL2_EE_MCH_pt', 'TkEleL2_EE_MCH_tkIso', 'TkEleL2_EE_MCH_puppiIso',
+                'TkEleL2_EE_MCH_reiso_dRmin0_01_tot_puppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(DYPEE_df, cols, sname)
 
     if sname == "MinBias":
         print(f"\nRunning post-analysis for {sname} sample...")
 
+        # STEP 3_0_0, X_X_X: For ROC curves
         EB_df = anamanager.get_dataframe('EB')
-        cols = ['TkEleL2_EB_pt', 'TkEleL2_EB_tkIso', 'TkEleL2_EB_puppiIso']
+        cols = ['TkEleL2_EB_pt', 'TkEleL2_EB_tkIso', 'TkEleL2_EB_puppiIso',
+                'TkEleL2_EB_reiso_dRmin0_01_tot_puppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(EB_df, cols, sname, recreate=True)
 
+        # STEP 3_0_0, X_X_X: For ROC curves
         EE_df = anamanager.get_dataframe('EE')
-        cols = ['TkEleL2_EE_pt', 'TkEleL2_EE_tkIso', 'TkEleL2_EE_puppiIso']
+        cols = ['TkEleL2_EE_pt', 'TkEleL2_EE_tkIso', 'TkEleL2_EE_puppiIso',
+                'TkEleL2_EE_reiso_dRmin0_01_tot_puppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(EE_df, cols, sname)

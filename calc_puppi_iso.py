@@ -5,13 +5,21 @@ from ROOT import RDataFrame
 
 def recalculate_puppi_iso(df: RDataFrame, elcoll: str, puppicoll: str):
 
-    dRmin_list = np.arange(0.01, 0.2, 0.01)
+    # dRmin_list = np.arange(0.01, 0.2, 0.01)
+    dRmin_list = [0.01]
     dRmax = 0.4
     for dRmin in dRmin_list:
-        getisostr = f'calcisoannularcone({elcoll}_pt, {elcoll}_eta, {elcoll}_phi,\
-                        {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {dRmin}, {dRmax})'
-        df = df.Define(f'{elcoll}_Re_dRmin{str(dRmin).replace('.', '_')}_puppiIso', getisostr)
-
+        getisostr = f'calcisoannularcone({elcoll}_pt, {elcoll}_eta, {elcoll}_caloEta,\
+                        {elcoll}_phi, {elcoll}_caloPhi,\
+                        {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
+                        {dRmin}, {dRmax})'
+        df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple', getisostr)
+        # df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_absPuppiIso',
+        #                f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        # df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_oth_absPuppiIso',
+        #                f'std::get<6>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_puppiIso',
+                       f'std::get<7>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
     return df
 
 

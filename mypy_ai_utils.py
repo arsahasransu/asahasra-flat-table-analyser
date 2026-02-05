@@ -1,3 +1,7 @@
+import itertools
+import multiprocessing
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,7 +19,6 @@ def roc_curve(truth: np.ndarray, scores: np.ndarray, *,
     # Calculate TPR and FPR and AUC
     tpr = np.cumsum(sorted_truth) / np.sum(sorted_truth)
     fpr = np.cumsum(1 - sorted_truth) / np.sum(1 - sorted_truth)
-    auc = np.trapezoid(tpr, fpr)
 
     # Remove non-unique FPR
     unique_fpr, inv = np.unique(fpr, return_inverse=True)
@@ -43,6 +46,7 @@ def roc_curve(truth: np.ndarray, scores: np.ndarray, *,
 
     tpr = tpr[indices]
     fpr = fpr[indices]
+    auc = np.trapezoid(tpr, fpr)
     sorted_scores = sorted_scores[indices]
 
     return fpr, tpr, auc, sorted_scores
@@ -75,7 +79,8 @@ def make_roc(vals: list[list[np.ndarray]], *,
         scatter = plt.scatter(fpr, tpr,
                               c=thr, cmap = cmaps[i], norm='log', # Colour maps can slow larger arrays
                               marker=markers[i],
-                              label=f'{vals[i][2]} (AUC = {auc:.4f})', **kwargs)
+                            #   label=f'{vals[i][2]} (AUC = {auc:.4f})', **kwargs)
+                              label=f'{vals[i][2]}', **kwargs)
         cbar = plt.colorbar(scatter)
     
     if scale == "piecewise_linear":
@@ -101,3 +106,53 @@ def make_roc(vals: list[list[np.ndarray]], *,
     plt.savefig(filename, dpi=300)
     print(f"ROC curve saved to {filename}")
     plt.close()
+
+
+def _init_worker(valarr):
+    global _VALARRAY
+    _VALARRAY = valarr
+
+
+@ut.time_eval
+def count_events_passing_threshold(valarr, thrv):
+    return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in valarr)
+
+
+def count_events_passing_threshold_multiprocessing(thrv):
+    return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in _VALARRAY)
+
+
+@ut.time_eval
+def make_roc_per_event(vals: list[list[np.ndarray]], *,
+                       points: int = 1000,
+                       thrvs: np.array = np.arange(0, 10, 0.1)):
+    
+    roc_res = []
+    for i, (si, bi, sample) in enumerate(vals):
+        print(sample)
+
+        starttime = time.time()
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,
+                                  initializer=_init_worker,
+                                  initargs=(si,)) as mp_pool:
+            tprvs = mp_pool.map(count_events_passing_threshold_multiprocessing, thrvs)
+        endtime = time.time()
+        print(f"Execution time: {endtime - starttime} seconds")
+
+        nsi = si.shape[0]
+        tprvs = [tprv/nsi for tprv in tprvs]
+
+        starttime = time.time()
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,
+                                  initializer=_init_worker,
+                                  initargs=(bi,)) as mp_pool:
+            fprvs = mp_pool.map(count_events_passing_threshold_multiprocessing, thrvs)
+        endtime = time.time()
+        print(f"Execution time: {endtime - starttime} seconds")
+
+        nbi = bi.shape[0]
+        fprvs = [fprv/nbi for fprv in fprvs]
+
+        roc_res.append([fprvs, tprvs, thrvs, sample])
+
+    return roc_res

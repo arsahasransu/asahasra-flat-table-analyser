@@ -38,8 +38,19 @@ def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         ut.create_rdf_checkpint(dfE, dfER, f"Applying selection: > 0 TkEl in region {ERegion}...")
 
         # STEP 3_0_0: sufElER necessary to make reference ROC curves for tkIso
-        rdf_g.add_hists_singlecollection(dfER, histograms, sufElER)
+        #########################################################
+        # rdf_g.add_hists_singlecollection(dfER, histograms, sufElER)
+        # ana_man.add_dataframe(key=ERegion, df=dfER)
+        #########################################################
+
+        # STEP X_X_X: Add charged contribution to iso calc for gen-matched TkEl
+        #########################################################
+        dfER = reiso.recalculate_puppi_iso(dfER, sufElER, sufPu)
         ana_man.add_dataframe(key=ERegion, df=dfER)
+        rdf_g.add_hists_singlecollection(dfER, histograms, sufElER)
+        rdf_g.add_hists_singlecollection(dfER, histograms, f'{sufElER}_reiso',
+                                         'dRmin\\d_\\d{1,2}_[a-z0-9]+')
+        #########################################################
 
     ana_man.add_histograms(histograms)
     return ana_man

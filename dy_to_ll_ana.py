@@ -83,15 +83,25 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         # STEP 2_1_0: For comparing all TkEl to gen-matched TkEl
         #########################################################
         # STEP 3_0_0: sufElMch necessary for generating reference tkiso ROC curves
-        rdf_g.add_hists_multiplecolls(dfGenER, histograms, [sufElER, sufElMch])
-        ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
+        # rdf_g.add_hists_singlecollection(dfGenER, histograms, sufElMch)
+        # ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
 
         # Filter for atleast one gen-match TkEl in the defined eta region
-        # dfGenMER = dfGenER.Filter(f'{sufElMch}_n > 0', f'GM')
-        # ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
+        dfGenMER = dfGenER.Filter(f'{sufElMch}_n > 0', f'GM')
+        ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
         #########################################################
 
-        # dfGenER.Describe().Print()
+        # STEP X_X_X: Add charged contribution to iso calc for gen-matched TkEl
+        #########################################################
+        dfGenMER = reiso.recalculate_puppi_iso(dfGenMER, sufElMch, sufPu)
+        ana_man.add_dataframe(key=f'DYPM{ERegion}', df=dfGenMER)
+        rdf_g.add_hists_singlecollection(dfGenMER, histograms, sufElMch)
+        rdf_g.add_hists_singlecollection(dfGenMER, histograms, f'{sufElMch}_reiso',
+                                         'dRmin\\d_\\d{1,2}_[a-z0-9]+')
+        #########################################################
+
+
+        # dfGenMER.Describe().Print()
 
     ana_man.add_histograms(histograms)
     return ana_man
@@ -106,10 +116,6 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     # For each TkEl, observe the feature of PuppiCandidates around the TkEl in annular dR window
     # add_puppicands_by_pdg(dfGenER, histograms, '', tkelobj=sufElMch)
     # dfGenER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElMch, histograms)
-
-    # Calculate puppi iso
-    # dfgenEB = reiso.recalculate_puppi_iso(dfgenEB, f'{sufEl}_MCH', sufPu)
-    # rdf_g.add_hists_singlecollection(dfgenEB, histograms, f'{sufEl}_MCH_Re', 'dRmin\\d_\\d{1,2}')
 
     # Separate the lead and sub-lead gen matched TkEl
     dfgEBel1 = dfgenEB.Filter(f'{sufEl}_MCH_n >= 1', 'genDYEBTkEl1')
