@@ -25,8 +25,10 @@ def recalculate_puppi_iso(df: RDataFrame, elcoll: str, puppicoll: str):
 
 def recalcpuppiiso_comps_oneel(df: RDataFrame, elcoll: str, puppicoll: str):
 
-    dRmin_list = np.round(np.arange(0.01, 0.21, 0.01), 2)
-    dRmax_list = np.round(np.arange(0.1, 0.6, 0.1), 2)
+    # dRmin_list = np.round(np.arange(0.01, 0.21, 0.01), 2)
+    dRmin_list = [0.01]
+    # dRmax_list = np.round(np.arange(0.1, 0.6, 0.1), 2)
+    dRmax_list = [0.4]
     for dRmin in dRmin_list:
         for dRmax in dRmax_list:
             if dRmin >= dRmax:
@@ -35,10 +37,13 @@ def recalcpuppiiso_comps_oneel(df: RDataFrame, elcoll: str, puppicoll: str):
                             {elcoll}_phi, {elcoll}_caloPhi,\
                             {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
                             {dRmin}, {dRmax})'
-            for i, isostr in enumerate(['isotot', 'iso11', 'iso13', 'iso22', 'iso130', 'iso211', 'isooth']):
-                collname = f'{elcoll}_Re_'
-                collname += f'dRmin{str(dRmin).replace('.', '_')}_'
-                collname += f'dRmax{str(dRmax).replace('.', '_')}_'
-                df = df.Define(f'{collname}{isostr}_puppiIso', f'std::get<{i}>({getisostr})')
+            df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple', getisostr)
+            df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_puppiIso',
+                           f'std::get<7>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+            # for i, isostr in enumerate(['isotot', 'iso11', 'iso13', 'iso22', 'iso130', 'iso211', 'isooth']):
+            #     collname = f'{elcoll}_Re_'
+            #     collname += f'dRmin{str(dRmin).replace('.', '_')}_'
+            #     collname += f'dRmax{str(dRmax).replace('.', '_')}_'
+            #     df = df.Define(f'{collname}{isostr}_puppiIso', f'std::get<{i}>({getisostr})')
 
     return df
