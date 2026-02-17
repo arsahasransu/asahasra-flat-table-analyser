@@ -23,34 +23,53 @@ def define_newcollection(df: RDataFrame, collection: str, selection: str, sid: s
     return df
 
 
-# Add histograms for a collection of variables
-# Input: optionally the selection ID of the collection
-# Infers the filter ID and the list of available variables for the collection
-def add_hists_singlecollection(df: RDataFrame, histograms: list, collection: str, sreg: str = ''):
+def add_hists_singlecollection(df: RDataFrame, 
+                               histograms: list,  # Adds new histograms to this existing list
+                               collection: str,   # ID of the collection for variables
+                               sreg: str = ''):
+
+    """ Adds histograms from input collection name. Autolists variables in the dataframe.
+     If columns don't have the format COLLECTION_VARIABLE, a regular expression can be
+     used to specify COLLECTION_REGEX_VARIABLE. Morever the variables should be pre-defined
+     in the lnkvartohist list. The function mutates the histograms list.
+    """
 
     # Infer the filter ID of the dataframe
-    fid = 'base_'
-    # TODO LINE BELOW GIVES MORE TIME DELAY THAN EXPECTED - REASON UNKNOWN
-    filternameslist = df.GetFilterNames()
-    if len(filternameslist) != 0:
-        fid = filternameslist[-1] + '_'
+    filtsuf = df.GetFilterNames()[-1]+'_' if df.GetFilterNames() else 'base_'
 
     # Infer the available variables for the collection and selection ID
     collkey = collection
     dfcolumnnames = list(df.GetColumnNames())
 
+    # Specify reg when a special column is created of the form COLLECTION_RANDOMSTRING_VARNAME
     if sreg != '':
-        fullcolumnregex = f'({collection})_({sreg})_(\\w+)'
+        fullcolumnregex = rf'({collection})_({sreg})_(\w+)'
         selection_regex = re.compile(fullcolumnregex)
-        dfcolumn_regmatchobj = [re.fullmatch(selection_regex, str(dfcolname)) for dfcolname in dfcolumnnames]
-        histograms.extend([df.Histo1D((f'{fid}{m.group(0)}', linkvartohist[m.group(3)][3],
-                           linkvartohist[m.group(3)][0], linkvartohist[m.group(3)][1], linkvartohist[m.group(3)][2]),
-                           f'{m.group(0)}') for m in dfcolumn_regmatchobj if m is not None and m.group(3) in linkvartohist])
+        for dfcolname in dfcolumnnames:
+            m = re.fullmatch(selection_regex, str(dfcolname))
+            if m is None:
+                continue
+            varname = m.group(3)
+            hname = m.group(0)
+            if not varname in linkvartohist:
+                continue
+            hatr = linkvartohist[varname]
+            histograms.extend(
+                [df.Histo1D((f'{filtsuf}{hname}', hatr[3], hatr[0], hatr[1], hatr[2]), hname)]
+            )
+
+    # Default picks columns of the form COLLECTION_VARNAME
     else:
         collkey_vars = [columnname.split('_')[-1] for columnname in dfcolumnnames if columnname.startswith(collkey+'_')]
-        histograms.extend([df.Histo1D((f'{fid}{collkey}_{var}', linkvartohist[var][3],
-                                       linkvartohist[var][0], linkvartohist[var][1], linkvartohist[var][2]),
-                                      f'{collkey}_{var}') for var in collkey_vars if var in linkvartohist])
+        collkey_vars = list(set(collkey_vars))
+        for var in collkey_vars :
+            hname = f'{collkey}_{var}'
+            if var not in linkvartohist or hname not in dfcolumnnames:
+                continue
+            hatr = linkvartohist[var]
+            histograms.extend(
+                [df.Histo1D((f'{filtsuf}{hname}', hatr[3], hatr[0], hatr[1], hatr[2]), hname)]
+            )
 
 
 def add_hists_multiplecolls(df: RDataFrame, histograms: list, collections: list):

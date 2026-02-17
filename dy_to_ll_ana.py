@@ -91,16 +91,21 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
         #########################################################
 
-        # STEP X_X_X: Add charged contribution to iso calc for gen-matched TkEl
+        # STEP 3_0_0: Add charged contribution to iso calc for gen-matched TkEl
         #########################################################
         dfGenMER = reiso.recalculate_puppi_iso(dfGenMER, sufElMch, sufPu)
+        # dfGenMER.Describe().Print()
         ana_man.add_dataframe(key=f'DYPM{ERegion}', df=dfGenMER)
-        rdf_g.add_hists_singlecollection(dfGenMER, histograms, sufElMch)
-        rdf_g.add_hists_singlecollection(dfGenMER, histograms, f'{sufElMch}_reiso',
-                                         'dRmin\\d_\\d{1,2}_[a-z0-9]+')
-        
+        rdf_g.add_hists_multiplecolls(dfGenMER, histograms, [sufElMch,
+                                        sufElMch+'_reisotot:dRmin\d_\d{1,2}'])
         #########################################################
 
+        # STEP 4_0_0: Compare in pT separate bins
+        #########################################################
+        # dfGenMER = rdf_g.define_newcollection(dfGenMER, sufElMch, f"{sufElMch}_pt > 50", "Pt50")
+        # dfGenMER = rdf_g.define_newcollection(dfGenMER, sufElMch, f"{sufElMch}_pt > 20 && {sufElMch}_pt <= 50", "20Pt50")
+        # rdf_g.add_hists_multiplecolls(dfGenMER, histograms, [f"{sufElMch}_Pt50", f"{sufElMch}_20Pt50"])
+        #########################################################
 
         # dfGenMER.Describe().Print()
 

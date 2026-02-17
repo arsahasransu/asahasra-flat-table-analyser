@@ -29,8 +29,8 @@ linkvartohist = {
     'hwTkQuality': (10, -1, 9, 'HW track quality'),
 
     'pfIso': (100000, 0, 100, 'PF rel. iso.'),
-    'puppiIso': (100000, -5, 95, 'puppi rel. iso.'),
-    'absPuppiIso': (100000, -50, 950, 'puppi absolute. iso.'),
+    'puppiIso': (100000, 0, 100, 'puppi rel. iso.'),
+    'absPuppiIso': (100000, 0, 1000, 'puppi absolute. iso.'),
     'tkIso': (100000, 0, 100, 'track rel. iso.'),
 
     'pdgId': (500, -250, 250, 'pid'),

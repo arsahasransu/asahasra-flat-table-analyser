@@ -63,13 +63,21 @@ general:
 #       Z -> ee: _MCH
 #     collection: ['DYPEB_TkEleL2_EB{tag}', 'DYPEE_TkEleL2_EE{tag}']
 
-# AN plots for STEP 3_0_0
-compare_var_roc:
+# # AN plots for STEP 3_0_0
+# compare_var_roc:
+#   norm_scheme:
+#     method: 'hist_integral'
+#   hist_tag:
+#     DY_PU200: GM_TkEleL2_EB_MCH
+#     MinBias: EB_TkEleL2_EB
+
+# AN plots for STEP 4_0_0
+compare_iso:
   norm_scheme:
     method: 'hist_integral'
   hist_tag:
-    DY_PU200: DYPEB_TkEleL2_EB_MCH
-    MinBias: EB_TkEleL2_EB
+    DY_PU200: GM_TkEleL2_EB_MCH_Pt50
+    MinBias: EB_TkEleL2_EB_Pt50
 
 
 # OLD PLOTS RETAINED FOR EXAMPLE USAGE

@@ -88,7 +88,7 @@ def define_cpp_utils():
     ROOT.gInterpreter.Declare(STRCPPFUNC_getmatchedidxs)
 
     STRCPPFUNC_calcisoanncone_singleobj = """
-        std::tuple< float, float, float,  float, float, float,  float, float, float,
+        std::tuple< float, float, float,  float, float, float, float, float, float, float,  float, float, float,
             float, float, float, float > calcisoanncone_singleobj(float sig_pt,
                                                                   float sig_eta,
                                                                   float sig_calo_eta,
@@ -115,8 +115,10 @@ def define_cpp_utils():
                     }
             }
             return std::make_tuple(isotot, iso11, iso13, iso22, iso130, iso211, isooth,
+                                   (iso11+iso13+iso211), (iso22+iso130),
                                    isotot/sig_pt, iso11/sig_pt, iso13/sig_pt,
-                                   iso22/sig_pt, iso130/sig_pt, iso211/sig_pt);
+                                   iso22/sig_pt, iso130/sig_pt, iso211/sig_pt,
+                                   (iso11+iso13+iso211)/sig_pt, (iso22+iso130)/sig_pt);
         }
     """
 
@@ -124,6 +126,10 @@ def define_cpp_utils():
 
     STRCPPFUNC_calcisoannularcone = """
         std::tuple< ROOT::VecOps::RVec<float>,
+                    ROOT::VecOps::RVec<float>,
+                    ROOT::VecOps::RVec<float>,
+                    ROOT::VecOps::RVec<float>,
+                    ROOT::VecOps::RVec<float>,
                     ROOT::VecOps::RVec<float>,
                     ROOT::VecOps::RVec<float>,
                     ROOT::VecOps::RVec<float>,
@@ -152,12 +158,16 @@ def define_cpp_utils():
             ROOT::VecOps::RVec<float> iso130(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> iso211(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> isooth(sig_pt.size(), -1);
+            ROOT::VecOps::RVec<float> isochg(sig_pt.size(), -1);
+            ROOT::VecOps::RVec<float> isonut(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> relisotot(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> reliso11(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> reliso13(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> reliso22(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> reliso130(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> reliso211(sig_pt.size(), -1);
+            ROOT::VecOps::RVec<float> relisochg(sig_pt.size(), -1);
+            ROOT::VecOps::RVec<float> relisonut(sig_pt.size(), -1);
 
             for (int i = 0; i < sig_pt.size(); i++) {
                 std::tuple isotuple = calcisoanncone_singleobj( sig_pt[i], sig_eta[i], sig_calo_eta[i],
@@ -171,15 +181,20 @@ def define_cpp_utils():
                 iso130[i] = std::get<4>(isotuple);
                 iso211[i] = std::get<5>(isotuple);
                 isooth[i] = std::get<6>(isotuple);
-                relisotot[i] = std::get<7>(isotuple);
-                reliso11[i] = std::get<8>(isotuple);
-                reliso13[i] = std::get<9>(isotuple);
-                reliso22[i] = std::get<10>(isotuple);
-                reliso130[i] = std::get<11>(isotuple);
-                reliso211[i] = std::get<12>(isotuple);
+                isochg[i] = std::get<7>(isotuple);
+                isonut[i] = std::get<8>(isotuple);
+                relisotot[i] = std::get<9>(isotuple);
+                reliso11[i] = std::get<10>(isotuple);
+                reliso13[i] = std::get<11>(isotuple);
+                reliso22[i] = std::get<12>(isotuple);
+                reliso130[i] = std::get<13>(isotuple);
+                reliso211[i] = std::get<14>(isotuple);
+                relisochg[i] = std::get<15>(isotuple);
+                relisonut[i] = std::get<16>(isotuple);
             }
-            return std::make_tuple(isotot, iso11, iso13, iso22, iso130, iso211, isooth,
-                                   relisotot, reliso11, reliso13, reliso22, reliso130, reliso211);
+            return std::make_tuple(isotot, iso11, iso13, iso22, iso130, iso211, isooth, isochg, isonut,
+                                   relisotot, reliso11, reliso13, reliso22, reliso130, reliso211,
+                                   relisochg, relisonut);
         }
     """
 

@@ -14,12 +14,19 @@ def recalculate_puppi_iso(df: RDataFrame, elcoll: str, puppicoll: str):
                         {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
                         {dRmin}, {dRmax})'
         df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple', getisostr)
-        # df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_absPuppiIso',
-        #                f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
-        # df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_oth_absPuppiIso',
-        #                f'std::get<6>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
-        df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_puppiIso',
+
+        df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                       f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reisochg_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
                        f'std::get<7>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                       f'std::get<8>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                       f'std::get<9>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reisochg_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                       f'std::get<15>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+        df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                       f'std::get<16>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
     return df
 
 
@@ -38,12 +45,18 @@ def recalcpuppiiso_comps_oneel(df: RDataFrame, elcoll: str, puppicoll: str):
                             {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
                             {dRmin}, {dRmax})'
             df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple', getisostr)
-            df = df.Define(f'{elcoll}_reiso_dRmin{str(dRmin).replace('.', '_')}_tot_puppiIso',
+
+            df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                           f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+            df = df.Define(f'{elcoll}_reisochg_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
                            f'std::get<7>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
-            # for i, isostr in enumerate(['isotot', 'iso11', 'iso13', 'iso22', 'iso130', 'iso211', 'isooth']):
-            #     collname = f'{elcoll}_Re_'
-            #     collname += f'dRmin{str(dRmin).replace('.', '_')}_'
-            #     collname += f'dRmax{str(dRmax).replace('.', '_')}_'
-            #     df = df.Define(f'{collname}{isostr}_puppiIso', f'std::get<{i}>({getisostr})')
+            df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                           f'std::get<8>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+            df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                           f'std::get<9>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+            df = df.Define(f'{elcoll}_reisochg_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                           f'std::get<15>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+            df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                           f'std::get<16>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
 
     return df
