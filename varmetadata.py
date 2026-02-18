@@ -30,8 +30,9 @@ linkvartohist = {
 
     'pfIso': (100000, 0, 100, 'PF rel. iso.'),
     'puppiIso': (100000, 0, 100, 'puppi rel. iso.'),
-    'absPuppiIso': (100000, 0, 1000, 'puppi absolute. iso.'),
+    'absPuppiIso': (100000, 0, 1000, 'puppi abs. iso.'),
     'tkIso': (100000, 0, 100, 'track rel. iso.'),
+    'absTkIso': (100000, 0, 1000, 'track abs. iso.'),
 
     'pdgId': (500, -250, 250, 'pid'),
     'puppiWeight': (110, 0.5, 1.05, 'puppi weight'),

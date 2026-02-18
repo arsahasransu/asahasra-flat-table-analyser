@@ -18,6 +18,8 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
+    df = df.Define(sufEl+'_absTkIso', f'{sufEl}_pt*{sufEl}_tkIso')
+
     # STEP 1_0_0: Enable for plots in "Gen properties" section
     ##########################################################
     # rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])

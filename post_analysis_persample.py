@@ -11,14 +11,16 @@ def post_analysis_persample(anamanager: SampleRDFManager):
 
         # STEP 3_0_0, X_X_X: For ROC curves
         DYPEB_df = anamanager.get_dataframe('DYPMEB')
-        cols = ['TkEleL2_EB_MCH_pt', 'TkEleL2_EB_MCH_tkIso', 'TkEleL2_EB_MCH_puppiIso',
+        cols = ['TkEleL2_EB_MCH_pt', 'TkEleL2_EB_MCH_tkIso', 'TkEleL2_EB_MCH_absTkIso',
+                'TkEleL2_EB_MCH_puppiIso',
                 'TkEleL2_EB_MCH_reisotot_dRmin0_01_puppiIso',
                 'TkEleL2_EB_MCH_reisotot_dRmin0_01_absPuppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(DYPEB_df, cols, sname, recreate=True)
 
         # STEP 3_0_0, X_X_X: For ROC curves
         DYPEE_df = anamanager.get_dataframe('DYPMEE')
-        cols = ['TkEleL2_EE_MCH_pt', 'TkEleL2_EE_MCH_tkIso', 'TkEleL2_EE_MCH_puppiIso',
+        cols = ['TkEleL2_EE_MCH_pt', 'TkEleL2_EE_MCH_tkIso', 'TkEleL2_EE_MCH_absTkIso',
+                'TkEleL2_EE_MCH_puppiIso',
                 'TkEleL2_EE_MCH_reisotot_dRmin0_01_puppiIso',
                 'TkEleL2_EE_MCH_reisotot_dRmin0_01_absPuppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(DYPEE_df, cols, sname)
@@ -28,14 +30,16 @@ def post_analysis_persample(anamanager: SampleRDFManager):
 
         # STEP 3_0_0, X_X_X: For ROC curves
         EB_df = anamanager.get_dataframe('EB')
-        cols = ['TkEleL2_EB_pt', 'TkEleL2_EB_tkIso', 'TkEleL2_EB_puppiIso',
-                'TkEleL2_EB_reisotot_dRmin0_01_puppiIso',
-                'TkEleL2_EB_reisotot_dRmin0_01_absPuppiIso']
+        cols = ['TkEleL2_Pt5_EB_pt', 'TkEleL2_Pt5_EB_tkIso', 'TkEleL2_Pt5_EB_absTkIso',
+                'TkEleL2_Pt5_EB_puppiIso',
+                'TkEleL2_Pt5_EB_reisotot_dRmin0_01_puppiIso',
+                'TkEleL2_Pt5_EB_reisotot_dRmin0_01_absPuppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(EB_df, cols, sname, recreate=True)
 
         # STEP 3_0_0, X_X_X: For ROC curves
         EE_df = anamanager.get_dataframe('EE')
-        cols = ['TkEleL2_EE_pt', 'TkEleL2_EE_tkIso', 'TkEleL2_EE_puppiIso',
-                'TkEleL2_EE_reisotot_dRmin0_01_puppiIso',
-                'TkEleL2_EE_reisotot_dRmin0_01_absPuppiIso']
+        cols = ['TkEleL2_Pt5_EE_pt', 'TkEleL2_Pt5_EE_tkIso', 'TkEleL2_Pt5_EE_absTkIso',
+                'TkEleL2_Pt5_EE_puppiIso',
+                'TkEleL2_Pt5_EE_reisotot_dRmin0_01_puppiIso',
+                'TkEleL2_Pt5_EE_reisotot_dRmin0_01_absPuppiIso']
         rdf_g.save_rdf_snapshot_to_pkl(EE_df, cols, sname)
