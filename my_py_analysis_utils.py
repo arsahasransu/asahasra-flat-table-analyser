@@ -27,6 +27,7 @@ def get_isoval_by_ptbins(pts, isos, *,
 
     ptmax = 70
     iso_pt_binned = {i: [] for i in range(ptmax+1)}
+    # iso_pt_binned_uncertainty = {i: [] for i in range(ptmax+1)}
     if ptbins:
         # At a later stage modify to adapt iso_pt_binned from ptbins
         raise RuntimeError("The option with ptbins not yet supported.")
@@ -37,8 +38,12 @@ def get_isoval_by_ptbins(pts, isos, *,
             idx = idx if idx < ptmax else ptmax
             iso_pt_binned[idx].append(iso)
 
-    return iso_pt_binned
+    # for i in iso_pt_binned:
+    #     count = len(iso_pt_binned)
+    #     iso_pt_binned_uncertainty[i] = 0 if count == 0 else 1/m.sqrt(count)
 
+    # return (iso_pt_binned, iso_pt_binned_uncertainty)
+    return iso_pt_binned
 
 def get_isovals_for_sigpercentiles(pts, isos, percentiles, *,
                                    ptbins=None):
@@ -64,14 +69,21 @@ def get_isovals_for_sigpercentiles(pts, isos, percentiles, *,
     The pts and isos can be potentially generalised to other variables.
     """
 
+    # iso_pt_binned, sigma = get_isoval_by_ptbins(pts, isos, ptbins=ptbins)
     iso_pt_binned = get_isoval_by_ptbins(pts, isos, ptbins=ptbins)
 
     isovals_for_sigpercentiles = []
+    # isovals_sigmas = []
     for percentile in percentiles:
         isovals_for_sigpercentile = {k: (np.nanpercentile(v,
             percentile) if len(v) > 0 else np.nan) for k, v in iso_pt_binned.items()}
-        isovals_for_sigpercentiles.append(isovals_for_sigpercentile) 
+        # isoval_sigma = {k: (0 if sigma[k]==0 else isovals_for_sigpercentile[k]/sigma[k]) for k in isovals_for_sigpercentile}
 
+        isovals_for_sigpercentiles.append(isovals_for_sigpercentile) 
+        # isovals_sigmas.append(isoval_sigma)
+
+
+    # return (isovals_for_sigpercentiles, isovals_sigmas)
     return isovals_for_sigpercentiles
 
 

@@ -20,8 +20,8 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
 
     df = df.Define(sufEl+'_absTkIso', f'{sufEl}_pt*{sufEl}_tkIso')
 
-    # STEP 1_0_0: Enable for plots in "Gen properties" section
-    ##########################################################
+    # # STEP 1_0_0: Enable for plots in "Gen properties" section
+    # ##########################################################
     # rdf_g.add_hists_multiplecolls(df, histograms, [sufGen, sufEl, sufPu])
 
     # df_genstudy2 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2', 'GENST2')
@@ -31,11 +31,11 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     # rdf_g.add_hists_singlecollection(df_genstudy1, histograms, f'{sufGen}_GENST1')
 
     # df_genstudy0 = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==0', 'GENST0')
-    # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')
-    
+    # rdf_g.add_hists_singlecollection(df_genstudy0, histograms, f'{sufGen}_GENST0')    
+    # ##########################################################
+
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<2.5', 'DYP')
-    # rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
-    ##########################################################
+    rdf_g.add_hists_singlecollection(df, histograms, f'{sufGen}_DYP')
 
     dfGenP = df.Filter(f'{sufGen}_DYP_n > 0 && {sufEl}_n > 0', 'genDYP')
     ana_man.add_dataframe(key='genDYP', df=dfGenP)
@@ -43,11 +43,11 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
                                         "status 2 and |eta| < 2.5... \n>0 reconstructed TkEl...")
 
 
-    # STEP 1_2_0: Enable for plots in "Gen selection" section
-    ##########################################################
+    # # STEP 1_2_0: Enable for plots in "Gen selection" section
+    # ##########################################################
     # rdf_g.add_hists_singlecollection(dfGenP, histograms, sufEl)
     # add_puppicands_by_pdg(dfGenP, histograms, '')
-    ##########################################################
+    # ##########################################################
 
     # SPLIT ETA REGIONS BASED ON TKEL
     dfGenP = rdf_g.define_newcollection(dfGenP, sufEl, f'abs({sufEl}_eta) <= 1.5', 'EB')
@@ -62,12 +62,12 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         dfGenER = dfGenP.Filter(f'{sufElER}_n > 0', f'DYP{ERegion}')
         ut.create_rdf_checkpint(dfGenP, dfGenER, f"Applying selection: > 0 TkEl in region {ERegion}...")
 
-        # STEP 2_0_0: GEN MATCH BLOCK
-        #########################################################
-        # PRE GEN MATCH
+        # # STEP 2_0_0 AND 2_1_0: GEN MATCH BLOCK - PRE GEN MATCH
+        # #########################################################
         # dfGenER = anut.angdiff_hists(dfGenER, sufGenDYP, sufElER)
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenDYP}_{sufElER}')
+        # rdf_g.add_hists_multiplecolls(dfGenER, histograms, [f'{sufElER}', f'{sufGenDYP}_{sufElER}'])
         # anut.add_genmatching_efficiency_with_dRcut(histograms, f'DYP{ERegion}_{sufGenDYP}_{sufElER}')
+        # ##########################################################
 
         # GEN MATCH
         dfGenER = anut.do_gen_match(dfGenER, sufGenDYP, sufElER, gen_dRcuts[ERegion])
@@ -77,30 +77,37 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         sufGenMch = f'{sufGenDYP}_MCH'
         sufElMch = f'{sufElER}_MCH'
 
-        # POST GEN MATCH
+        # # STEP 2_0_0: GEN MATCH BLOCK - POST GEN MATCH
+        # #########################################################
         # dfGenER = anut.angdiff_hists(dfGenER, sufGenMch, sufElMch)
         # rdf_g.add_hists_singlecollection(dfGenER, histograms, f'{sufGenMch}_{sufElMch}')
-        ##########################################################
+        # ##########################################################
 
-        # STEP 2_1_0: For comparing all TkEl to gen-matched TkEl
+        # STEP 2_1_0 AND 3_0_0: For comparing all TkEl to gen-matched TkEl
         #########################################################
-        # STEP 3_0_0: sufElMch necessary for generating reference tkiso ROC curves
-        # rdf_g.add_hists_singlecollection(dfGenER, histograms, sufElMch)
-        # ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
+        rdf_g.add_hists_singlecollection(dfGenER, histograms, sufElMch)
+        ana_man.add_dataframe(key=f'DYP{ERegion}', df=dfGenER)
+        #########################################################
 
         # Filter for atleast one gen-match TkEl in the defined eta region
         dfGenMER = dfGenER.Filter(f'{sufElMch}_n > 0', f'GM')
         ut.create_rdf_checkpint(dfGenER, dfGenMER, f"Applying selection: > 0 Gen-matched TkEl in region {ERegion}")
-        #########################################################
 
         # STEP 3_0_0: Add charged contribution to iso calc for gen-matched TkEl
         #########################################################
         dfGenMER = reiso.recalculate_puppi_iso(dfGenMER, sufElMch, sufPu)
+        # dfGenMER = reiso.recalculate_puppi_iso(dfGenMER, sufElMch, sufPu, drminlist=[0.01], drmax=0.4, ptmin=2, dzmax=1.0)
         # dfGenMER.Describe().Print()
         ana_man.add_dataframe(key=f'DYPM{ERegion}', df=dfGenMER)
         rdf_g.add_hists_multiplecolls(dfGenMER, histograms, [sufElMch,
-                                        sufElMch+'_reisotot:dRmin\d_\d{1,2}'])
+                                        sufElMch+r'_reisotot:dRmin\d_\d{1,2}',
+                                        sufElMch+r'_reisooth:dRmin\d_\d{1,2}',
+                                        sufElMch+r'_reisochg:dRmin\d_\d{1,2}',
+                                        sufElMch+r'_reisonut:dRmin\d_\d{1,2}'])
         #########################################################
+
+    ana_man.add_histograms(histograms)
+    return ana_man
 
         # STEP 4_0_0: Compare in pT separate bins
         #########################################################
@@ -110,9 +117,6 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         #########################################################
 
         # dfGenMER.Describe().Print()
-
-    ana_man.add_histograms(histograms)
-    return ana_man
 
     # # # Checked for pT sorting of the TkEl collection
     # dfGenER = dfGenER.Define(f'{sufElMch}_pt_sorted', f'checksorting<float>({sufElMch}_pt, true)')

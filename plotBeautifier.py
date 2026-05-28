@@ -44,10 +44,11 @@ from an_specific_utilities import conditionally_modify_plots
 def makePlot_isolation(histo: TH1):
     # Generate 100 xbins upto precision 2 in log-scale
     xlow = 0.001
-    xhigh = 100
+    xhigh = 100 if 'abs' not in histo.GetName() else 1000
     nbins = 200
     step = (m.log10(xhigh) - m.log10(xlow))/nbins
-    bins = [np.round(10**i, 3) for i in np.arange(m.log10(xlow), m.log10(xhigh), step)]
+    bin_precision = 3 if 'abs' not in histo.GetName() else 2
+    bins = [np.round(10**i, bin_precision) for i in np.arange(m.log10(xlow), m.log10(xhigh), step)]
     bins = list(np.sort(list(set(bins))))
     bins.append(xhigh)
     bins_array = np.array(bins, dtype='float64')
@@ -255,6 +256,8 @@ def makePngPlot(histList, outputDir: str, plotkey: str, legList=[], normlist=[])
 
     if plotkey == 'autoCompPlot':
         if len(legList) != len(histList):
+            print(f"Legends: {', '.join(legList)}")
+            print(f"Histograms: {', '.join([hist.GetName() for hist in histList])}")
             raise RuntimeError("Legend list length unequal with length of histogram list!")
 
         histlist_copied = [hist.Clone() for hist in histList]

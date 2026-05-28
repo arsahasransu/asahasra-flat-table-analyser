@@ -1,5 +1,5 @@
 # ########################################
-# Generic class of utilities to code redundancy and lookup
+# Generic class of utilities to reduce code redundancy and lookup
 # Should depend only on inbuilt python packages
 # 
 # Author: Abanti Ranadhir Sahasransu
@@ -23,7 +23,7 @@ def recreate_dir(dirpath, *, verbose=False):
     if pdir.exists() and pdir.is_dir():
         if verbose:
             print(f"Found directory: {dirpath}")
-            print(f"Deleting directory")
+            print(f"Recreating directory")
         shutil.rmtree(pdir)
 
     pdir.mkdir(parents=True, exist_ok=True)

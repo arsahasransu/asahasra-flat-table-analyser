@@ -1,40 +1,32 @@
 general:
-  # input_dir_prefix: /mercury/data3/asahasra/Phase2L1tAlgoStudies/asahasra-flat-table-analyser/puppiIsoData
-  input_dir_prefix: ./Phase2EGPuppiIso_151Xv1_Ntuples
+  input_dir_prefix: ./
   output_dir: ./OutHistoFiles
   tree_name: Events
 
 samples:
   DY_noPU:
-    input_file_pattern: DYToLL_M50_PU0/FP/v151Xv1/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU0/FP/v151Xv1/perfNano_*.root
+    type: 'dytoll'
+
+  DY_noPUv3:
+    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv3/DYToLL_M50_PU0/FP/v151Xv3/perfNano_*.root
     type: 'dytoll'
 
   DY_PU200:
-    input_file_pattern: DYToLL_M50_PU200/FP/v151Xv1/perfNano_*.root
-    # input_file_pattern: DYToLL_M50_PU200/FP/test_Data/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU200/FP/v151Xv1/perfNano_*.root
+    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU200/FP/test_Data/perfNano_*.root
+    type: 'dytoll'
+
+  DY_PU200v3:
+    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv3//DYToLL_M50_PU200/FP/v151Xv3/perfNano_*.root
     type: 'dytoll'
 
   MinBias:
-    input_file_pattern: MinBias_PU200/FP/v151Xv1/perfNano_*.root
-    # input_file_pattern: MinBias_PU200/FP/test_Data/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/MinBias_PU200/FP/v151Xv1/perfNano_*.root
+    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/MinBias_PU200/FP/test_Data/perfNano_*.root
     type: 'qcd'
 
-  # QCD_Pt20To30:
-  #   input_file_pattern: QCD_Pt20To30/FP/v142Xv1/perfNano_*.root
-  #   type: 'qcd'
+  MinBiasv3:
+    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv3/MinBias_PU200/FP/v151Xv3/perfNano_*.root
+    type: 'qcd'
 
-  # QCD_Pt30To50:
-  #   input_file_pattern: QCD_Pt30To50/FP/v142Xv1/perfNano_*.root
-  #   type: 'qcd'
-
-  # QCD_Pt50To80:
-  #   input_file_pattern: QCD_Pt50To80/FP/v142Xv1/perfNano_*.root
-  #   type: 'qcd'
-
-  # QCD_Pt80To120:
-  #   input_file_pattern: QCD_Pt80To120/FP/v142Xv1/perfNano_*.root
-  #   type: 'qcd'
-
-  # QCD_Pt120To170:
-  #   input_file_pattern: QCD_Pt120To170/FP/v142Xv1/perfNano_*.root
-  #   type: 'qcd'

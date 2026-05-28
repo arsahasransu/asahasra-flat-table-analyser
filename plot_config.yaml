@@ -1,9 +1,18 @@
+# Required general settings
 general:
+  # Path to the histograms directory
   hist_folder: ./OutHistoFiles/
+  # Dictionary of sample names and corresponding ROOT files
   samples:
     MinBias: hists_MinBias.root
+    MinBiasv3: hists_MinBiasv3.root
     DY_noPU: hists_DY_noPU.root
+    DY_noPUv3: hists_DY_noPUv3.root
     DY_PU200: hists_DY_PU200.root
+    DY_PU200v3: hists_DY_PU200v3.root
+
+# All top level entries hereforth will create a new output directory
+# TODO List possible entries and provide more information on this config file
 
 # # AN plots for STEP 1_0_0
 # compareGen_DYM50_PromptAndEtaSel:
@@ -11,6 +20,7 @@ general:
 #     method: 'hist_integral'
 #   hist_tag:
 #     DY_noPU: base_GenEl_DYP
+#     DY_noPUv3: base_GenEl_DYP
 #     DY_PU200: base_GenEl_DYP
 
 # # AN plots for STEP 1_0_0
@@ -18,7 +28,7 @@ general:
 #   type: same_sample_different_collection
 #   norm_scheme:
 #     method: 'hist_integral'
-#   ftags: ['DY_noPU', 'DY_PU200']
+#   ftags: ['DY_noPU', 'DY_noPUv3', 'DY_PU200']
 #   hist_tag:
 #     prefix:
 #       'all': GenEl
@@ -34,7 +44,7 @@ general:
 #     method: 'summed_components'
 #     norm_config: {refsample: DY_PU200} 
 #   hist_tag:
-#     MinBias: tke1_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
+#     MinBias: tke1_[TkEleL2_Pt5, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 #     DY_noPU: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 #     DY_PU200: genDYP_[TkEleL2, L1PuppiCandsEl, L1PuppiCandsMu, L1PuppiCandsCh, L1PuppiCandsNh, L1PuppiCandsPh]
 
@@ -43,7 +53,7 @@ general:
 #   type: same_sample_different_collection
 #   norm_scheme:
 #     method: hist_integral
-#   ftags: ['DY_noPU', 'DY_PU200']
+#   ftags: ['DY_noPU', 'DY_PU200', 'DY_noPUv3']
 #   hist_tag:
 #     prefix:
 #       EE: EE
@@ -69,15 +79,38 @@ general:
 #     method: 'hist_integral'
 #   hist_tag:
 #     DY_PU200: GM_TkEleL2_EB_MCH
-#     MinBias: EB_TkEleL2_EB
+#     MinBias: EB_TkEleL2_Pt5_EB
 
-# AN plots for STEP 4_0_0
-compare_iso:
+compare_puppi_iso_consistency_check:
+  type: same_sample_different_collection
   norm_scheme:
-    method: 'hist_integral'
+    method: default_no_norm
+  ftags: ['DY_PU200', 'MinBias', 'DY_PU200v3', 'MinBiasv3']
   hist_tag:
-    DY_PU200: GM_TkEleL2_EB_MCH_Pt50
-    MinBias: EB_TkEleL2_EB_Pt50
+    prefix:
+      New: _reisotot_dRmin0_03
+      Old: ''
+    collection: ['GM_TkEleL2_EB_MCH{tag}', 'EB_TkEleL2_Pt5_EB{tag}']
+    # collection: ['GM_TkEleL2_EB_{tag}']
+
+
+
+
+
+
+
+
+
+
+
+
+# # AN plots for STEP 4_0_0
+# compare_iso:
+#   norm_scheme:
+#     method: 'hist_integral'
+#   hist_tag:
+#     DY_PU200: GM_TkEleL2_EB_MCH_Pt50
+#     MinBias: EB_TkEleL2_EB_Pt50
 
 
 # OLD PLOTS RETAINED FOR EXAMPLE USAGE

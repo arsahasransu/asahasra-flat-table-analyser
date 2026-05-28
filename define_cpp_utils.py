@@ -87,6 +87,123 @@ def define_cpp_utils():
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_getmatchedidxs)
 
+
+    STRCPPFUNC_quantise_relisoval = """
+        // Helper: reinterpret uint32_t bits as float
+        inline float bits_to_float(std::uint32_t bits) {
+            static_assert(sizeof(float) == sizeof(std::uint32_t), "Size mismatch");
+            float result;
+            std::memcpy(&result, &bits, sizeof(float)); // safe copy
+            return result;
+        }
+
+        // Helper: extract float components
+        inline void unpack_float(float x, std::uint32_t& sign, std::uint32_t& exp, std::uint32_t& frac) {
+            std::uint32_t bits;
+            std::memcpy(&bits, &x, sizeof(float));
+            sign = (bits >> 31) & 1;
+            exp  = (bits >> 23) & 0xFF;
+            frac = bits & 0x7FFFFF;
+        }
+
+        float quantise_relisoval(float iso) {
+            // Handle NaN and Inf gracefully: return as-is or clamp
+            if (std::isnan(iso) || std::isinf(iso)) {
+                return iso;
+            }
+
+            // Handle zero
+            if (iso == 0.0f) return 0.0f;
+
+            std::uint32_t sign, orig_exp, orig_frac;
+            unpack_float(iso, sign, orig_exp, orig_frac);
+
+            // Extract unbiased exponent
+            std::int32_t unbiased_exp = static_cast<std::int32_t>(orig_exp) - 127;
+
+            // Clamp exponent to representable range for 1–8–8 format:
+            // Valid exponents: -126 (smallest normalized) to +127 (largest finite)
+            // With 8-bit exponent (bias=127), max biased exp = 254 → unbiased 127
+            // min normalized: biased=1 → unbiased=-126
+            if (unbiased_exp < -126) {
+                // Underflow: clamp to smallest normalized
+                unbiased_exp = -126;
+                orig_exp = 1;
+                orig_frac = 0;
+            } else if (unbiased_exp > 127) {
+                // Overflow: clamp to largest finite (biased = 254)
+                unbiased_exp = 127;
+                orig_exp = 254;
+                orig_frac = 0x7FFFFF; // max mantissa
+            }
+
+            // For 1–8–8 format:
+            // - exponent is 8-bit (bias=127)
+            // - mantissa: take top 8 bits of original 23-bit mantissa (truncation)
+            //   or round: std::round(orig_frac * 2^(8-23)) / 2^(8-23)
+            // Let's do rounding to nearest:
+
+            // Shift and scale original fraction to 8 bits:
+            // orig_frac has 23 bits; we want to round to 8 bits.
+            // Rounding: consider bit 8 (i.e., bit 23−8 = 15 in orig_frac)
+            const int bits_to_keep = 8;
+            const int shift = 23 - bits_to_keep;  // 15
+
+            std::uint32_t mantissa_8bit;
+            if (shift > 0) {
+                // Get top 8 bits, with rounding
+                std::uint32_t guard_bit = (orig_frac >> (shift - 1)) & 1;  // bit after MSB of 8-bit window
+                std::uint32_t round_bit = (orig_frac >> (shift - 2)) & 1;  // next bit for round-to-even? Let's use simple round-half-up
+                std::uint32_t remainder_mask = (1u << shift) - 1u;
+                std::uint32_t remainder = orig_frac & remainder_mask;
+
+                // Round: if remainder >= half, round up
+                std::uint32_t half = 1u << (shift - 1);
+                if (remainder >= half) {
+                    mantissa_8bit = (orig_frac >> shift) + 1u;
+                } else {
+                    mantissa_8bit = orig_frac >> shift;
+                }
+
+                // Handle overflow: if mantissa overflows (e.g., 0xFF → need 9 bits)
+                if (mantissa_8bit >= (1u << bits_to_keep)) {
+                    mantissa_8bit = (1u << bits_to_keep) - 1u;  // clamp to max (0xFF)
+                    // Note: in real 1–8–8, this would increment exponent — but we skip normalization for simplicity
+                    // or handle it by re-clamping exponent if desired
+                }
+            } else {
+                mantissa_8bit = orig_frac & 0xFFu;
+            }
+
+            // If original was subnormal or zero, handle specially (here we assume normalized)
+            // For normalized numbers: leading '1' is implicit → stored mantissa = 8 bits of fractional part
+            // So we store mantissa_8bit as-is (fraction only)
+
+            // Build 1–8–8 representation (17 bits total):
+            // sign (1) | exponent (8) | mantissa (8)
+            std::uint32_t packed = 0;
+            packed |= (sign << 16);             // sign at bit 16 (top of 17-bit)
+            packed |= (orig_exp << 8);          // exponent at bits 8–15
+            packed |= (mantissa_8bit);          // mantissa at bits 0–7
+
+            // Now reinterpret this 17-bit value as 32-bit float
+            // But 17-bit value must be zero-extended to 32 bits, and placed in the *low 17 bits*
+            // of a float's bit pattern — that's unconventional, but matches "emulating" the format.
+
+            // Alternative: map to standard float's 32-bit layout:
+            //   sign = 1 bit, exponent = 8 bits, mantissa = 23 bits.
+            // To emulate 8-bit mantissa: put our 8-bit mantissa in the top 8 bits of the 23-bit fraction.
+            std::uint32_t float_bits = 0;
+            float_bits |= (sign << 31);
+            float_bits |= (orig_exp << 23);                     // 8-bit exponent in top 8 bits of 8-bit exponent field
+            float_bits |= (mantissa_8bit << (23 - 8));          // place 8-bit mantissa in top 8 bits of fraction (bits 22–15)
+
+            return bits_to_float(float_bits);
+        }
+    """
+
+    ROOT.gInterpreter.Declare(STRCPPFUNC_quantise_relisoval)
+
     STRCPPFUNC_calcisoanncone_singleobj = """
         std::tuple< float, float, float,  float, float, float, float, float, float, float,  float, float, float,
             float, float, float, float > calcisoanncone_singleobj(float sig_pt,
@@ -94,17 +211,32 @@ def define_cpp_utils():
                                                                   float sig_calo_eta,
                                                                   float sig_phi,
                                                                   float sig_calo_phi,
+                                                                  float sig_vz,
                                                                   ROOT::VecOps::RVec<float> &bkg_pt,
                                                                   ROOT::VecOps::RVec<float> &bkg_eta,
                                                                   ROOT::VecOps::RVec<float> &bkg_phi,
                                                                   ROOT::VecOps::RVec<float> &bkg_pid,
-                                                                  float dRmin, float dRmax) {
+                                                                  ROOT::VecOps::RVec<float> &bkg_z0,
+                                                                  float dRmin, float dRmax, float ptmin,
+                                                                  float dzmax) {
             float isotot = 0.0, iso11 = 0.0, iso13 = 0.0, iso22 = 0.0, iso130 = 0.0, iso211 = 0.0, isooth = 0.0;
+              //  std::cout<<"Calculate Iso ------"<<std::endl;
             for(int i=0; i<bkg_pt.size(); i++) {
+
+                if(bkg_pt[i] < ptmin) continue;
+                if(fabs(bkg_pid[i]) == 11  || fabs(bkg_pid[i]) == 13  || fabs(bkg_pid[i]) == 211 ) {
+                    // if(abs(bkg_z0[i]-sig_vz) > dzmax) continue; INCORRECT
+                    if(abs(bkg_z0[i]) >= dzmax) continue;
+                }
+
                 float calodR = getdR(sig_calo_eta, bkg_eta[i], sig_calo_phi, bkg_phi[i]);
                 float nonCalodR = getdR(sig_eta, bkg_eta[i], sig_phi, bkg_phi[i]);
-                float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ? calodR : nonCalodR;
+                // float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ? calodR : nonCalodR;
+                float dR = calodR;
                 if (dR > dRmin && dR < dRmax) {
+                 //                  std::cout<<"L1PuppiCand: "<<bkg_pt[i]<<"\t"<<
+                 // bkg_eta[i]<<"\t"<<bkg_phi[i]<<"\t"<<bkg_pid[i]<<"\t"<<dR<<std::endl;
+
                         isotot += bkg_pt[i];
                         if( fabs(bkg_pid[i]) == 11 ) iso11 += bkg_pt[i];
                         else if( fabs(bkg_pid[i]) == 13 ) iso13 += bkg_pt[i];
@@ -114,6 +246,14 @@ def define_cpp_utils():
                         else isooth += bkg_pt[i];
                     }
             }
+
+            // std::cout<<sig_calo_eta<<"\t"<<sig_calo_phi<<"\t"<<sig_pt<<"\t"<<isotot<<"\t"<<isotot/sig_pt<<"\t"<<quantise_relisoval(isotot/sig_pt)<<std::endl;
+            //if(isotot != 0) {
+            //    for(int i=0; i<bkg_pt.size(); i++) {
+            //       std::cout<<"L1PuppiCand: "<<bkg_pt[i]<<"\t"<<
+            //      bkg_eta[i]<<"\t"<<bkg_phi[i]<<"\t"<<bkg_pid[i]<<"\t"<<bkg_z0[i]<<std::endl;
+             //   }
+            //}
             return std::make_tuple(isotot, iso11, iso13, iso22, iso130, iso211, isooth,
                                    (iso11+iso13+iso211), (iso22+iso130),
                                    isotot/sig_pt, iso11/sig_pt, iso13/sig_pt,
@@ -146,11 +286,14 @@ def define_cpp_utils():
                                                                   ROOT::VecOps::RVec<float> &sig_calo_eta,
                                                                   ROOT::VecOps::RVec<float> &sig_phi,
                                                                   ROOT::VecOps::RVec<float> &sig_calo_phi,
+                                                                  ROOT::VecOps::RVec<float> &sig_vz,
                                                                   ROOT::VecOps::RVec<float> &bkg_pt,
                                                                   ROOT::VecOps::RVec<float> &bkg_eta,
                                                                   ROOT::VecOps::RVec<float> &bkg_phi,
                                                                   ROOT::VecOps::RVec<float> &bkg_pid,
-                                                                  float dRmin, float dRmax) {
+                                                                  ROOT::VecOps::RVec<float> &bkg_z0,
+                                                                  float dRmin, float dRmax, float ptmin,
+                                                                  float dzmax) {
             ROOT::VecOps::RVec<float> isotot(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> iso11(sig_pt.size(), -1);
             ROOT::VecOps::RVec<float> iso13(sig_pt.size(), -1);
@@ -170,10 +313,11 @@ def define_cpp_utils():
             ROOT::VecOps::RVec<float> relisonut(sig_pt.size(), -1);
 
             for (int i = 0; i < sig_pt.size(); i++) {
+                // std::cout<<"Calc iso. for: "<<sig_pt[i]<<"\t"<<sig_calo_eta[i]<<"\t"<<sig_calo_phi[i]<<std::endl;
                 std::tuple isotuple = calcisoanncone_singleobj( sig_pt[i], sig_eta[i], sig_calo_eta[i],
-                                                                sig_phi[i], sig_calo_phi[i],
-                                                                bkg_pt, bkg_eta, bkg_phi, bkg_pid,
-                                                                dRmin, dRmax );
+                                                                sig_phi[i], sig_calo_phi[i], sig_vz[i],
+                                                                bkg_pt, bkg_eta, bkg_phi, bkg_pid, bkg_z0,
+                                                                dRmin, dRmax, ptmin, dzmax );
                 isotot[i] = std::get<0>(isotuple);
                 iso11[i] = std::get<1>(isotuple);
                 iso13[i] = std::get<2>(isotuple);
