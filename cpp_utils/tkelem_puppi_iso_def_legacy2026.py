@@ -35,23 +35,18 @@ def tkelem_puppi_iso_def_legacy2026():
                 if(fabs(bkg_pid[i]) == 11  || fabs(bkg_pid[i]) == 13  || fabs(bkg_pid[i]) == 211 ) {
                     if(abs(bkg_z0[i]) >= dzmax) continue;
                 }
-                else {
-                    if(abs(sig_pt - bkg_pt[i]) < 0.5) continue;
-                }
+                // else {
+                //     if(abs(sig_pt - bkg_pt[i]) < 0.5) continue;
+                // }
 
                 float calodR = getdR(sig_calo_eta, bkg_eta[i], sig_calo_phi, bkg_phi[i]);
-                float nonCalodR = getdR(sig_eta, bkg_eta[i], sig_phi, bkg_phi[i]);
+                // float nonCalodR = getdR(sig_eta, bkg_eta[i], sig_phi, bkg_phi[i]);
                 // float dR = (fabs(bkg_pid[i]) == 22) || (fabs(bkg_pid[i]) == 130) ? calodR : nonCalodR;
                 float dR = calodR;
-                float deta = sig_calo_eta - bkg_eta[i];
-                float dphi = sig_calo_phi - bkg_phi[i];
+                // float deta = sig_calo_eta - bkg_eta[i];
+                // float dphi = sig_calo_phi - bkg_phi[i];
                 // float dR = sqrt(deta*deta + dphi*dphi);
 
-                int dR2_ = makeDR2FromFloatDR(dR);
-                int dR2min_ = makeDR2FromFloatDR(dRmin);
-                int dR2max_ = makeDR2FromFloatDR(dRmax);
-
-                // if (dR2_ >= dR2min_ && dR2_ < dR2max_) {
                 if (dR >= dRmin && dR < dRmax) {
                         isotot += bkg_pt[i];
                     }
