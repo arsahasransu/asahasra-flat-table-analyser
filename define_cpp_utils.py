@@ -9,7 +9,6 @@ def define_cpp_utils():
 
     # Order is important here due to inter-dependent functions
     cmssw_cpp_utils()
-    calciso_annularcone()
 
     STRCPPFUNC_getdR = """
         float getdR(float eta1, float eta2, float phi1, float phi2) {
@@ -20,6 +19,8 @@ def define_cpp_utils():
     """
 
     ROOT.gInterpreter.Declare(STRCPPFUNC_getdR)
+
+    calciso_annularcone()
 
     STRCPPFUNC_getminangs = """
         std::unordered_map< std::string,

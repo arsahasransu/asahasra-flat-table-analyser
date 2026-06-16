@@ -3,8 +3,8 @@ from ROOT import RDataFrame
 import an_specific_utilities as anut
 from an_specific_utilities import sufEl, sufGen, sufPu
 from an_specific_utilities import add_puppicands_by_pdg
-import calc_puppi_iso as reiso
-import my_py_generic_utils as ut
+import python.calc_puppi_iso as reiso
+import python.my_py_generic_utils as ut
 import rdf_generic as rdf_g
 
 

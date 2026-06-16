@@ -9,8 +9,8 @@ from ROOT import TH1, TH1D
 from ROOT import TCanvas, TEfficiency, TFile
 
 from an_specific_utilities import make_plotnorm_by_scheme
-from my_py_generic_utils import recreate_dir
-from plotBeautifier import makePngPlot
+from python.my_py_generic_utils import recreate_dir
+from python.plotBeautifier import makePngPlot
 
 # Enable batch mode
 ROOT.gROOT.SetBatch(True)
