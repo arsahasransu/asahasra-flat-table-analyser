@@ -1,5 +1,5 @@
 from an_specific_utilities import SampleRDFManager
-import python.my_py_generic_utils as ut
+import pypkg.my_py_generic_utils as ut
 import rdf_generic as rdf_g
 
 @ut.time_eval

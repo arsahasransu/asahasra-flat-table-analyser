@@ -1,4 +1,4 @@
-from ..python.my_py_ai_utils import *
+from ..pypkg.my_py_ai_utils import *
 
 # import matplotlib.pyplot as plt
 import numpy as np

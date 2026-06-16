@@ -9,8 +9,8 @@ import ROOT
 import an_specific_utilities as anautil
 from define_cpp_utils import define_cpp_utils
 import dy_to_ll_ana
-import python.my_py_generic_utils as ut
-from python.post_analysis_persample import post_analysis_persample
+import pypkg.my_py_generic_utils as ut
+from pypkg.post_analysis_persample import post_analysis_persample
 import qcd_ana
 
 
