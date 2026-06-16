@@ -48,6 +48,7 @@ def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         # dfER = reiso.recalculate_puppi_iso(dfER, sufElPt5ER, sufPu, drminlist=[0.01], drmax=0.4, ptmin=2, dzmax=1.0)
         ana_man.add_dataframe(key=ERegion, df=dfER)
         rdf_g.add_hists_multiplecolls(dfER, histograms, [sufElPt5ER,
+                                        sufElPt5ER+r'_reisotot2026:dRmin\d_\d{1,2}',
                                         sufElPt5ER+r'_reisotot:dRmin\d_\d{1,2}',
                                         sufElPt5ER+r'_reisooth:dRmin\d_\d{1,2}',
                                         sufElPt5ER+r'_reisochg:dRmin\d_\d{1,2}',

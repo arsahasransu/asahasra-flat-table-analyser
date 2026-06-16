@@ -31,6 +31,24 @@ def recalculate_puppi_iso(df: RDataFrame, elcoll: str, puppicoll: str, *,
                        f'std::get<15>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
         df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
                        f'std::get<16>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+
+        df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIsoDiff',
+                       f'{elcoll}_puppiIso - {elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIso')
+
+        getisostr_legacy2026 = f'calciso_legacy26({elcoll}_pt, {elcoll}_eta, {elcoll}_caloEta,\
+                                    {elcoll}_phi, {elcoll}_caloPhi, {elcoll}_vz,\
+                                    {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
+                                    {puppicoll}_z0,\
+                                    {dRmin}, {dRmax}, {ptmin}, {dzmax})'
+        df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026', getisostr_legacy2026)
+        df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                       f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026)')
+        df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                       f'std::get<1>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026)')
+
+        df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIsoDiff',
+                       f'{elcoll}_puppiIso - {elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIso')
+
     return df
 
 
@@ -66,5 +84,22 @@ def recalcpuppiiso_comps_oneel(df: RDataFrame, elcoll: str, puppicoll: str, *,
                            f'std::get<15>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
             df = df.Define(f'{elcoll}_reisonut_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
                            f'std::get<16>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuple)')
+
+            df = df.Define(f'{elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIsoDiff',
+                           f'{elcoll}_puppiIso - {elcoll}_reisotot_dRmin{str(dRmin).replace('.', '_')}_puppiIso')
+
+            getisostr_legacy2026 = f'calciso_legacy26_single({elcoll}_pt, {elcoll}_eta, {elcoll}_caloEta,\
+                                        {elcoll}_phi, {elcoll}_caloPhi, {elcoll}_vz,\
+                                        {puppicoll}_pt, {puppicoll}_eta, {puppicoll}_phi, {puppicoll}_pdgId,\
+                                        {puppicoll}_z0,\
+                                        {dRmin}, {dRmax}, {ptmin}, {dzmax})'
+            df = df.Define(f'{elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026', getisostr_legacy2026)
+            df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_absPuppiIso',
+                        f'std::get<0>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026)')
+            df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIso',
+                        f'std::get<1>({elcoll}_dRmin{str(dRmin).replace('.', '_')}_reisotuplelegacy2026)')
+
+            df = df.Define(f'{elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIsoDiff',
+                           f'{elcoll}_puppiIso - {elcoll}_reisotot2026_dRmin{str(dRmin).replace('.', '_')}_puppiIso')
 
     return df

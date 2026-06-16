@@ -30,6 +30,7 @@ linkvartohist = {
 
     'pfIso': (100000, 0, 100, 'PF rel. iso.'),
     'puppiIso': (100000, 0, 100, 'puppi rel. iso.'),
+    'puppiIsoDiff': (10000, -5, 5, 'difference puppi rel. iso.'),
     'absPuppiIso': (100000, 0, 1000, 'puppi abs. iso.'),
     'tkIso': (100000, 0, 100, 'track rel. iso.'),
     'absTkIso': (100000, 0, 1000, 'track abs. iso.'),

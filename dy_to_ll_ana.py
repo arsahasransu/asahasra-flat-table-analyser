@@ -100,6 +100,7 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
         # dfGenMER.Describe().Print()
         ana_man.add_dataframe(key=f'DYPM{ERegion}', df=dfGenMER)
         rdf_g.add_hists_multiplecolls(dfGenMER, histograms, [sufElMch,
+                                        sufElMch+r'_reisotot2026:dRmin\d_\d{1,2}',
                                         sufElMch+r'_reisotot:dRmin\d_\d{1,2}',
                                         sufElMch+r'_reisooth:dRmin\d_\d{1,2}',
                                         sufElMch+r'_reisochg:dRmin\d_\d{1,2}',

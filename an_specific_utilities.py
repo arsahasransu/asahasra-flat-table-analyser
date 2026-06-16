@@ -18,7 +18,7 @@ sufPu = 'L1PuppiCands'
 
 customisation_conds = {
     'canvas': [
-        (lambda histname: 'Iso' in histname, lambda canvas: canvas.SetLogx()),
+        (lambda histname: histname.endswith('Iso'), lambda canvas: canvas.SetLogx()),
         # (lambda histname: histname.endswith('eta') or histname.endswith('Eta'), lambda canvas: canvas.SetLogy(False))
         # (lambda histname: 'bin2dR' in histname, lambda canvas: canvas.SetLogx())
     ]
