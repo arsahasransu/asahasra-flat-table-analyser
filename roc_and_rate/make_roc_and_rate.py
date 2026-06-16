@@ -1,5 +1,4 @@
-import an_specific_utilities as ut
-from my_py_ai_utils import *
+from ..python.my_py_ai_utils import *
 
 # import matplotlib.pyplot as plt
 import numpy as np
@@ -7,47 +6,47 @@ import pickle
 
 
 def main():
-    with open("DY_PU200.pkl", "rb") as fsigpklfile:
+    with open("../DY_PU200.pkl", "rb") as fsigpklfile:
         fsig = pickle.load(fsigpklfile)
-    with open("MinBias.pkl", "rb") as fbkgpklfile:
+    with open("../MinBias.pkl", "rb") as fbkgpklfile:
         fbkg = pickle.load(fbkgpklfile)
 
 
     ebspt = fsig["TkEleL2_EB_MCH_pt"]
     ebsiso = fsig["TkEleL2_EB_MCH_tkIso"]
     ebspiso = fsig["TkEleL2_EB_MCH_puppiIso"]
-    ebspreiso = fsig["TkEleL2_EB_MCH_reiso_dRmin0_01_tot_puppiIso"]
+    ebspreiso = fsig["TkEleL2_EB_MCH_reiso_dRmin0_03_tot_puppiIso"]
     ebbpt = fbkg["TkEleL2_EB_pt"]
     ebbiso = fbkg["TkEleL2_EB_tkIso"]
     ebbpiso = fbkg["TkEleL2_EB_puppiIso"]
-    ebbpreiso = fbkg["TkEleL2_EB_reiso_dRmin0_01_tot_puppiIso"]
+    ebbpreiso = fbkg["TkEleL2_EB_reiso_dRmin0_03_tot_puppiIso"]
     print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape, ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape)
 
     eespt = fsig["TkEleL2_EE_MCH_pt"]
     eesiso = fsig["TkEleL2_EE_MCH_tkIso"]
     eespiso = fsig["TkEleL2_EE_MCH_puppiIso"]
-    eespreiso = fsig["TkEleL2_EE_MCH_reiso_dRmin0_01_tot_puppiIso"]
+    eespreiso = fsig["TkEleL2_EE_MCH_reiso_dRmin0_03_tot_puppiIso"]
     eebpt = fbkg["TkEleL2_EE_pt"]
     eebiso = fbkg["TkEleL2_EE_tkIso"]
     eebpiso = fbkg["TkEleL2_EE_puppiIso"]
-    eebpreiso = fbkg["TkEleL2_EE_reiso_dRmin0_01_tot_puppiIso"]
+    eebpreiso = fbkg["TkEleL2_EE_reiso_dRmin0_03_tot_puppiIso"]
     print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
 
-    ebsi = np.concatenate(ebsiso)
-    ebspi = np.concatenate(ebspiso)
-    ebsprei = np.concatenate(ebspreiso)
-    ebbi = np.concatenate(ebbiso)
-    ebbpi = np.concatenate(ebbpiso)
-    ebbprei = np.concatenate(ebbpreiso)
-    print(ebsi.shape, ebspi.shape, ebsprei.shape, ebbi.shape, ebbpi.shape, ebbprei.shape)
+    # ebsi = np.concatenate(ebsiso)
+    # ebspi = np.concatenate(ebspiso)
+    # ebsprei = np.concatenate(ebspreiso)
+    # ebbi = np.concatenate(ebbiso)
+    # ebbpi = np.concatenate(ebbpiso)
+    # ebbprei = np.concatenate(ebbpreiso)
+    # print(ebsi.shape, ebspi.shape, ebsprei.shape, ebbi.shape, ebbpi.shape, ebbprei.shape)
 
-    eesi = np.concatenate(eesiso)
-    eespi = np.concatenate(eespiso)
-    eesprei = np.concatenate(eespreiso)
-    eebi = np.concatenate(eebiso)
-    eebpi = np.concatenate(eebpiso)
-    eebprei = np.concatenate(eebpreiso)
-    print(eesi.shape, eespi.shape, eesprei.shape, eebi.shape, eebpi.shape, eebprei.shape)
+    # eesi = np.concatenate(eesiso)
+    # eespi = np.concatenate(eespiso)
+    # eesprei = np.concatenate(eespreiso)
+    # eebi = np.concatenate(eebiso)
+    # eebpi = np.concatenate(eebpiso)
+    # eebprei = np.concatenate(eebpreiso)
+    # print(eesi.shape, eespi.shape, eesprei.shape, eebi.shape, eebpi.shape, eebprei.shape)
 
     roc_res = make_roc_per_event([[ebsiso, ebbiso, 'tkIso'], [ebspiso, ebbpiso, 'puppiIso'], [ebspreiso, ebbpreiso, 'RePuppiIso']],
                                 thrvs = np.arange(0, 10, 0.0125))

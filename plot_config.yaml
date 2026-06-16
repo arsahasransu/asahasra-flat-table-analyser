@@ -20,7 +20,7 @@ general:
 #     method: 'hist_integral'
 #   hist_tag:
 #     DY_noPU: base_GenEl_DYP
-#     DY_noPUv3: base_GenEl_DYP
+#     # DY_noPUv3: base_GenEl_DYP
 #     DY_PU200: base_GenEl_DYP
 
 # # AN plots for STEP 1_0_0
@@ -28,7 +28,8 @@ general:
 #   type: same_sample_different_collection
 #   norm_scheme:
 #     method: 'hist_integral'
-#   ftags: ['DY_noPU', 'DY_noPUv3', 'DY_PU200']
+#   # ftags: ['DY_noPU', 'DY_noPUv3', 'DY_PU200']
+#   ftags: ['DY_noPU', 'DY_PU200']
 #   hist_tag:
 #     prefix:
 #       'all': GenEl
@@ -53,7 +54,8 @@ general:
 #   type: same_sample_different_collection
 #   norm_scheme:
 #     method: hist_integral
-#   ftags: ['DY_noPU', 'DY_PU200', 'DY_noPUv3']
+#   # ftags: ['DY_noPU', 'DY_PU200', 'DY_noPUv3']
+#   ftags: ['DY_noPU', 'DY_PU200']
 #   hist_tag:
 #     prefix:
 #       EE: EE
@@ -89,11 +91,11 @@ compare_puppi_iso_consistency_check:
   ftags: ['DY_noPU', 'DY_PU200', 'MinBias']
   hist_tag:
     prefix:
+      Old: ''
       Legacy2026: _reisotot2026_dRmin0_03
       New: _reisotot_dRmin0_03
-      NewChg: _reisochg_dRmin0_03
-      NewNeu: _reisonut_dRmin0_03
-      Old: ''
+      # NewChg: _reisochg_dRmin0_03
+      # NewNeu: _reisonut_dRmin0_03
     collection: ['GM_TkEleL2_EB_MCH{tag}', 'EB_TkEleL2_Pt5_EB{tag}',
                  'GM_TkEleL2_EE_MCH{tag}', 'EE_TkEleL2_Pt5_EE{tag}']
 
