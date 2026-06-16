@@ -1,25 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "LiteLLM/Qwen3-Coder-Next-UD-Q4_K_XL.gguf",
   "provider": {
-    "litellm": {
+    "LiteLLM": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "LiteLLM",
+      "name": "LiteLLM (HEPACC16)",
       "options": {
-        "baseURL": "http://localhost:4000/v1",
+        "baseURL": "https://vicuna.pp.rl.ac.uk:4443/v1",
         "apiKey": "sk-McB0yYMjAJ-UIF9dc9ZfbA"
       },
       "models": {
-        "Nemotron-3-Nano-30B-A3B-UD-Q4_K_XL.gguf": {
-          "name": "Nemotron 3 Nano 30B"
-        },
         "Qwen3-Coder-Next-UD-Q4_K_XL.gguf": {
-          "name": "Qwen3 Coder Next"
+          "name": "Qwen3-Coder-Next (Local)"
         },
         "gemma-4-31B-it-UD-Q4_K_XL.gguf": {
-          "name": "Gemma 4 31B"
+          "name": "Gemma 4 31B (Local)"
         }
       }
     }
-  },
-  "model": "litellm/Qwen3-Coder-Next-UD-Q4_K_XL.gguf"
+  }
 }
