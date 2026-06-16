@@ -1,4 +1,4 @@
-from ..pypkg.my_py_ai_utils import *
+from my_py_ai_utils import *
 
 # import matplotlib.pyplot as plt
 import numpy as np
@@ -15,22 +15,22 @@ def main():
     ebspt = fsig["TkEleL2_EB_MCH_pt"]
     ebsiso = fsig["TkEleL2_EB_MCH_tkIso"]
     ebspiso = fsig["TkEleL2_EB_MCH_puppiIso"]
-    ebspreiso = fsig["TkEleL2_EB_MCH_reiso_dRmin0_03_tot_puppiIso"]
-    ebbpt = fbkg["TkEleL2_EB_pt"]
-    ebbiso = fbkg["TkEleL2_EB_tkIso"]
-    ebbpiso = fbkg["TkEleL2_EB_puppiIso"]
-    ebbpreiso = fbkg["TkEleL2_EB_reiso_dRmin0_03_tot_puppiIso"]
+    ebspreiso = fsig["TkEleL2_EB_MCH_reisotot_dRmin0_03_puppiIso"]
+    ebbpt = fbkg["TkEleL2_Pt5_EB_pt"]
+    ebbiso = fbkg["TkEleL2_Pt5_EB_tkIso"]
+    ebbpiso = fbkg["TkEleL2_Pt5_EB_puppiIso"]
+    ebbpreiso = fbkg["TkEleL2_Pt5_EB_reisotot_dRmin0_03_puppiIso"]
     print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape, ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape)
 
-    eespt = fsig["TkEleL2_EE_MCH_pt"]
-    eesiso = fsig["TkEleL2_EE_MCH_tkIso"]
-    eespiso = fsig["TkEleL2_EE_MCH_puppiIso"]
-    eespreiso = fsig["TkEleL2_EE_MCH_reiso_dRmin0_03_tot_puppiIso"]
-    eebpt = fbkg["TkEleL2_EE_pt"]
-    eebiso = fbkg["TkEleL2_EE_tkIso"]
-    eebpiso = fbkg["TkEleL2_EE_puppiIso"]
-    eebpreiso = fbkg["TkEleL2_EE_reiso_dRmin0_03_tot_puppiIso"]
-    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
+    # eespt = fsig["TkEleL2_EE_MCH_pt"]
+    # eesiso = fsig["TkEleL2_EE_MCH_tkIso"]
+    # eespiso = fsig["TkEleL2_EE_MCH_puppiIso"]
+    # eespreiso = fsig["TkEleL2_EE_MCH_reiso_dRmin0_03_tot_puppiIso"]
+    # eebpt = fbkg["TkEleL2_EE_pt"]
+    # eebiso = fbkg["TkEleL2_EE_tkIso"]
+    # eebpiso = fbkg["TkEleL2_EE_puppiIso"]
+    # eebpreiso = fbkg["TkEleL2_EE_reiso_dRmin0_03_tot_puppiIso"]
+    # print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
 
     # ebsi = np.concatenate(ebsiso)
     # ebspi = np.concatenate(ebspiso)

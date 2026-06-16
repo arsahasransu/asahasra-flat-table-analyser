@@ -4,7 +4,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-import my_py_generic_utils as ut
+# import my_py_generic_utils as ut
 
 
 def roc_curve(truth: np.ndarray, scores: np.ndarray, *,
@@ -97,7 +97,7 @@ def make_roc_png(roc_res, *,
     plt.close()
     
 
-@ut.time_eval
+# @ut.time_eval
 def make_roc(vals: list[list[np.ndarray]], *,
                          filename: str = "roc_curve.png",
                          scale: str = "default",
@@ -124,7 +124,7 @@ def _init_worker(valarr):
     _VALARRAY = valarr
 
 
-@ut.time_eval
+# @ut.time_eval
 def count_events_passing_threshold(valarr, thrv):
     return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in valarr)
 
@@ -133,7 +133,7 @@ def count_events_passing_threshold_multiprocessing(thrv):
     return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in _VALARRAY)
 
 
-@ut.time_eval
+# @ut.time_eval
 def make_roc_per_event(vals: list[list[np.ndarray]], *,
                        points: int = 1000,
                        thrvs: np.array = np.arange(0, 10, 0.1),
