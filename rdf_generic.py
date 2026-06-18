@@ -10,6 +10,8 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from concurrent.futures import ThreadPoolExecutor
+
 from varmetadata import linkvartohist
 
 
@@ -118,11 +120,21 @@ def save_rdf_snapshot_to_parquet(df: RDataFrame, cols: list[str], savename: str,
     np_dict = df.AsNumpy(cols)
     table_dict = {}
 
-    for k, arr in np_dict.items():
+    def convert_column(item):
+        k, arr = item
         if arr.dtype == object:
-            table_dict[k] = pa.array(arr.tolist(), type=pa.list_(pa.float32()))
-        else:
-            table_dict[k] = pa.array(arr)
+            return k, pa.array(arr.tolist(), type=pa.list_(pa.float32()))
+        return k, pa.array(arr)
+
+    with ThreadPoolExecutor() as executor:
+        results = executor.map(convert_column, np_dict.items())
+
+    table_dict = dict(results)
+    # for k, arr in np_dict.items():
+    #     if arr.dtype == object:
+    #         table_dict[k] = pa.array(arr.tolist(), type=pa.list_(pa.float32()))
+    #     else:
+    #         table_dict[k] = pa.array(arr)
 
     table = pa.table(table_dict)
 

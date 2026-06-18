@@ -66,4 +66,4 @@ def post_analysis_persample(anamanager: SampleRDFManager):
                 # 'TkEleL2_Pt5_EE_reisonut_dRmin0_01_puppiIso',
         ]
         # rdf_g.save_rdf_snapshot_to_pkl(EE_df, cols, sname)
-        rdf_g.save_rdf_snapshot_to_parquet(EE_df, cols, f"{sname}_EE")
+        rdf_g.save_rdf_snapshot_to_parquet(EE_df, cols, f"{sname}_EE", recreate=True)
