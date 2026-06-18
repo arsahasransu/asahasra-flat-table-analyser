@@ -21,7 +21,7 @@ def post_analysis_persample(anamanager: SampleRDFManager):
                 # 'TkEleL2_EB_MCH_reisonut_dRmin0_01_puppiIso',
             ]
         # rdf_g.save_rdf_snapshot_to_pkl(DYPEB_df, cols, sname, recreate=True)
-        rdf_g.save_rdf_snapshot_to_parquet_snap(DYPEB_df, cols, f"{sname}_EB", recreate=True)
+        rdf_g.save_rdf_snapshot_to_parquet(DYPEB_df, cols, f"{sname}_EB", recreate=True)
 
         # STEP 3_0_0, X_X_X: For ROC curves
         DYPEE_df = anamanager.get_dataframe('DYPMEE')
@@ -35,7 +35,7 @@ def post_analysis_persample(anamanager: SampleRDFManager):
                 # 'TkEleL2_EE_MCH_reisonut_dRmin0_01_puppiIso',
             ]  
         # rdf_g.save_rdf_snapshot_to_pkl(DYPEE_df, cols, sname)
-        rdf_g.save_rdf_snapshot_to_parquet_snap(DYPEE_df, cols, f"{sname}_EE", recreate=True)
+        rdf_g.save_rdf_snapshot_to_parquet(DYPEE_df, cols, f"{sname}_EE", recreate=True)
 
     if sname == "MinBias":
         print(f"\nRunning post-analysis for {sname} sample...")
@@ -52,7 +52,7 @@ def post_analysis_persample(anamanager: SampleRDFManager):
                 # 'TkEleL2_Pt5_EB_reisonut_dRmin0_01_puppiIso',
             ]
         # rdf_g.save_rdf_snapshot_to_pkl(EB_df, cols, sname, recreate=True)
-        rdf_g.save_rdf_snapshot_to_parquet_snap(EB_df, cols, f"{sname}_EB", recreate=True)
+        rdf_g.save_rdf_snapshot_to_parquet(EB_df, cols, f"{sname}_EB", recreate=True)
 
         # STEP 3_0_0, X_X_X: For ROC curves
         EE_df = anamanager.get_dataframe('EE')
@@ -66,4 +66,4 @@ def post_analysis_persample(anamanager: SampleRDFManager):
                 # 'TkEleL2_Pt5_EE_reisonut_dRmin0_01_puppiIso',
         ]
         # rdf_g.save_rdf_snapshot_to_pkl(EE_df, cols, sname)
-        rdf_g.save_rdf_snapshot_to_parquet_snap(EE_df, cols, f"{sname}_EE", recreate=True)
+        rdf_g.save_rdf_snapshot_to_parquet(EE_df, cols, f"{sname}_EE")

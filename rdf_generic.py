@@ -139,54 +139,6 @@ def save_rdf_snapshot_to_parquet(df: RDataFrame, cols: list[str], savename: str,
         pq.write_table(table, parquetfilename)
 
 
-def save_rdf_snapshot_to_parquet_snap(df: RDataFrame, cols: list[str], savename: str, *, recreate: bool = False, nthreads: int = None):
-    """Save RDataFrame to .parquet via Snapshot + TChain (faster for complex dataframes).
-
-    Writes df to a temp ROOT tree using Snapshot (multi-threaded, no Python per-event),
-    then reads back the columns via TChain → AsNumpy → parquet.
-
-    When df has many Defines/Filters this is faster because Snapshot evaluates them
-    in C++ threads on disk, then the TChain read only touches our columns.
-    """
-    parquetfilename = f'{savename}.parquet'
-    snapshotname = f'{parquetfilename}.snap.root'
-    print(f"Snapshot→parquet: " + ", ".join(cols) + f" to {parquetfilename}")
-
-    # if nthreads is not None:
-    #     ROOT.ROOT.EnableImplicitMT(nthreads)
-
-    df.Snapshot("Events", snapshotname, cols)
-
-    chain = ROOT.TChain("Events")
-    chain.Add(snapshotname)
-    rdf = RDataFrame(chain)
-    np_dict = rdf.AsNumpy(cols)
-
-    table_dict = {}
-    for k, arr in np_dict.items():
-        if arr.dtype == object:
-            table_dict[k] = pa.array(arr.tolist(), type=pa.list_(pa.float32()))
-        else:
-            table_dict[k] = pa.array(arr)
-
-    table = pa.table(table_dict)
-
-    if os.path.exists(parquetfilename) and not recreate:
-        existing = pq.read_table(parquetfilename)
-        existing_names = set(existing.column_names)
-        for k, arr in table_dict.items():
-            if k not in existing_names:
-                existing = existing.append_column(pa.field(k, type=arr.type), arr)
-            else:
-                raise RuntimeError(f'Key {k} exists in file {parquetfilename}')
-        pq.write_table(existing, parquetfilename)
-    else:
-        pq.write_table(table, parquetfilename)
-
-    if os.path.exists(snapshotname):
-        os.remove(snapshotname)
-
-
 def load_rdf_snapshot_from_parquet(parquetpath: str) -> dict[str, np.ndarray]:
     """Load .parquet snapshot → dict of numpy arrays.
     list<float> columns → object arrays with per-event vectors preserved."""
