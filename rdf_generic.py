@@ -6,6 +6,10 @@ import re
 from ROOT import RDataFrame
 import ROOT
 
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+
 from varmetadata import linkvartohist
 
 
@@ -100,3 +104,50 @@ def save_rdf_snapshot_to_pkl(df: RDataFrame, cols: list[str], savename: str, *, 
     else:
         with open(pklfilename, "wb") as pklf:
             pickle.dump(np_dict, pklf, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def save_rdf_snapshot_to_parquet(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
+    """Save RDataFrame columns to .parquet — RVec<float> → pyarrow list<item: float32>
+    
+    Columns that are RVec (object dtype) → variable-length list per event.
+    Scalar columns preserved as-is.
+    """
+    parquetfilename = f'{savename}.parquet'
+    print("Saving: " + ", ".join(cols) + f" to {parquetfilename}")
+
+    np_dict = df.AsNumpy(cols)
+    table_dict = {}
+
+    for k, arr in np_dict.items():
+        if arr.dtype == object:
+            table_dict[k] = pa.array(arr.tolist(), type=pa.list_(pa.float32()))
+        else:
+            table_dict[k] = pa.array(arr)
+
+    table = pa.table(table_dict)
+
+    if os.path.exists(parquetfilename) and not recreate:
+        existing = pq.read_table(parquetfilename)
+        existing_names = set(existing.column_names)
+        for k, arr in table_dict.items():
+            if k not in existing_names:
+                existing = existing.append_column(pa.field(k, type=arr.type), arr)
+            else:
+                raise RuntimeError(f'Key {k} exists in file {parquetfilename}')
+        pq.write_table(existing, parquetfilename)
+    else:
+        pq.write_table(table, parquetfilename)
+
+
+def load_rdf_snapshot_from_parquet(parquetpath: str) -> dict[str, np.ndarray]:
+    """Load .parquet snapshot → dict of numpy arrays.
+    list<float> columns → object arrays with per-event vectors preserved."""
+    table = pq.read_table(parquetpath)
+    result = {}
+    for col in table.column_names:
+        arr = table.column(col)
+        if pa.types.is_list(arr.type):
+            result[col] = np.array(arr.to_pylist(), dtype=object)
+        else:
+            result[col] = arr.to_numpy()
+    return result

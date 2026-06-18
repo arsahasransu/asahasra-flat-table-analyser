@@ -2,118 +2,140 @@
 
 ## Quick Start
 
-**Run analysis:**
 ```bash
-python analyser.py analysis_config.yaml
+python other_helper_files/check_env.py        # validates deps, writes env_report.json
+python analyser.py                             # runs analysis (config hardcoded)
+python plotter.py                              # generates plots (config hardcoded)
 ```
 
-**Check environment:**
+Neither `analyser.py` nor `plotter.py` accept CLI arguments — both hardcode their config paths.
+
+## Environment Setup
+
+On CERN machines, source CVMFS ROOT **before** running anything:
 ```bash
-python check_env.py
+source other_helper_files/make_env.sh          # LCG_108a, ROOT + PyROOT
 ```
 
-**Generate plots:**
-```bash
-python plotter.py
-```
+Requires: Python ≥3.9, ROOT ≥6.36, numpy 2.4+, pyyaml 6.0+, IPython 9.7+. `check_env.py` validates all of these.
 
-## Project Overview
+## Run Order & Data
 
-This is a HEP analysis framework using ROOT's RDataFrame to process flat Ntuples from Phase2 L1T studies. Primary analysis: electron isolation studies in DY→ll and QCD events with PU200.
+1. `python other_helper_files/check_env.py` — verify environment
+2. `python analyser.py` — produces `./OutHistoFiles/hists_{sample}.root`
+3. `python plotter.py` — reads ROOT hists, writes `./plots/` (PNG)
+4. `python roc_and_rate/make_roc_and_rate.py` — ROC curves from `.pkl` snapshots
+5. `python pypkg/post_analysis_persample.py` runs **inside** `analyser.py` step 2 — exports `.pkl` for ROC
 
-## Key Architecture
-
-**Entry point:** `analyser.py:18` → `analyser()`
-- Loads config from `analysis_config.yaml:4-44`
-- Creates `SampleRDFManager` per sample (`an_specific_utilities.py:28`)
-- Dispatches to `dy_to_ll_ana.py:12` or `qcd_ana.py:13` based on sample type
-- Outputs histograms to `./OutHistoFiles/hists_{sample}.root`
-
-**Sample types:**
-- `dytoll`: DYToLL_M50_PU0, DYToLL_M50_PU200
-- `qcd`: MinBias_PU200
-
-**Main collections:**
-- `TkEleL2`: Reconstructed TkElectrons (defined in `an_specific_utilities.py:14`)
-- `GenEl`: Generator electrons (`an_specific_utilities.py:15`)
-- `L1PuppiCands`: L1 Puppicandidates by pdgId (`an_specific_utilities.py:16`)
-
-## Critical Paths
-
-**DY analysis flow** (`dy_to_ll_ana.py`):
-1. Define collections: `GenEl_prompt==2 && |eta|<2.5` → `GenEl_DYP`
-2. Filter: `genDYP_n>0 && TkEleL2_n>0` → `genDYP`
-3. Split η regions: EB (|η|≤1.5), EE (1.5<|η|≤2.5)
-4. Gen-match with dR cuts: EB=0.04, EE=0.05 (`dy_to_ll_ana.py:56`)
-5. Recalculate puppi isolation for gen-matched electrons (`calc_puppi_iso.py:6`)
-6. Output: `DYPM{EB,EE}` dataframes with iso variables
-
-**QCD analysis flow** (`qcd_ana.py`):
-1. FilterTkEleL2 pT>0 → `TkEleL2_Pt5`
-2. Split η regions: EB, EE
-3. Recalculate puppi isolation (`qcd_ana.py:47`)
-4. Output: `{EB,EE}` dataframes
-
-## C++ Utilities (define_cpp_utils.py)
-
-Auto-loaded via `ROOT.gInterpreter.Declare()` in `analyser.py:21`:
-- `getminangs()`: min dη, dφ, dR between two collections
-- `getmatchedidxs()`: gen-matching with dR cut
-- `calcisoannularcone()`: puppi isolation in annular cones
-- `quantise_relisoval()`: custom浮点 quantization (1-8-8 format)
-- `checksorting()`: verify descending pT sort
+**Output directory is deleted and recreated** each run (`analyser.py:38-41`). All previous hists are lost.
 
 ## Configuration
 
-**Input:** `analysis_config.yaml:1-44`
-- `input_dir_prefix`: base path for input files (default: `./Phase2EGPuppiIso_151Xv1_Ntuples`)
-- `tree_name`: `Events`
-- `output_dir`: `./OutHistoFiles`
+**`analysis_config.yaml`** — controls everything for the analyser:
+- `general.input_dir_prefix`: prefix prepended to all sample paths (currently `./`)
+- `general.output_dir`: `./OutHistoFiles`
+- `general.tree_name`: `Events`
+- `samples.{name}.input_file_pattern`: **glob** relative to prefix, e.g. `Phase2EGPuppiIso_151Xv3_Ntuplesv1base/MinBias_PU200/FP/v151Xv1base/perfNano_*.root`
+- `samples.{name}.type`: `dytoll` → DY analysis, `qcd` → QCD analysis
 
-**Plot config:** `plot_config.yaml:1-201`
-- Predefined plot groups in sections (most current are enabled, others commented)
-- Key plot: `compare_puppi_iso_consistency_check` (lines 74-84)
-- Normalization schemes: `hist_integral`, `default_no_norm`, `summed_components`
+Currently active samples: `DY_noPU`, `DY_PU200`, `MinBias`. Commented entries (e.g. `v3` variants) can be enabled.
 
-## Data Dependencies
+**`plot_config.yaml`** — controls all plotting:
+- `general.hist_folder`: `./OutHistoFiles/`
+- `general.samples`: maps plot names to ROOT filenames (must match analyser output names)
+- Each top-level key defines a plot group → output directory `./plots/{key}/`
+- `hist_tag` uses composite syntax: `col[ele1, ele2]` expands to `col_ele1`, `col_ele2`
+- Normalization schemes: `default_no_norm`, `hist_integral`, `summed_components`
 
-**Root level commands to run:**
-1. `python check_env.py` (creates `env_report.json`)
-2. `python analyser.py analysis_config.yaml` → outputs ROOT files
-3. `python plotter.py plot_config.yaml` → generates PNG plots
+## Architecture
 
-**Environment:**
-- Python ≥3.9 (tested: 3.13, 3.14)
-- ROOT ≥6.36 (tested: 6.38)
-- Required Python deps: numpy 2.4+, yaml 6.0+, IPython 9.7+
+**Entry point:** `analyser.py:18` → `analyser()`
+- `define_cpp_utils()` on line 21 — loads ALL C++ functions via `ROOT.gInterpreter.Declare()`. **Must run before any RDataFrame code.**
+- `SampleRDFManager` per sample (`an_specific_utilities.py:28`) wraps RDataFrame + hists
+- Dispatches by type: `dy_to_ll_ana.dy_to_ll_ana_main()` or `qcd_ana.qcd_ana_main()`
+- Post-analysis: `post_analysis_persample()` — saves `.pkl` snapshots for ROC curves
 
-**Data download:**
-```bash
-scp -r mercury13:/opt/ppd/cms/users/asahasra/Phase2EGPuppiIso_151Xv1_Ntuples ./
-```
+**Collection suffixes** (`an_specific_utilities.py:14-16`):
+- `sufEl = 'TkEleL2'` — reconstructed track electrons
+- `sufGen = 'GenEl'` — generator-level electrons
+- `sufPu = 'L1PuppiCands'` — L1 PUPPI candidates
 
-## Output Structure
+**DY analysis** (`dy_to_ll_ana.py:12`):
+1. `GenEl_prompt==2 && |eta|<2.5` → `GenEl_DYP`
+2. Filter: `GenEl_DYP_n>0 && TkEleL2_n>0` → `genDYP` dataframe
+3. η split: EB (`|η|≤1.5`), EE (`1.5<|η|≤2.5`)
+4. Gen-match with dR cuts: EB=0.04, EE=0.05
+5. New collection: `*_MCH` (matched), stores `*_recoidx`, `*_genidx` vectors
+6. Recalculate puppi isolation on matched electrons
+7. **WARNING:** Lines 133-153 in `dy_to_ll_ana.py` are dead code (after `return`). References `dfgenEB` which is undefined.
 
-```
-./OutHistoFiles/
-├── hists_DY_noPU.root
-├── hists_DY_PU200.root
-└── hists_MinBias.root
-```
+**QCD analysis** (`qcd_ana.py:13`):
+1. `TkEleL2_pt > 0` → `TkEleL2_Pt5`
+2. η split: EB, EE
+3. Recalculate puppi isolation
+4. Line 34 (`anut.make_puppi_by_angdiff_from_tkel`) is a dead TODO comment — not called.
 
-Each sample's plots use normalized histogram names: `{rdf_filter}_{collection_var}`
+## C++ Functions
 
-## Special Conventions
+`define_cpp_utils.py` is a thin wrapper. Actual C++ code lives in:
+- `cpp_utils/cmssw_cpp_utils.py` — base utilities (quantize, etc.), loaded first
+- `cpp_utils/calciso_annularcone.py` — `calcisoannularcone()`, `calcisoanncone_singleobj()`
+- `cpp_utils/tkelem_puppi_iso_def_legacy2026.py` — legacy 2026 iso: `calciso_legacy26()`, `calciso_legacy26_single()`
+- `define_cpp_utils.py` — inline functions: `getminangs()`, `getmatchedidxs()`, `checksorting()`, `getpuppimask_annulardR()`, `getdR()`
 
-1. **Analysis steps** are marked in comments (`STEP_X_X_X:`) - uncomment to enable
-2. Plot config uses composite collection syntax: `col[ele1, ele2, ...]` (see `plotter.py:84-108`)
-3. dRmin variants: `reisotot_dRmin0_03` (from `calc_puppi_iso.py:7` default drmin=0.03)
-4. Gen-matching: stores `*_recoidx` and `*_genidx` vectors indexing matched pairs
-5. η region split uses `define_newcollection()` (`rdf_generic.py:13`)
+**Load order matters** — functions depend on each other. `define_cpp_utils()` respects this order.
+
+## Isolation Variables
+
+`pypkg/calc_puppi_iso.py:recalculate_puppi_iso()` creates columns with **underscored dR values**:
+- `reisotot_dRmin0_03_puppiIso` — recalculated total puppi iso (default drmin=0.03, drmax=0.2)
+- `reisotot2026_dRmin0_03_puppiIso` — legacy 2026 version
+- `reisochg_dRmin0_03_puppiIso`, `reisonut_dRmin0_03_puppiIso` — charged/neutral components
+- `reisotot_dRmin0_03_puppiIsoDiff` — difference from Ntuple puppiIso
+
+Dots in dR values become underscores. The regex `:dRmin\d_\d{1,2}` suffix selects them in `add_hists_multiplecolls`.
+
+## Histogram Naming
+
+`varmetadata.py` defines binning for all variables. Histograms follow `{filter_suffix}{collection}_{var}` pattern. Filter suffix comes from RDataFrame `GetFilterNames()[-1]`.
+
+## Post-Processing
+
+`post_analysis_persample.py` runs at the end of `analyser.py` per sample:
+- `DY_PU200` → saves `DYPM{EB,EE}` dataframes to `DY_PU200.pkl`
+- `MinBias` → saves `{EB,EE}` dataframes to `MinBias.pkl`
+- These `.pkl` files feed ROC curve generation (`roc_and_rate/make_roc_and_rate.py`)
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `analyser.py` | Entry — loads config, C++, dispatches analysis |
+| `analysis_config.yaml` | Sample paths, types, I/O settings |
+| `plot_config.yaml` | Plot groups, hist tags, normalization |
+| `dy_to_ll_ana.py` | DY→ll analysis pipeline |
+| `qcd_ana.py` | QCD (MinBias) analysis pipeline |
+| `an_specific_utilities.py` | `SampleRDFManager`, gen-match, angdiff |
+| `rdf_generic.py` | `define_newcollection`, `add_hists_*`, `save_rdf_snapshot_to_pkl` |
+| `varmetadata.py` | Histogram binning + labels for all variables |
+| `pypkg/calc_puppi_iso.py` | Puppi isolation recalculation |
+| `cpp_utils/*.py` | C++ isolation + utility code |
+| `define_cpp_utils.py` | Orchestrator for ALL ROOT.C++ declarations |
+| `pypkg/plotBeautifier.py` | Plot formatting (log axes, ranges, labels) |
+| `pypkg/post_analysis_persample.py` | Pickle exports for ROC |
+| `other_helper_files/make_env.sh` | CVMFS ROOT environment |
+
+## Analysis Step Toggles
+
+Commented blocks marked `STEP_X_X_X:` enable optional analysis stages (gen property plots, selection comparisons, etc.). Uncomment to activate in `dy_to_ll_ana.py` or `qcd_ana.py`.
 
 ## Common Pitfalls
 
-- Output directory is **deleted and recreated** on each run (`analyser.py:37-41`)
-- `env_report.json` is written by `check_env.py:157` during environment validation
-- Custom isolation variables use `dRmin{X_Y}` pattern (dots replaced with underscore)
-- C++ functions must be declared before use; `analyser.py:21` must run first
+- **`check_env.py` is in `other_helper_files/`**, not root — `python check_env.py` will fail
+- **No CLI args** for `analyser.py` or `plotter.py` — edit the config files directly
+- **C++ order matters** — `cmssw_cpp_utils()` before `calciso_annularcone()` before `tkelem_puppi_iso_def_legacy2026()`
+- **`dy_to_ll_ana.py` has dead code** after line 110 — lines referencing `dfgenEB` will fail if uncommented
+- **`qcd_ana.py` line 34** is a stale TODO, not functional code
+- **Plot sample names** in `plot_config.yaml` must match analyser sample keys (not file paths)
+- **`.gitignore`** excludes `*.root`, `*.pkl`, `*.png`, `*.DS_Store` — don't commit these
+- **`plots/` and `OutHistoFiles/`** are recreated (deleted first) on each run
