@@ -140,15 +140,28 @@ def save_rdf_snapshot_to_parquet(df: RDataFrame, cols: list[str], savename: str,
 
     if os.path.exists(parquetfilename) and not recreate:
         existing = pq.read_table(parquetfilename)
-        existing_names = set(existing.column_names)
+        schema_names = set(existing.schema.names)
+
+        new_cols = {}
         for k, arr in table_dict.items():
-            if k not in existing_names:
-                existing = existing.append_column(pa.field(k, type=arr.type), arr)
-            else:
-                raise RuntimeError(f'Key {k} exists in file {parquetfilename}')
-        pq.write_table(existing, parquetfilename)
-    else:
-        pq.write_table(table, parquetfilename)
+            if k in schema_names:
+                raise RuntimeError(f'Key {k} exists in {parquetfilename}')
+            new_cols[k] = arr
+
+        # Single table construction, not iterative append
+        merged = existing.append_column  # wrong pattern — do this instead:
+        merged = pa.table({**{n: existing.column(n) for n in existing.schema.names}, **new_cols})
+        pq.write_table(merged, parquetfilename)        
+    #     existing = pq.read_table(parquetfilename)
+    #     existing_names = set(existing.column_names)
+    #     for k, arr in table_dict.items():
+    #         if k not in existing_names:
+    #             existing = existing.append_column(pa.field(k, type=arr.type), arr)
+    #         else:
+    #             raise RuntimeError(f'Key {k} exists in file {parquetfilename}')
+    #     pq.write_table(existing, parquetfilename)
+    # else:
+    #     pq.write_table(table, parquetfilename)
 
 
 def load_rdf_snapshot_from_parquet(parquetpath: str) -> dict[str, np.ndarray]:
@@ -163,3 +176,14 @@ def load_rdf_snapshot_from_parquet(parquetpath: str) -> dict[str, np.ndarray]:
         else:
             result[col] = arr.to_numpy()
     return result
+
+
+def save_rdf_snapshot(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
+    parquetfilename = f'{savename}.parquet'
+    rootfilename    = f'{savename}_snapshot.root'
+    treename        = 'snapshot'
+
+    print("Saving: " + ", ".join(cols) + f" to {parquetfilename}")
+
+    # --- Stage 1: Snapshot to ROOT (multithreaded C++ side, no Python GIL) ---
+    df.Snapshot(treename, rootfilename, cols)
