@@ -1,15 +1,17 @@
 from my_py_ai_utils import *
 
-# import matplotlib.pyplot as plt
 import numpy as np
-import pickle
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import rdf_generic as rdf_g
 
 
 def main():
-    with open("../DY_PU200.pkl", "rb") as fsigpklfile:
-        fsig = pickle.load(fsigpklfile)
-    with open("../MinBias.pkl", "rb") as fbkgpklfile:
-        fbkg = pickle.load(fbkgpklfile)
+    base = os.path.join(os.path.dirname(__file__), '..')
+    fsig = rdf_g.load_rdf_snapshot_from_parquet(os.path.join(base, 'DY_PU200_EB.parquet'))
+    fbkg = rdf_g.load_rdf_snapshot_from_parquet(os.path.join(base, 'MinBias_EB.parquet'))
 
 
     ebspt = fsig["TkEleL2_EB_MCH_pt"]
