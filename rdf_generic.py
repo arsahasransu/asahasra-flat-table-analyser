@@ -105,16 +105,75 @@ def save_rdf_snapshot_to_pkl(df: RDataFrame, cols: list[str], savename: str, *, 
 
 
 @time_eval
-def load_rdf_snapshot_from_root(rootpath: str, treename: str = 'snapshot') -> dict[str, np.ndarray]:
-    """Load ROOT snapshot tree → dict of numpy object arrays (per-event RVec<float> preserved)."""
-    import uproot
-    f = uproot.open(rootpath)
-    tree = f[treename]
-    result = {}
-    for col in tree.keys():
-        result[col] = np.array(tree[col].array().to_list(), dtype=object)
-    return result
+def load_rdf_snapshot_from_root(
+    rootpath: str,
+    treename: str = 'snapshot',
+    step_size: int = 100_000,
+    executor=None,
+) -> dict[str, np.ndarray]:
+    """
+    Load ROOT snapshot tree → dict of numpy arrays.
 
+    Speed improvements over naive version
+    ──────────────────────────────────────
+    • Reads ALL branches in one batched pass (single I/O sweep).
+    • Uses uproot's built-in thread executor for parallel decompression.
+    • Accumulates chunks with pre-allocated list then np.concatenate,
+      avoiding repeated full-array copies.
+    • Keeps numeric branches as typed numpy arrays (float32/int32/…)
+      and falls back to object arrays only for ragged RVec columns.
+    """
+    import uproot
+    from concurrent.futures import ThreadPoolExecutor
+
+    own_executor = False
+    if executor is None:
+        executor = ThreadPoolExecutor()   # uproot picks thread count
+        own_executor = True
+
+    try:
+        with uproot.open(rootpath) as f:
+            tree = f[treename]
+            branches = tree.keys()
+
+            # --- accumulate per-branch chunks --------------------------
+            accumulators: dict[str, list] = {b: [] for b in branches}
+
+            for batch in tree.iterate(
+                branches,
+                step_size=step_size,
+                library="np",          # returns numpy directly — no .to_list()
+                decompression_executor=executor,
+                interpretation_executor=executor,
+            ):
+                for b in branches:
+                    accumulators[b].append(batch[b])
+
+            # --- concatenate chunks ------------------------------------
+            result: dict[str, np.ndarray] = {}
+            for b in branches:
+                chunks = accumulators[b]
+                if not chunks:
+                    result[b] = np.array([], dtype=object)
+                    continue
+
+                # Flat numeric arrays → typed concatenate (fast path)
+                if chunks[0].dtype != object:
+                    result[b] = np.concatenate(chunks)
+                else:
+                    # Ragged RVec columns — keep as object array of arrays
+                    result[b] = np.empty(sum(len(c) for c in chunks), dtype=object)
+                    idx = 0
+                    for c in chunks:
+                        for row in c:
+                            result[b][idx] = row
+                            idx += 1
+
+    finally:
+        if own_executor:
+            executor.shutdown(wait=False)
+
+    return result
 
 def save_rdf_snapshot(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
     parquetfilename = f'{savename}.parquet'

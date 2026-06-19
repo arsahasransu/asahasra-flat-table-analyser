@@ -43,7 +43,7 @@ except Exception:
 
 REQUIRED: Dict[str, Optional[str]] = {
     # numerics
-    "numpy": "2.4.0",
+    "numpy": "2.1.0",
 
     # serialization
     "pyarrow": None,             # variable-length list I/O (parquet/feather)
@@ -53,9 +53,9 @@ REQUIRED: Dict[str, Optional[str]] = {
 
     # HEP / ROOT
     "ROOT": None,                # presence-only (PyROOT often isn't semantically versioned the same way)
+    "uproot": None,
 
-    "yaml": "6.0.0",
-    "IPython": "9.7.0"
+    "yaml": "6.0.0"
 }
 
 # ---------------------------------------------------------------------------
