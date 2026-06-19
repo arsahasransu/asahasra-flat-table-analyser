@@ -51,10 +51,10 @@ def main():
     # print(eesi.shape, eespi.shape, eesprei.shape, eebi.shape, eebpi.shape, eebprei.shape)
 
     # roc_res = make_roc_per_event([[ebsiso, ebbiso, 'tkIso'], [ebspiso, ebbpiso, 'puppiIso'], [ebspreiso, ebbpreiso, 'RePuppiIso']],
-    # roc_res = make_roc_per_event([[ebspiso, ebbpiso, 'puppiIso']],
-    #                             thrvs = np.arange(0, 10, 0.0125))
+    roc_res = make_roc_per_event_modified([[ebsiso, ebbiso, 'tkIso'], [ebspiso, ebbpiso, 'puppiIso'], [ebspreiso, ebbpreiso, 'RePuppiIso']],
+                                thrvs = np.arange(0, 10, 0.0125))
 
-    # make_roc_per_event_png(roc_res, filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
+    make_roc_per_event_png(roc_res, filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
 
 
 def make_roc_per_event_png(roc_res, *,

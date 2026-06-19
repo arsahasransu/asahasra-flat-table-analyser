@@ -108,28 +108,16 @@ def save_rdf_snapshot_to_pkl(df: RDataFrame, cols: list[str], savename: str, *, 
 def load_rdf_snapshot_from_root(
     rootpath: str,
     treename: str = 'snapshot',
-    step_size: int = 100_000,
-    executor=None,
+    step_size: int = 100_000
 ) -> dict[str, np.ndarray]:
     """
     Load ROOT snapshot tree → dict of numpy arrays.
 
-    Speed improvements over naive version
-    ──────────────────────────────────────
-    • Reads ALL branches in one batched pass (single I/O sweep).
-    • Uses uproot's built-in thread executor for parallel decompression.
-    • Accumulates chunks with pre-allocated list then np.concatenate,
-      avoiding repeated full-array copies.
-    • Keeps numeric branches as typed numpy arrays (float32/int32/…)
-      and falls back to object arrays only for ragged RVec columns.
     """
     import uproot
     from concurrent.futures import ThreadPoolExecutor
 
-    own_executor = False
-    if executor is None:
-        executor = ThreadPoolExecutor()   # uproot picks thread count
-        own_executor = True
+    executor = ThreadPoolExecutor()   # uproot picks thread count
 
     try:
         with uproot.open(rootpath) as f:
@@ -170,8 +158,7 @@ def load_rdf_snapshot_from_root(
                             idx += 1
 
     finally:
-        if own_executor:
-            executor.shutdown(wait=False)
+        executor.shutdown(wait=False)
 
     return result
 

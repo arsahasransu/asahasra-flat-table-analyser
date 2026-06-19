@@ -119,22 +119,22 @@ def make_roc(vals: list[list[np.ndarray]], *,
                  xlim=xlim, ylim=ylim, **kwargs)
 
 
-def _init_worker(valarr):
-    global _VALARRAY
-    _VALARRAY = valarr
+def _init_worker(si_arr, bi_arr):
+    global _SI_ARRAY, _BI_ARRAY
+    _SI_ARRAY = si_arr
+    _BI_ARRAY = bi_arr
 
+def count_events_si(thrv):
+    return sum(any(vals < thrv for vals in ev) for ev in _SI_ARRAY)
 
-# @ut.time_eval
+def count_events_bi(thrv):
+    return sum(any(vals < thrv for vals in ev) for ev in _BI_ARRAY)
+
 def count_events_passing_threshold(valarr, thrv):
     return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in valarr)
 
-
-def count_events_passing_threshold_multiprocessing(thrv):
-    return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in _VALARRAY)
-
-
 # @ut.time_eval
-def make_roc_per_event(vals: list[list[np.ndarray]], *,
+def make_roc_per_event(vals, *,
                        points: int = 1000,
                        thrvs: np.array = np.arange(0, 10, 0.1),
                        multproc: bool = True):
@@ -153,21 +153,16 @@ def make_roc_per_event(vals: list[list[np.ndarray]], *,
             starttime = time.time()
             with multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,
                                     initializer=_init_worker,
-                                    initargs=(si,)) as mp_pool:
-                tprvs = mp_pool.map(count_events_passing_threshold_multiprocessing, thrvs)
+                                    initargs=(si, bi)) as pool:
+                # Submit both concurrently instead of sequentially
+                tpr_future = pool.map_async(count_events_si, thrvs)
+                fpr_future = pool.map_async(count_events_bi, thrvs)
+                tprvs = tpr_future.get()
+                fprvs = fpr_future.get()
             endtime = time.time()
             print(f"Execution time: {endtime - starttime} seconds")
 
             tprvs = [tprv/nsi for tprv in tprvs]
-
-            starttime = time.time()
-            with multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,
-                                    initializer=_init_worker,
-                                    initargs=(bi,)) as mp_pool:
-                fprvs = mp_pool.map(count_events_passing_threshold_multiprocessing, thrvs)
-            endtime = time.time()
-            print(f"Execution time: {endtime - starttime} seconds")
-
             fprvs = [fprv/nbi for fprv in fprvs]
 
             roc_res.append([fprvs, tprvs, thrvs, sample])
@@ -187,5 +182,46 @@ def make_roc_per_event(vals: list[list[np.ndarray]], *,
                 fprvs.append(fprv)
 
             roc_res.append([fprvs, tprvs, thrvs, sample])
+
+    return roc_res
+
+
+def make_roc_per_event_modified(vals, *,
+                       thrvs: np.ndarray = np.arange(0, 10, 0.1)):
+
+    roc_res = []
+    thrvs_sorted = np.sort(thrvs)  # searchsorted requires sorted array
+
+    for (si, bi, sample) in vals:
+        print(sample)
+
+        # Filter to non-empty events only
+        si_nonempty = [ev for ev in si if len(ev) > 0]
+        bi_nonempty = [ev for ev in bi if len(ev) > 0]
+
+        nsi = len(si_nonempty)
+        nbi = len(bi_nonempty)
+
+        print(si.shape[0], nsi)
+        print(bi.shape[0], nbi)
+
+        # Precompute per-event minimum — O(n_events)
+        si_mins = np.array([ev.min() for ev in si_nonempty])
+        bi_mins = np.array([ev.min() for ev in bi_nonempty])
+
+        # Sort mins once — O(n_events log n_events)
+        si_mins_sorted = np.sort(si_mins)
+        bi_mins_sorted = np.sort(bi_mins)
+
+        # Count events passing each threshold — O(n_thresholds log n_events)
+        # searchsorted gives index of first element >= thrv,
+        # so events below thrv = that index count
+        tpr_counts = np.searchsorted(si_mins_sorted, thrvs_sorted, side='right')
+        fpr_counts = np.searchsorted(bi_mins_sorted, thrvs_sorted, side='right')
+
+        tprvs = tpr_counts / nsi
+        fprvs = fpr_counts / nbi
+
+        roc_res.append([fprvs.tolist(), tprvs.tolist(), thrvs_sorted, sample])
 
     return roc_res
