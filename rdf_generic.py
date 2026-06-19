@@ -7,13 +7,9 @@ from ROOT import RDataFrame
 import ROOT
 
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
-
-from concurrent.futures import ThreadPoolExecutor
 
 from varmetadata import linkvartohist
-
+from pypkg.my_py_generic_utils import time_eval
 
 # Filter on a single collections with a list of potential variables
 def define_newcollection(df: RDataFrame, collection: str, selection: str, sid: str):
@@ -108,73 +104,15 @@ def save_rdf_snapshot_to_pkl(df: RDataFrame, cols: list[str], savename: str, *, 
             pickle.dump(np_dict, pklf, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def save_rdf_snapshot_to_parquet(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
-    """Save RDataFrame columns to .parquet — RVec<float> → pyarrow list<item: float32>
-    
-    Columns that are RVec (object dtype) → variable-length list per event.
-    Scalar columns preserved as-is.
-    """
-    parquetfilename = f'{savename}.parquet'
-    print("Saving: " + ", ".join(cols) + f" to {parquetfilename}")
-
-    np_dict = df.AsNumpy(cols)
-    table_dict = {}
-
-    def convert_column(item):
-        k, arr = item
-        if arr.dtype == object:
-            return k, pa.array(arr.tolist(), type=pa.list_(pa.float32()))
-        return k, pa.array(arr)
-
-    with ThreadPoolExecutor() as executor:
-        results = executor.map(convert_column, np_dict.items())
-
-    table_dict = dict(results)
-    # for k, arr in np_dict.items():
-    #     if arr.dtype == object:
-    #         table_dict[k] = pa.array(arr.tolist(), type=pa.list_(pa.float32()))
-    #     else:
-    #         table_dict[k] = pa.array(arr)
-
-    table = pa.table(table_dict)
-
-    if os.path.exists(parquetfilename) and not recreate:
-        existing = pq.read_table(parquetfilename)
-        schema_names = set(existing.schema.names)
-
-        new_cols = {}
-        for k, arr in table_dict.items():
-            if k in schema_names:
-                raise RuntimeError(f'Key {k} exists in {parquetfilename}')
-            new_cols[k] = arr
-
-        # Single table construction, not iterative append
-        merged = existing.append_column  # wrong pattern — do this instead:
-        merged = pa.table({**{n: existing.column(n) for n in existing.schema.names}, **new_cols})
-        pq.write_table(merged, parquetfilename)        
-    #     existing = pq.read_table(parquetfilename)
-    #     existing_names = set(existing.column_names)
-    #     for k, arr in table_dict.items():
-    #         if k not in existing_names:
-    #             existing = existing.append_column(pa.field(k, type=arr.type), arr)
-    #         else:
-    #             raise RuntimeError(f'Key {k} exists in file {parquetfilename}')
-    #     pq.write_table(existing, parquetfilename)
-    # else:
-    #     pq.write_table(table, parquetfilename)
-
-
-def load_rdf_snapshot_from_parquet(parquetpath: str) -> dict[str, np.ndarray]:
-    """Load .parquet snapshot → dict of numpy arrays.
-    list<float> columns → object arrays with per-event vectors preserved."""
-    table = pq.read_table(parquetpath)
+@time_eval
+def load_rdf_snapshot_from_root(rootpath: str, treename: str = 'snapshot') -> dict[str, np.ndarray]:
+    """Load ROOT snapshot tree → dict of numpy object arrays (per-event RVec<float> preserved)."""
+    import uproot
+    f = uproot.open(rootpath)
+    tree = f[treename]
     result = {}
-    for col in table.column_names:
-        arr = table.column(col)
-        if pa.types.is_list(arr.type):
-            result[col] = np.array(arr.to_pylist(), dtype=object)
-        else:
-            result[col] = arr.to_numpy()
+    for col in tree.keys():
+        result[col] = np.array(tree[col].array().to_list(), dtype=object)
     return result
 
 
