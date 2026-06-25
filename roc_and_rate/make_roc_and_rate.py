@@ -12,6 +12,8 @@ def main():
     base = os.path.join(os.path.dirname(__file__), '..')
     fsig = rdf_g.load_rdf_snapshot_from_root(os.path.join(base, 'DY_PU200_EB_snapshot.root'))
     fbkg = rdf_g.load_rdf_snapshot_from_root(os.path.join(base, 'MinBias_EB_snapshot.root'))
+    fsigee = rdf_g.load_rdf_snapshot_from_root(os.path.join(base, 'DY_PU200_EE_snapshot.root'))
+    fbkgee = rdf_g.load_rdf_snapshot_from_root(os.path.join(base, 'MinBias_EE_snapshot.root'))
 
 
     ebspt = fsig["TkEleL2_EB_MCH_pt"]
@@ -24,15 +26,15 @@ def main():
     ebbpreiso = fbkg["TkEleL2_Pt5_EB_reisotot_dRmin0_03_puppiIso"]
     print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape, ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape)
 
-    # eespt = fsig["TkEleL2_EE_MCH_pt"]
-    # eesiso = fsig["TkEleL2_EE_MCH_tkIso"]
-    # eespiso = fsig["TkEleL2_EE_MCH_puppiIso"]
-    # eespreiso = fsig["TkEleL2_EE_MCH_reiso_dRmin0_03_tot_puppiIso"]
-    # eebpt = fbkg["TkEleL2_EE_pt"]
-    # eebiso = fbkg["TkEleL2_EE_tkIso"]
-    # eebpiso = fbkg["TkEleL2_EE_puppiIso"]
-    # eebpreiso = fbkg["TkEleL2_EE_reiso_dRmin0_03_tot_puppiIso"]
-    # print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
+    eespt = fsigee["TkEleL2_EE_MCH_pt"]
+    eesiso = fsigee["TkEleL2_EE_MCH_tkIso"]
+    eespiso = fsigee["TkEleL2_EE_MCH_puppiIso"]
+    eespreiso = fsigee["TkEleL2_EE_MCH_reisotot_dRmin0_03_puppiIso"]
+    eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
+    eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
+    eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
+    eebpreiso = fbkgee["TkEleL2_Pt5_EE_reisotot_dRmin0_03_puppiIso"]
+    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
 
     # ebsi = np.concatenate(ebsiso)
     # ebspi = np.concatenate(ebspiso)
@@ -55,6 +57,11 @@ def main():
                                 thrvs = np.arange(0, 10, 0.0125))
 
     make_roc_per_event_png(roc_res, filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
+
+    roc_resee = make_roc_per_event_modified([[eesiso, ebbiso, 'tkIso'], [eespiso, eebpiso, 'puppiIso'], [eespreiso, eebpreiso, 'RePuppiIso']],
+                                thrvs = np.arange(0, 10, 0.0125))
+
+    make_roc_per_event_png(roc_resee, filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
 
 
 def make_roc_per_event_png(roc_res, *,
