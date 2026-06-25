@@ -83,27 +83,6 @@ def add_hists_multiplecolls(df: RDataFrame, histograms: list, collections: list)
             add_hists_singlecollection(df, histograms, collection)
 
 
-def save_rdf_snapshot_to_pkl(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
-    pklfilename = f'{savename}.pkl'
-    print("Saving: " + ", ".join(cols) + f" to {pklfilename}")
-
-    np_dict = df.AsNumpy(cols)
-    if os.path.exists(pklfilename) and not recreate:
-        with open(pklfilename, "rb") as repklf:
-            pkld = pickle.load(repklf)
-        for k, v in np_dict.items():
-            if k not in pkld:
-                pkld[k] = v
-            else:
-                raise RuntimeError(f'Key {k} exists in file {pklfilename}')
-            
-        with open(pklfilename, "wb") as pklf:
-            pickle.dump(pkld, pklf, protocol=pickle.HIGHEST_PROTOCOL)
-    else:
-        with open(pklfilename, "wb") as pklf:
-            pickle.dump(np_dict, pklf, protocol=pickle.HIGHEST_PROTOCOL)
-
-
 @time_eval
 def load_rdf_snapshot_from_root(
     rootpath: str,
