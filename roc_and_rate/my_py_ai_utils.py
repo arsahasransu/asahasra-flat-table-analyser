@@ -119,74 +119,7 @@ def make_roc(vals: list[list[np.ndarray]], *,
                  xlim=xlim, ylim=ylim, **kwargs)
 
 
-def _init_worker(si_arr, bi_arr):
-    global _SI_ARRAY, _BI_ARRAY
-    _SI_ARRAY = si_arr
-    _BI_ARRAY = bi_arr
-
-def count_events_si(thrv):
-    return sum(any(vals < thrv for vals in ev) for ev in _SI_ARRAY)
-
-def count_events_bi(thrv):
-    return sum(any(vals < thrv for vals in ev) for ev in _BI_ARRAY)
-
-def count_events_passing_threshold(valarr, thrv):
-    return sum(any(vals < thrv for vals in ev_valarr) for ev_valarr in valarr)
-
-# @ut.time_eval
 def make_roc_per_event(vals, *,
-                       points: int = 1000,
-                       thrvs: np.array = np.arange(0, 10, 0.1),
-                       multproc: bool = True):
-    
-    roc_res = []
-    for (si, bi, sample) in vals:
-        print(sample)
-
-        nsi = sum( len(siev)>0 for siev in si)
-        nbi = sum( len(biev)>0 for biev in bi)
-
-        print(si.shape[0], nsi)
-        print(bi.shape[0], nbi)
-
-        if multproc:
-            starttime = time.time()
-            with multiprocessing.Pool(processes=multiprocessing.cpu_count()-2,
-                                    initializer=_init_worker,
-                                    initargs=(si, bi)) as pool:
-                # Submit both concurrently instead of sequentially
-                tpr_future = pool.map_async(count_events_si, thrvs)
-                fpr_future = pool.map_async(count_events_bi, thrvs)
-                tprvs = tpr_future.get()
-                fprvs = fpr_future.get()
-            endtime = time.time()
-            print(f"Execution time: {endtime - starttime} seconds")
-
-            tprvs = [tprv/nsi for tprv in tprvs]
-            fprvs = [fprv/nbi for fprv in fprvs]
-
-            roc_res.append([fprvs, tprvs, thrvs, sample])
-
-        else:
-            fprvs = []
-            tprvs = []
-
-            for thrv in thrvs:
-                tprv = count_events_passing_threshold(si, thrv)
-                tprv = tprv/nsi
-
-                fprv = count_events_passing_threshold(bi, thrv)
-                fprv = fprv/nbi
-
-                tprvs.append(tprv)
-                fprvs.append(fprv)
-
-            roc_res.append([fprvs, tprvs, thrvs, sample])
-
-    return roc_res
-
-
-def make_roc_per_event_modified(vals, *,
                        thrvs: np.ndarray = np.arange(0, 10, 0.1)):
 
     roc_res = []
@@ -202,8 +135,8 @@ def make_roc_per_event_modified(vals, *,
         nsi = len(si_nonempty)
         nbi = len(bi_nonempty)
 
-        print(si.shape[0], nsi)
-        print(bi.shape[0], nbi)
+        print("Total event count: ",si.shape[0], ". Non-empty: ", nsi)
+        print("Total event count: ",bi.shape[0], ". Non-empty: ", nbi)
 
         # Precompute per-event minimum — O(n_events)
         si_mins = np.array([ev.min() for ev in si_nonempty])

@@ -30,56 +30,60 @@ def main():
     print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape)
 
 
-    # eespt = fsigee["TkEleL2_EE_MCH_pt"]
-    # eesiso = fsigee["TkEleL2_EE_MCH_tkIso"]
-    # eespiso = fsigee["TkEleL2_EE_MCH_puppiIso"]
-    # eespreiso = fsigee["TkEleL2_EE_MCH_reisotot_dRmin0_03_puppiIso"]
-    # eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
-    # eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
-    # eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
-    # eebpreiso = fbkgee["TkEleL2_Pt5_EE_reisotot_dRmin0_03_puppiIso"]
-    # print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape)
-    # print(eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
+    eespt = fsigee["TkEleL2_EE_MCH_pt"]
+    eesiso = fsigee["TkEleL2_EE_MCH_tkIso"]
+    eespiso = fsigee["TkEleL2_EE_MCH_puppiIso"]
+    eespreiso = fsigee["TkEleL2_EE_MCH_reisotot_dRmin0_03_puppiIso"]
+    eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
+    eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
+    eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
+    eebpreiso = fbkgee["TkEleL2_Pt5_EE_reisotot_dRmin0_03_puppiIso"]
+    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape)
+    print(eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
 
     # With the data loaded as above, you will generate performance of iso per event
     # In order to generate per electron, change to the following code below
     # eespt = np.concatenate(ebspt)
 
-    roc_res = make_roc_per_event_modified([[ebsiso, ebbiso, 'tkIso'], [ebspiso, ebbpiso, 'puppiIso'], [ebspreiso, ebbpreiso, 'RePuppiIso']],
-                                thrvs = np.arange(0, 10, 0.0125))
+    roc_res = make_roc_per_event([
+        [ebsiso, ebbiso, 'tkIso'], 
+        [ebspiso, ebbpiso, 'puppiIso'], 
+        [ebspreiso, ebbpreiso, 'RePuppiIso']
+        ], thrvs = np.arange(0, 10, 0.0125))
 
     make_roc_per_event_png(roc_res, filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
 
-    # roc_resee = make_roc_per_event_modified([[eesiso, ebbiso, 'tkIso'], [eespiso, eebpiso, 'puppiIso'], [eespreiso, eebpreiso, 'RePuppiIso']],
-    #                             thrvs = np.arange(0, 10, 0.0125))
+    roc_resee = make_roc_per_event([
+        [eesiso, ebbiso, 'tkIso'], 
+        [eespiso, eebpiso, 'puppiIso'], 
+        [eespreiso, eebpreiso, 'RePuppiIso']
+        ], thrvs = np.arange(0, 10, 0.0125))
 
-    # make_roc_per_event_png(roc_resee, filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
+    make_roc_per_event_png(roc_resee, filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
 
 
 def make_roc_per_event_png(roc_res, *,
-                           filename: str = "roc_curve.png",
-                           scale: str = "default",
-                           xlim: tuple[float] = (0.1, 1.1), ylim: tuple[float] = (0.1, 1.1), **kwargs):
+                            filename: str = "roc_curve.png",
+                            scale: str = "default",
+                            xlim: tuple[float] = (0.1, 1.1),
+                            ylim: tuple[float] = (0.1, 1.1),
+                            return_fig: bool = False,
+                            **kwargs):
 
 
     markers = ['o', '*', 'v', '^']
     cmaps = ['viridis', 'plasma', 'inferno', 'coolwarm']
 
     # Plot ROC curves
-    print(f"Saving ROC curve to {filename}...")
-    plt.figure(figsize=(8, 6))
+    fig = plt.figure(figsize=(8, 6))
     for i, (fpr, tpr, thr, sample) in enumerate(roc_res):
-        print(fpr[1])
         scatter = plt.scatter(fpr, tpr,
                                 c=thr, cmap = cmaps[i], norm='log', # Colour maps can slow larger arrays
                                 marker=markers[i],
-                            #   label=f'{vals[i][2]} (AUC = {auc:.4f})', **kwargs)
                                 label=sample, **kwargs)
         cbar = plt.colorbar(scatter)
 
     if scale == "piecewise_linear":
-        # Adjust plotting to show 0.1 to 0.9 and 0.9 to 0.99 and 0.99 to 1.0 and 1.0 to 1.1 regions clearly
-        # Optional: vertical guides at the two boundaries for clarity
         plt.xscale('piecewise_0p1_0p9_0p999')
         plt.yscale('piecewise_0p1_0p9_0p999')
         plt.xlim(xlim[0], xlim[1])
@@ -91,15 +95,19 @@ def make_roc_per_event_png(roc_res, *,
         plt.ylim(bottom=ylim[0], top=ylim[1])
 
     plt.grid(True, which='both', ls='--', alpha=0.4)
-
     plt.xlabel('False Positive Rate (log scale)')
     plt.ylabel('True Positive Rate (log scale)')
     plt.title('ROC Curve')
-
     plt.legend(loc='lower right')
-    plt.savefig(filename, dpi=300)
-    print(f"ROC curve saved to {filename}")
-    plt.close()
+    plt.tight_layout()
+
+    if return_fig:
+        return fig
+    else:
+        print(f"Saving ROC curve to {filename}...")
+        plt.savefig(filename, dpi=300)
+        print(f"ROC curve saved to {filename}")
+        plt.close()
 
 
 if __name__ == '__main__':
