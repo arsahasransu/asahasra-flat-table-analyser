@@ -120,7 +120,7 @@ def make_roc(vals: list[list[np.ndarray]], *,
 
 
 def make_roc_per_event(vals, *,
-                       thrvs: np.ndarray = np.arange(0, 10, 0.1)):
+                       thrvs: np.ndarray = np.arange(0, 10.1, 0.1)):
 
     roc_res = []
     thrvs_sorted = np.sort(thrvs)  # searchsorted requires sorted array
