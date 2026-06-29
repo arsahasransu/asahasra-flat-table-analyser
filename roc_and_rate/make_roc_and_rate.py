@@ -5,6 +5,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.colors import LogNorm
+from matplotlib.lines import Line2D
 
 import sys
 import os
@@ -50,32 +51,43 @@ def main():
     # In order to generate per electron, change to the following code below
     # eespt = np.concatenate(ebspt)
 
-    roc_res = make_roc_per_event([
+    roc_res_eb = make_roc_per_event([
         [ebsiso, ebbiso, 'tkIso'], 
         [ebspiso, ebbpiso, 'puppiIso'], 
         [ebspreiso, ebbpreiso, 'RePuppiIso']
         ], thrvs = np.arange(0, 10.0125, 0.0125))
 
-    # make_roc_per_event_png(roc_res, 
-    #                             filename="TkEleL2_EB_tkIso_ROCperevent_piecewise_linear.png", 
-    #                             scale = "piecewise_linear",
-    #                             xlim=(0.98, 1.001), 
-    #                             ylim=(0.1, 1.01), 
-    #                             s=5)
+    make_roc_per_event_png(roc_res_eb, 
+                           filename="TkEleL2_EB_tkIso_ROCperevent_piecewise_linear.png", 
+                           scale = "piecewise_linear",
+                           xlim=(0.98, 1.001), 
+                           ylim=(0.1, 1.01), 
+                           s=5)
 
-    make_roc_per_event_png(roc_res, 
-                                filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", 
-                                xlim=(0.992, 1.001), 
-                                ylim=(0.8, 1.01), 
-                                s=5)
+    make_roc_per_event_png(roc_res_eb, 
+                           filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", 
+                           xlim=(0.992, 1.001), 
+                           ylim=(0.8, 1.01), 
+                           s=5)
 
-    # roc_resee = make_roc_per_event([
-    #     [eesiso, ebbiso, 'tkIso'], 
-    #     [eespiso, eebpiso, 'puppiIso'], 
-    #     [eespreiso, eebpreiso, 'RePuppiIso']
-    #     ], thrvs = np.arange(0, 10, 0.0125))
+    roc_res_ee = make_roc_per_event([
+        [eesiso, ebbiso, 'tkIso'], 
+        [eespiso, eebpiso, 'puppiIso'], 
+        [eespreiso, eebpreiso, 'RePuppiIso']
+        ], thrvs = np.arange(0, 10, 0.0125))
 
-    # make_roc_per_event_png(roc_resee, filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", xlim=(0.98, 1.001), ylim=(0.9, 1.01), s=5)
+    make_roc_per_event_png(roc_res_ee, 
+                           filename="TkEleL2_EE_tkIso_ROCperevent_piecewise_linear.png", 
+                           scale = "piecewise_linear",
+                           xlim=(0.1, 1.001), 
+                           ylim=(0.1, 1.01), 
+                           s=5)
+
+    make_roc_per_event_png(roc_res_ee, 
+                           filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", 
+                           xlim=(0.992, 1.001), 
+                           ylim=(0.8, 1.01), 
+                           s=5)
 
 
 # ── Global style ─────────────────────────────────────────────────────────────
@@ -155,6 +167,7 @@ def make_roc_per_event_png(
     cbar_axes = [fig.add_subplot(cbar_gs[i]) for i in range(n)]
 
     # ── Scatter + colorbars ──────────────────────────────────────────────────
+    leg_labels = []
     for i, (fpr, tpr, thr, label) in enumerate(roc_res):
         thr_arr = np.asarray(thr)
         thr_pos = np.where(thr_arr > 0, thr_arr, np.nan)   # hide ≤0 from LogNorm
@@ -164,6 +177,7 @@ def make_roc_per_event_png(
         norm = LogNorm(vmin=vmin, vmax=vmax)
 
         leg_label = label if auc_labels is None else f"{label}  (AUC = {auc_labels[i]})"
+        leg_labels.append(leg_label)
 
         # 's' (marker size) may arrive via **kwargs; honour the caller's value
         # if supplied, otherwise use our per-curve default.
@@ -228,18 +242,29 @@ def make_roc_per_event_png(
     ax.set_ylabel(ylabel)
 
     # ── Legend ───────────────────────────────────────────────────────────────
-    legend = ax.legend(
+    # Build custom Line2D handles so markers are guaranteed visible in the legend
+    handles = []
+    for i, (_, _, _, _) in enumerate(roc_res):
+        handles.append(
+            Line2D(
+                [0], [0],
+                marker=_MARKERS[i % len(_MARKERS)],
+                linestyle='',
+                color=mpl.colormaps[_CMAPS[i % len(_CMAPS)]](0.5),
+                markersize=8,
+                markeredgecolor='k',
+                markeredgewidth=0.5,
+                label=leg_labels[i],
+            )
+        )
+    ax.legend(
+        handles=handles,
         loc="lower right",
         frameon=False,
         borderpad=0.6,
         labelspacing=0.4,
         handletextpad=0.5,
     )
-    # Make legend markers larger than the scatter points for readability
-    for handle in legend.legend_handles:
-        handle.set_facecolor('black')
-        handle.set_sizes([40])
-        handle.set_alpha(1.0)
 
     # ── Output ───────────────────────────────────────────────────────────────
     if return_fig:
