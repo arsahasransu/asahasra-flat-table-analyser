@@ -1,6 +1,7 @@
 import multiprocessing
 import time
 
+import awkward as ak
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -120,23 +121,20 @@ def make_roc(vals: list[list[np.ndarray]], *,
 
 
 def make_roc_per_event(vals, *,
-                       thrvs: np.ndarray = np.arange(0, 10.1, 0.1)):
+                       thrvs: np.ndarray = np.arange(0, 10.1, 0.1),
+                       si_pt: np.ndarray | None = None,
+                       bi_pt: np.ndarray | None = None,
+                       ptcuts: list[float] | None = None):
 
-    roc_res = []
     thrvs_sorted = np.sort(thrvs)  # searchsorted requires sorted array
 
-    for (si, bi, sample) in vals:
-        print(sample)
-
+    def _compute_roc(si, bi):
         # Filter to non-empty events only
         si_nonempty = [ev for ev in si if len(ev) > 0]
         bi_nonempty = [ev for ev in bi if len(ev) > 0]
 
         nsi = len(si_nonempty)
         nbi = len(bi_nonempty)
-
-        print("Total event count: ",si.shape[0], ". Non-empty: ", nsi)
-        print("Total event count: ",bi.shape[0], ". Non-empty: ", nbi)
 
         # Precompute per-event minimum — O(n_events)
         si_mins = np.array([ev.min() for ev in si_nonempty])
@@ -147,14 +145,58 @@ def make_roc_per_event(vals, *,
         bi_mins_sorted = np.sort(bi_mins)
 
         # Count events passing each threshold — O(n_thresholds log n_events)
-        # searchsorted gives index of first element >= thrv,
-        # so events below thrv = that index count
         tpr_counts = np.searchsorted(si_mins_sorted, thrvs_sorted, side='right')
         fpr_counts = np.searchsorted(bi_mins_sorted, thrvs_sorted, side='right')
 
         tprvs = tpr_counts / nsi
         fprvs = fpr_counts / nbi
 
-        roc_res.append([fprvs.tolist(), tprvs.tolist(), thrvs_sorted, sample])
+        return fprvs.tolist(), tprvs.tolist()
 
-    return roc_res
+    if ptcuts is None or si_pt is None or bi_pt is None:
+        # Original behaviour — no PT filtering
+        roc_res = []
+        for (si, bi, sample) in vals:
+            print(sample)
+            nsi = len(si)
+            nbi = len(bi)
+            print(f"Total signal events: {nsi}, background: {nbi}")
+            fprvs, tprvs = _compute_roc(si, bi)
+            roc_res.append([fprvs, tprvs, thrvs_sorted, sample])
+        return roc_res
+
+    # PT filtering active
+    ptcuts = sorted(ptcuts)
+    all_roc_res = []
+
+    def generate_mask(arr, ptlim):
+        return np.vectorize(lambda x: x > ptlim, otypes=[object])(arr)
+
+    def apply_mask(arr, mask):
+        masked_arr = np.vectorize(lambda x, m: x[m], otypes=[object])(arr, mask)
+        return np.array([x for x in masked_arr if x.size > 0], dtype=object)
+
+    for ptcut in ptcuts:
+        roc_res = []
+        for (si, bi, sample) in vals:
+            print(f"PT cut = {ptcut} GeV, sample = {sample}")
+
+            # start = time.time()
+            s_mask = generate_mask(si_pt, ptcut)
+            si_filtered = apply_mask(si, s_mask)
+
+            b_mask = generate_mask(bi_pt, ptcut)
+            bi_filtered = apply_mask(bi, b_mask)
+            # end = time.time()
+            # print(f"Time taken to filter events: {end - start} seconds")
+
+            nsi = si_filtered.shape[0]
+            nbi = bi_filtered.shape[0]
+            print(f"  Signal events: {nsi} / {si.shape[0]}")
+            print(f"  Background events: {nbi} / {bi.shape[0]}")
+
+            fprvs, tprvs = _compute_roc(si_filtered, bi_filtered)
+            label = sample
+            roc_res.append([fprvs, tprvs, thrvs_sorted, label])
+        all_roc_res.append(roc_res)
+    return all_roc_res

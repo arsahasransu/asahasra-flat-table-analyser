@@ -28,66 +28,81 @@ def main():
     ebsiso = fsig["TkEleL2_EB_MCH_tkIso"]
     ebspiso = fsig["TkEleL2_EB_MCH_puppiIso"]
     ebspreiso = fsig["TkEleL2_EB_MCH_reisotot_dRmin0_03_puppiIso"]
+    ebspreisochg = fsig["TkEleL2_EB_MCH_reisochg_dRmin0_03_puppiIso"]
     ebbpt = fbkg["TkEleL2_Pt5_EB_pt"]
     ebbiso = fbkg["TkEleL2_Pt5_EB_tkIso"]
     ebbpiso = fbkg["TkEleL2_Pt5_EB_puppiIso"]
     ebbpreiso = fbkg["TkEleL2_Pt5_EB_reisotot_dRmin0_03_puppiIso"]
-    print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape)
-    print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape)
+    ebbpreisochg = fbkg["TkEleL2_Pt5_EB_reisochg_dRmin0_03_puppiIso"]
+    print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape, ebspreisochg.shape)
+    print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape, ebbpreisochg.shape)
 
 
     eespt = fsigee["TkEleL2_EE_MCH_pt"]
     eesiso = fsigee["TkEleL2_EE_MCH_tkIso"]
     eespiso = fsigee["TkEleL2_EE_MCH_puppiIso"]
     eespreiso = fsigee["TkEleL2_EE_MCH_reisotot_dRmin0_03_puppiIso"]
+    eespreisochg = fsigee["TkEleL2_EE_MCH_reisochg_dRmin0_03_puppiIso"]
     eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
     eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
     eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
     eebpreiso = fbkgee["TkEleL2_Pt5_EE_reisotot_dRmin0_03_puppiIso"]
-    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape)
-    print(eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape)
+    eebpreisochg = fbkgee["TkEleL2_Pt5_EE_reisochg_dRmin0_03_puppiIso"]
+    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eespreisochg.shape)
+    print(eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape, eebpreisochg.shape)
 
-    # With the data loaded as above, you will generate performance of iso per event
-    # In order to generate per electron, change to the following code below
-    # eespt = np.concatenate(ebspt)
+    # PT cuts to apply
+    ptcuts = [10, 15, 20]
 
+    # --- EB ---
     roc_res_eb = make_roc_per_event([
-        [ebsiso, ebbiso, 'tkIso'], 
-        [ebspiso, ebbpiso, 'puppiIso'], 
-        [ebspreiso, ebbpreiso, 'RePuppiIso']
-        ], thrvs = np.arange(0, 10.0125, 0.0125))
+        [ebsiso, ebbiso, 'track iso.'],
+        [ebspiso, ebbpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        [ebspreiso, ebbpreiso, r'puppi iso. (TkEl calo. $\eta$ and $\phi$)'],
+        # [ebspreisochg, ebbpreisochg, 'RePuppiIsoChg']
+        ], thrvs=np.arange(0, 10.0125, 0.0125),
+        si_pt=ebspt, bi_pt=ebbpt, ptcuts=ptcuts)
 
-    make_roc_per_event_png(roc_res_eb, 
-                           filename="TkEleL2_EB_tkIso_ROCperevent_piecewise_linear.png", 
-                           scale = "piecewise_linear",
-                           xlim=(0.98, 1.001), 
-                           ylim=(0.1, 1.01), 
-                           s=5)
+    for ptcut, roc_res in zip(ptcuts, roc_res_eb):
+        pt_tag = f"_Pt{ptcut}"
+        # make_roc_per_event_png(roc_res,
+        #                         filename=f"TkEleL2_EB_tkIso_ROCperevent_piecewise_linear{pt_tag}.png",
+        #                         scale="piecewise_linear",
+        #                         xlim=(0.1, 1.001),
+        #                         ylim=(0.1, 1.01),
+        #                         s=5)
 
-    make_roc_per_event_png(roc_res_eb, 
-                           filename="TkEleL2_EB_tkIso_ROCperevent_linear.png", 
-                           xlim=(0.992, 1.001), 
-                           ylim=(0.8, 1.01), 
-                           s=5)
+        make_roc_per_event_png(roc_res,
+                                filename=f"TkEleL2_EB_tkIso_ROCperevent_linear{pt_tag}.png",
+                                add_text = [(0.6, 0.84, r"$|\eta| < 1.48, \mathrm{p_{T}} > $" + f"{ptcut} GeV")],
+                                xlim=(0.1, 1.001),
+                                ylim=(0.8, 1.01),
+                                s=5)
 
+    # --- EE ---
     roc_res_ee = make_roc_per_event([
-        [eesiso, ebbiso, 'tkIso'], 
-        [eespiso, eebpiso, 'puppiIso'], 
-        [eespreiso, eebpreiso, 'RePuppiIso']
-        ], thrvs = np.arange(0, 10, 0.0125))
+        [eesiso, eebiso, 'track iso.'],
+        [eespiso, eebpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        [eespreiso, eebpreiso, r'puppi iso. (TkEl calo. $\eta$ and $\phi$)'],
+        # [eespreisochg, eebpreisochg, 'RePuppiIsoChg']
+        ], thrvs=np.arange(0, 10, 0.0125),
+        si_pt=eespt, bi_pt=eebpt, ptcuts=ptcuts)
 
-    make_roc_per_event_png(roc_res_ee, 
-                           filename="TkEleL2_EE_tkIso_ROCperevent_piecewise_linear.png", 
-                           scale = "piecewise_linear",
-                           xlim=(0.1, 1.001), 
-                           ylim=(0.1, 1.01), 
-                           s=5)
+    for ptcut, roc_res in zip(ptcuts, roc_res_ee):
+        pt_tag = f"_Pt{ptcut}"
+        # make_roc_per_event_png(roc_res,
+        #                         filename=f"TkEleL2_EE_tkIso_ROCperevent_piecewise_linear{pt_tag}.png",
+        #                         scale="piecewise_linear",
+        #                         xlim=(0.1, 1.001),
+        #                         ylim=(0.1, 1.01),
+        #                         s=5)
 
-    make_roc_per_event_png(roc_res_ee, 
-                           filename="TkEleL2_EE_tkIso_ROCperevent_linear.png", 
-                           xlim=(0.992, 1.001), 
-                           ylim=(0.8, 1.01), 
-                           s=5)
+        make_roc_per_event_png(roc_res,
+                                filename=f"TkEleL2_EE_tkIso_ROCperevent_linear{pt_tag}.png",
+                                add_text = [(0.73, 0.885, r"$1.48 < |\eta| < 2.5, \mathrm{p_{T}} > $" + f"{ptcut} GeV")],
+                                xlim=(0.4, 1.001),
+                                ylim=(0.86, 1.01),
+                                s=5)
 
 
 # ── Global style ─────────────────────────────────────────────────────────────
@@ -145,9 +160,11 @@ def make_roc_per_event_png(
     xlim: tuple = (0.9980, 1.001),
     ylim: tuple = (0.90,   1.01),
     auc_labels: list | None = None,     # optional list of AUC strings
-    xlabel: str = "Background Acceptance",
-    ylabel: str = "Signal Efficiency",
+    xlabel: str = "Background Acceptance (Min. Bias)",
+    ylabel: str = r"Signal Efficiency ($\mathrm{Z \rightarrow e^{+}e^{-}}$)",
+    legendlabel: str = "rel. iso. threshold",
     return_fig: bool = False,
+    add_text: list = [],
     **kwargs,
 ):
     n = len(roc_res)
@@ -202,9 +219,9 @@ def make_roc_per_event_png(
 
         # Label only the rightmost bar to avoid clutter
         if i == n - 1:
-            cb.set_label("Threshold", fontsize=11, labelpad=5)
+            cb.set_label(legendlabel, fontsize=11, labelpad=5)
         else:
-            cb.set_label(label, fontsize=11, labelpad=5, rotation=90)
+            cb.set_label('', fontsize=11, labelpad=5, rotation=90)
 
         # Minor ticks on the colorbar
         cb.ax.yaxis.set_minor_locator(ticker.LogLocator(subs="all", numticks=10))
@@ -218,17 +235,18 @@ def make_roc_per_event_png(
         ax.set_yscale("piecewise_0p1_0p9_0p999")
         for v in [0.9, 0.99, 1.0]:
             ax.axvline(v, color="0.75", lw=0.8, ls="--", zorder=1)
-    else:
-        ax.set_xscale("log")
-        ax.set_yscale("log")
+    # else:
+    #     ax.set_xscale("log")
+    #     ax.set_yscale("log")
 
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
 
     ax.xaxis.set_major_locator(ticker.MultipleLocator(0.1))  # tick every 0.1
     ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
-    ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.005))  # tick every 0.1
-    ax.xaxis.set_minor_formatter(ticker.FormatStrFormatter('%.3f'))
+    ax.xaxis.set_minor_locator(ticker.MultipleLocator(0.05))  # tick every 0.1
+    ax.xaxis.set_minor_formatter(ticker.NullFormatter())
+    # ax.xaxis.set_minor_formatter(ticker.FormatStrFormatter('%.3f'))
 
     ax.yaxis.set_major_locator(ticker.MultipleLocator(0.1))  # tick every 0.1
     ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.1f'))
@@ -237,9 +255,12 @@ def make_roc_per_event_png(
     ax.grid(True, which="major", ls="--", lw=0.6, color="0.75", alpha=0.7, zorder=0)
     ax.grid(True, which="minor", ls=":",  lw=0.4, color="0.82", alpha=0.5, zorder=0)
 
-    # ── Labels & title ───────────────────────────────────────────────────────
+    # ── Labels & text ───────────────────────────────────────────────────────
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+
+    for text_tuple in add_text:
+        ax.text(text_tuple[0], text_tuple[1], text_tuple[2])
 
     # ── Legend ───────────────────────────────────────────────────────────────
     # Build custom Line2D handles so markers are guaranteed visible in the legend
