@@ -24,11 +24,11 @@ def main():
 
     # Each row is an event entry in the loaded data below
 
-    ebspt = fsig["TkEleL2_EB_MCH_pt"]
-    ebsiso = fsig["TkEleL2_EB_MCH_tkIso"]
-    ebspiso = fsig["TkEleL2_EB_MCH_puppiIso"]
-    ebspreiso = fsig["TkEleL2_EB_MCH_reisotot_dRmin0_03_puppiIso"]
-    ebspreisochg = fsig["TkEleL2_EB_MCH_reisochg_dRmin0_03_puppiIso"]
+    ebspt = fsig["TkEleL2_Pt5_EB_MCH_pt"]
+    ebsiso = fsig["TkEleL2_Pt5_EB_MCH_tkIso"]
+    ebspiso = fsig["TkEleL2_Pt5_EB_MCH_puppiIso"]
+    ebspreiso = fsig["TkEleL2_Pt5_EB_MCH_reisotot_dRmin0_03_puppiIso"]
+    ebspreisochg = fsig["TkEleL2_Pt5_EB_MCH_reisochg_dRmin0_03_puppiIso"]
     ebbpt = fbkg["TkEleL2_Pt5_EB_pt"]
     ebbiso = fbkg["TkEleL2_Pt5_EB_tkIso"]
     ebbpiso = fbkg["TkEleL2_Pt5_EB_puppiIso"]
@@ -38,11 +38,11 @@ def main():
     print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape, ebbpreisochg.shape)
 
 
-    eespt = fsigee["TkEleL2_EE_MCH_pt"]
-    eesiso = fsigee["TkEleL2_EE_MCH_tkIso"]
-    eespiso = fsigee["TkEleL2_EE_MCH_puppiIso"]
-    eespreiso = fsigee["TkEleL2_EE_MCH_reisotot_dRmin0_03_puppiIso"]
-    eespreisochg = fsigee["TkEleL2_EE_MCH_reisochg_dRmin0_03_puppiIso"]
+    eespt = fsigee["TkEleL2_Pt5_EE_MCH_pt"]
+    eesiso = fsigee["TkEleL2_Pt5_EE_MCH_tkIso"]
+    eespiso = fsigee["TkEleL2_Pt5_EE_MCH_puppiIso"]
+    eespreiso = fsigee["TkEleL2_Pt5_EE_MCH_reisotot_dRmin0_03_puppiIso"]
+    eespreisochg = fsigee["TkEleL2_Pt5_EE_MCH_reisochg_dRmin0_03_puppiIso"]
     eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
     eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
     eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
