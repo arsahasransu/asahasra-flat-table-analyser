@@ -45,9 +45,6 @@ REQUIRED: Dict[str, Optional[str]] = {
     # numerics
     "numpy": "2.1.0",
 
-    # serialization
-    "pyarrow": None,             # variable-length list I/O (parquet/feather)
-
     # ML / DL
     # "torch": "2.1.0",            # PyTorch
 
