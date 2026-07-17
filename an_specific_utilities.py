@@ -191,22 +191,26 @@ fw_dRbins = [round(m.sqrt(e + p), 6) for e in d_ang**2 for p in d_ang**2]
 fw_dRbins = sorted(list(set(fw_dRbins)))
 
 
-def make_puppi_by_angdiff_from_tkel(df, refEg, histograms):
-    dRs = [[0.0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 10]]
-    # dRs = [[0.2, 0.3]]
+def make_puppi_by_angdiff_from_tkel(df, refEg, histograms, *, refPu=''):
+    # dRs = [[0.0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 10]]
+    dRs = [[0.0, 0.5]]
+
+    collPu = refPu if refPu != '' else sufPu
+    sufpu_addon = f'{collPu[len(sufPu)+1:]}_' if refPu != '' else ''
 
     for dRrange in dRs:
         dRmin = dRrange[0]
         dRmax = dRrange[1]
         dRstr = f'{str(dRmin).replace('.', 'p')}dR{str(dRmax).replace('.', 'p')}'
 
-        getpuppimask_annulardr_str = f"getpuppimask_annulardR({sufPu}_eta, {sufPu}_phi, {sufPu}_pdgId,\
+        getpuppimask_annulardr_str = f"getpuppimask_annulardR({collPu}_eta, {collPu}_phi, {collPu}_pdgId,\
             {refEg}_eta, {refEg}_caloEta, {refEg}_phi, {refEg}_caloPhi, {dRmin}, {dRmax})"
-    
-        df = df.Define(f'{sufPu}_mask{dRstr}', getpuppimask_annulardr_str)
+        drcolstr = f'{collPu}{refEg}_mask{dRstr}'
+        df = df.Define(drcolstr, getpuppimask_annulardr_str)
 
-        df = rdf_g.define_newcollection(df, sufPu, f'{sufPu}_mask{dRstr} == 1', dRstr)
-        add_puppicands_by_pdg(df, histograms, dRstr)
+        newpuppiidstr = f'{refEg.replace('_', '')}_{dRstr}'
+        df = rdf_g.define_newcollection(df, collPu, f'{drcolstr} == 1', newpuppiidstr)
+        add_puppicands_by_pdg(df, histograms, f'{sufpu_addon}{newpuppiidstr}')
 
     return df
 

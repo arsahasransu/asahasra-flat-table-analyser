@@ -83,21 +83,30 @@ general:
 #     DY_PU200: GM_TkEleL2_EB_MCH
 #     MinBias: EB_TkEleL2_Pt5_EB
 
-compare_puppi_iso_consistency_check:
-  type: same_sample_different_collection
+# compare_puppi_iso_consistency_check:
+#   type: same_sample_different_collection
+#   norm_scheme:
+#     method: default_no_norm
+#   # ftags: ['DY_PU200', 'MinBias', 'DY_PU200v3', 'MinBiasv3']
+#   ftags: ['DY_noPU', 'DY_PU200', 'MinBias']
+#   hist_tag:
+#     prefix:
+#       # Old: ''
+#       # Legacy2026: _reisotot2026_dRmin0_03
+#       New: _reisotot_dRmin0_03
+#       NewChg: _reisochg_dRmin0_03
+#       # NewNeu: _reisonut_dRmin0_03
+#     collection: ['GM_TkEleL2_Pt5_EB_MCH{tag}', 'EB_TkEleL2_Pt5_EB{tag}',
+#                  'GM_TkEleL2_Pt5_EE_MCH{tag}', 'EE_TkEleL2_Pt5_EE{tag}']
+
+PuppiCandsAroundTkEl:
   norm_scheme:
-    method: default_no_norm
-  # ftags: ['DY_PU200', 'MinBias', 'DY_PU200v3', 'MinBiasv3']
-  ftags: ['DY_noPU', 'DY_PU200', 'MinBias']
+    method: 'hist_integral'
+    # norm_config: {refsample: DY_PU200} 
   hist_tag:
-    prefix:
-      Old: ''
-      Legacy2026: _reisotot2026_dRmin0_03
-      New: _reisotot_dRmin0_03
-      # NewChg: _reisochg_dRmin0_03
-      # NewNeu: _reisonut_dRmin0_03
-    collection: ['GM_TkEleL2_EB_MCH{tag}', 'EB_TkEleL2_Pt5_EB{tag}',
-                 'GM_TkEleL2_EE_MCH{tag}', 'EE_TkEleL2_Pt5_EE{tag}']
+    MinBias: EB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5_0p0dR0p5]
+    DY_noPU: DYPEB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5]
+    DY_PU200: DYPEB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5]
 
 
 

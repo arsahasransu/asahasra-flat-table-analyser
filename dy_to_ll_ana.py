@@ -35,7 +35,7 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     # ##########################################################
 
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<=2.5', 'DYP')
-    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 5.0', 'Pt5')
+    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 15.0', 'Pt5')
     sufElPt5 = sufEl+'_Pt5'
     df = rdf_g.define_newcollection(df, sufPu, f'{sufPu}_pt >= 1.0', 'Pt1')
     sufPuPt1 = sufPu+'_Pt1'
@@ -110,6 +110,8 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
                                         sufElPt5Mch+r'_reisochg:dRmin\d_\d{1,2}',
                                         sufElPt5Mch+r'_reisonut:dRmin\d_\d{1,2}'])
         #########################################################
+
+        dfGenMER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElPt5Mch, histograms, refPu=sufPuPt1)
 
     ana_man.add_histograms(histograms)
     return ana_man
