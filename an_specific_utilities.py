@@ -193,7 +193,7 @@ fw_dRbins = sorted(list(set(fw_dRbins)))
 
 def make_puppi_by_angdiff_from_tkel(df, refEg, histograms, *, refPu=''):
     # dRs = [[0.0, 0.1], [0.1, 0.2], [0.2, 0.3], [0.3, 0.4], [0.4, 10]]
-    dRs = [[0.0, 0.5]]
+    dRs = [[0.0, 0.05], [0.05, 0.1], [0.1, 0.2]]
 
     collPu = refPu if refPu != '' else sufPu
     sufpu_addon = f'{collPu[len(sufPu)+1:]}_' if refPu != '' else ''

@@ -99,15 +99,29 @@ general:
 #     collection: ['GM_TkEleL2_Pt5_EB_MCH{tag}', 'EB_TkEleL2_Pt5_EB{tag}',
 #                  'GM_TkEleL2_Pt5_EE_MCH{tag}', 'EE_TkEleL2_Pt5_EE{tag}']
 
-PuppiCandsAroundTkEl:
+PuppiCandsAroundTkEl_EB_0p0dR0p05:
   norm_scheme:
     method: 'hist_integral'
-    # norm_config: {refsample: DY_PU200} 
   hist_tag:
-    MinBias: EB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5_0p0dR0p5]
-    DY_noPU: DYPEB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5]
-    DY_PU200: DYPEB_[L1PuppiCandsEl_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsCh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5, L1PuppiCandsNh_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5]
+    MinBias: EB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5_0p0dR0p5
+    DY_noPU: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5
+    DY_PU200: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p0dR0p5
 
+PuppiCandsAroundTkEl_EB_0p05dR0p1:
+  norm_scheme:
+    method: 'hist_integral'
+  hist_tag:
+    MinBias: EB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5_0p05dR0p1
+    DY_noPU: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p05dR0p1
+    DY_PU200: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p05dR0p1
+
+PuppiCandsAroundTkEl_EB_0p1dR0p2:
+  norm_scheme:
+    method: 'hist_integral'
+  hist_tag:
+    MinBias: EB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5_0p1dR0p2
+    DY_noPU: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p1dR0p2
+    DY_PU200: DYPEB_L1PuppiCands[El,Ch,Nh]_Pt1_TkEleL2Pt5EBMCH_0p1dR0p2
 
 
 

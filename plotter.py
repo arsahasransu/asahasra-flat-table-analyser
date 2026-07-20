@@ -102,7 +102,7 @@ def plotter():
             files = []  # Each row is a different sample
             legend = []  # Same number of entries as samples
             fcollnames = []  # Each collumn is a different collection
-            sel_col_re = re.compile(r"^([A-Za-z0-9_]+)\[([A-Za-z0-9_, ]+)\]$")
+            sel_col_re = re.compile(r"^([A-Za-z0-9_]+)\[([A-Za-z0-9_, ]+)\]([A-Za-z0-9_]*)$")
             alphanum_re = re.compile(r"^[A-Za-z0-9_]+$")
             summed_component = norm_scheme['norm_config']['refsample'] if norm_scheme['method'] == "summed_components" else -1
             summed_component_pos = -1
@@ -119,10 +119,11 @@ def plotter():
                 if getselmatch:
                     sel = getselmatch.group(1)
                     allcolls = map(str.strip, getselmatch.group(2).split(','))
+                    suffix = getselmatch.group(3)
                     for i, coll in enumerate(allcolls):
                         if len(fcollnames) <= i:
                             fcollnames.append([])
-                        fcollnames[i].append(f"{sel}{coll}")
+                        fcollnames[i].append(f"{sel}{coll}{suffix}")
                 elif alphanum_re.match(colls):
                     if len(fcollnames) == 0:
                         fcollnames.append([])
