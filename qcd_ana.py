@@ -57,7 +57,8 @@ def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
                                         sufElPt5ER+r'_reisonut:dRmin\d_\d{1,2}'])
         #########################################################
 
-        dfER = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElPt5, histograms, refPu=sufPuPt1)
+        dfERP = anut.make_puppi_by_angdiff_from_tkel(dfER, sufElPt5ER, histograms, refPu=sufPuPt1)
+        ana_man.add_dataframe(key=f'{ERegion}P', df=dfERP)
 
     ana_man.add_histograms(histograms)
     return ana_man

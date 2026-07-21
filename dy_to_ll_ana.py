@@ -111,7 +111,8 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
                                         sufElPt5Mch+r'_reisonut:dRmin\d_\d{1,2}'])
         #########################################################
 
-        dfGenMER = anut.make_puppi_by_angdiff_from_tkel(dfGenER, sufElPt5Mch, histograms, refPu=sufPuPt1)
+        dfGenMERP = anut.make_puppi_by_angdiff_from_tkel(dfGenMER, sufElPt5Mch, histograms, refPu=sufPuPt1)
+        ana_man.add_dataframe(key=f'DYPM{ERegion}P', df=dfGenMERP)
 
     ana_man.add_histograms(histograms)
     return ana_man
