@@ -2,6 +2,7 @@ import awkward as ak
 import numpy as np
 import uproot
 
+
 def flatten_per_tkel(filename: str, *,
                      tkeltag = "Pt5_EB_",
                      puppitag = "Pt1_TkEleL2Pt5EB_0p0dR0p5_"):
@@ -12,34 +13,41 @@ def flatten_per_tkel(filename: str, *,
         print(f'Unable to snapshot tree in file: {filename}')
     print(f'Opened {filename}')
 
-    data = file.arrays()
+    # List the exact branches we need to save memory and time
+    tkel_branches = {
+        "pt": f"TkEleL2_{tkeltag}pt",
+        "eta": f"TkEleL2_{tkeltag}eta",
+        "phi": f"TkEleL2_{tkeltag}phi",
+        "caloEta": f"TkEleL2_{tkeltag}caloEta",
+        "caloPhi": f"TkEleL2_{tkeltag}caloPhi",
+        "tkPt": f"TkEleL2_{tkeltag}tkPt",
+        "tkEta": f"TkEleL2_{tkeltag}tkEta",
+        "tkPhi": f"TkEleL2_{tkeltag}tkPhi",
+        "charge": f"TkEleL2_{tkeltag}charge",
+        "hwQual": f"TkEleL2_{tkeltag}hwQual",
+        "vz": f"TkEleL2_{tkeltag}vz"
+    }
+    
+    puppi_branches = {
+        "pt": f"L1PuppiCands_{puppitag}pt",
+        "eta": f"L1PuppiCands_{puppitag}eta",
+        "phi": f"L1PuppiCands_{puppitag}phi",
+        "mass": f"L1PuppiCands_{puppitag}mass",
+        "charge": f"L1PuppiCands_{puppitag}charge",
+        "dxy": f"L1PuppiCands_{puppitag}dxy",
+        "hwDxy": f"L1PuppiCands_{puppitag}hwDxy",
+        "hwTkQuality": f"L1PuppiCands_{puppitag}hwTkQuality",
+        "pdgId": f"L1PuppiCands_{puppitag}pdgId",
+        "puppiWeight": f"L1PuppiCands_{puppitag}puppiWeight",
+        "z0": f"L1PuppiCands_{puppitag}z0"
+    }
+    
+    branches_to_load = list(tkel_branches.values()) + list(puppi_branches.values())
+    data = file.arrays(filter_name=branches_to_load)
     print('Converted data to awkward arrays')
-    tkel = ak.zip({
-        "pt": data[f"TkEleL2_{tkeltag}pt"],
-        "eta": data[f"TkEleL2_{tkeltag}eta"],
-        "phi": data[f"TkEleL2_{tkeltag}phi"],
-        "caloEta": data[f"TkEleL2_{tkeltag}caloEta"],
-        "caloPhi": data[f"TkEleL2_{tkeltag}caloPhi"],
-        "tkPt": data[f"TkEleL2_{tkeltag}tkPt"],
-        "tkEta": data[f"TkEleL2_{tkeltag}tkEta"],
-        "tkPhi": data[f"TkEleL2_{tkeltag}tkPhi"],
-        "charge": data[f"TkEleL2_{tkeltag}charge"],
-        "hwQual": data[f"TkEleL2_{tkeltag}hwQual"],
-        "vz": data[f"TkEleL2_{tkeltag}vz"]
-    })
-    puppi = ak.zip({
-        "pt": data[f"L1PuppiCands_{puppitag}pt"],
-        "eta": data[f"L1PuppiCands_{puppitag}eta"],
-        "phi": data[f"L1PuppiCands_{puppitag}phi"],
-        "mass": data[f"L1PuppiCands_{puppitag}mass"],
-        "charge": data[f"L1PuppiCands_{puppitag}charge"],
-        "dxy": data[f"L1PuppiCands_{puppitag}dxy"],
-        "hwDxy": data[f"L1PuppiCands_{puppitag}hwDxy"],
-        "hwTkQuality": data[f"L1PuppiCands_{puppitag}hwTkQuality"],
-        "pdgId": data[f"L1PuppiCands_{puppitag}pdgId"],
-        "puppiWeight": data[f"L1PuppiCands_{puppitag}puppiWeight"],
-        "z0": data[f"L1PuppiCands_{puppitag}z0"]
-    })
+    
+    tkel = ak.zip({k: data[v] for k, v in tkel_branches.items()})
+    puppi = ak.zip({k: data[v] for k, v in puppi_branches.items()})
 
     # Create a cartesian product to pair every TkEl with every L1PuppCand
     pairs = ak.cartesian({"tkel": tkel, "puppi": puppi}, nested=True)
@@ -66,6 +74,7 @@ def flatten_per_tkel(filename: str, *,
     per_tkel_data = ak.flatten(tkel_with_puppi, axis=1)
     return per_tkel_data
 
+
 def split_puppi_by_pdgid(data):
     """
     Splits the nested 'mpuppi' collection into separate collections based on absolute pdgId:
@@ -86,6 +95,7 @@ def split_puppi_by_pdgid(data):
     
     return data
 
+
 def flatten_puppi_collections(data, max_items=5):
     """
     Takes the max_items highest pT elements from each mpuppi category,
@@ -94,13 +104,16 @@ def flatten_puppi_collections(data, max_items=5):
     """
     collections = ['mpuppiel', 'mpuppiph', 'mpuppimu', 'mpuppich', 'mpuppinh']
     
-    # Remove original 'mpuppi' if present to save memory
-    if "mpuppi" in data.fields:
-        data = data[[field for field in data.fields if field != "mpuppi"]]
+    new_cols = {}
+    
+    # Retain fields that are not part of the PUPPI collections and not the general 'mpuppi'
+    for field in data.fields:
+        if field not in collections and field != "mpuppi":
+            new_cols[field] = data[field]
         
     for coll in collections:
         if coll not in data.fields:
-            print(f"Warning, did not find {field} in data")
+            print(f"Warning, did not find {coll} in data")
             continue
             
         # Sort by pT descending
@@ -115,12 +128,27 @@ def flatten_puppi_collections(data, max_items=5):
             for field in item_i.fields:
                 col_name = f"{coll}_{i}_{field}"
                 # Replace None with 0 for each field
-                data[col_name] = ak.fill_none(item_i[field], 0)
+                new_cols[col_name] = ak.fill_none(item_i[field], 0)
                 
-        # Remove the nested collection
-        data = data[[f for f in data.fields if f != coll]]
-        
-    return data
+    # Zip all new columns simultaneously instead of assigning one by one (huge speedup)
+    return ak.zip(new_cols, depth_limit=1)
+
+
+def flatten_tkel_collection(data):
+    """
+    Expands the nested 'tkel' collection into individual top-level fields
+    and removes the original 'tkel' collection.
+    """
+    new_cols = {}
+    for field in data.fields:
+        if field == "tkel":
+            for tkel_field in data.tkel.fields:
+                new_cols[f"tkel_{tkel_field}"] = data.tkel[tkel_field]
+        else:
+            new_cols[field] = data[field]
+            
+    return ak.zip(new_cols, depth_limit=1)
+
 
 def prepare_ml_data(signal_file: str, bkg_file: str):
     print("Processing signal...")
@@ -129,6 +157,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str):
                                 puppitag="Pt1_TkEleL2Pt5EBMCH_0p0dR0p5_")
     sig_data = split_puppi_by_pdgid(sig_data)
     sig_data = flatten_puppi_collections(sig_data, max_items=5)
+    sig_data = flatten_tkel_collection(sig_data)
     sig_data["label"] = 1
     print(len(sig_data))
     
@@ -136,6 +165,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str):
     bkg_data = flatten_per_tkel(bkg_file)
     bkg_data = split_puppi_by_pdgid(bkg_data)
     bkg_data = flatten_puppi_collections(bkg_data, max_items=5)
+    bkg_data = flatten_tkel_collection(bkg_data)
     bkg_data["label"] = 0
     print(len(bkg_data))
     
@@ -153,6 +183,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str):
     
     print(f"Dataset split: {len(train_data)} training events, {len(test_data)} testing events")
     return train_data, test_data
+
 
 if __name__ == "__main__":
     train_data, test_data = prepare_ml_data(
