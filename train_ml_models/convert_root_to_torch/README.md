@@ -19,6 +19,7 @@ This directory contains scripts and notebooks designed to prepare analysis datas
    - Extracts Reconstructed Track Electrons (`TkEleL2`) and L1 PUPPI candidates into separate Awkward arrays.
    - Computes a Cartesian product of the two collections to evaluate $\Delta\eta$, $\Delta\phi$, and $\Delta R$.
    - Filters PUPPI candidates surrounding the electron within an annulus/cone mask ($0 < \Delta R < 0.5$).
+   - Leverages `filter_name` during array loading to read only necessary branches, saving vast amounts of memory.
    - Returns a flattened array where each record corresponds to a single Track Electron, containing its properties and a nested array of its matched PUPPI candidates (`mpuppi`).
 
 2. **`split_puppi_by_pdgid(data)`**
@@ -27,13 +28,25 @@ This directory contains scripts and notebooks designed to prepare analysis datas
      - Electrons (`pdgId` 11, `mpuppiel`)
      - Photons (`pdgId` 22, `mpuppiph`)
      - Muons (`pdgId` 13, `mpuppimu`)
-     - Charged Hadrons (`pdgId` 211, `mpuppichg`)
-     - Neutral Hadrons (`pdgId` 130, `mpuppineu`)
+     - Charged Hadrons (`pdgId` 211, `mpuppich`)
+     - Neutral Hadrons (`pdgId` 130, `mpuppinh`)
 
-3. **`prepare_ml_data(signal_file, bkg_file)`**
-   - Processes the signal file (e.g., DY analysis file) mapping it to `label = 1`.
-   - Processes the background file (e.g., MinBias analysis file) mapping it to `label = 0`.
-   - Merges, shuffles, and yields an 80:20 training and testing split.
+3. **`flatten_puppi_collections(data, max_items=5)`**
+   - Drops the original monolithic `mpuppi` collection to save memory.
+   - For each separated category (`mpuppiel`, `mpuppiph`, `mpuppimu`, `mpuppich`, `mpuppinh`), sorts candidates by $p_T$ descending.
+   - Takes the top `max_items` candidates, applying zero-padding if an electron has fewer candidates.
+   - Extracts all sub-fields (e.g. `pt`, `eta`, `phi`, etc.) into top-level flat columns (e.g., `mpuppiel_0_pt`, `mpuppiel_1_pt`).
+   - Uses batched dictionary collection with a single `ak.zip` application for heavily optimized runtime mapping.
+
+4. **`flatten_tkel_collection(data)`**
+   - Unnests the base Track Electron properties.
+   - Expands fields dynamically (e.g., `data.tkel.pt` becomes `data.tkel_pt`).
+   - Removes the nested `tkel` object so the final array format is purely tabular.
+
+5. **`prepare_ml_data(signal_file, bkg_file)`**
+   - Evaluates the entire chain sequentially for the signal dataset (e.g., DY analysis) mapping it to `label = 1`.
+   - Evaluates the entire chain sequentially for the background dataset (e.g., MinBias analysis) mapping it to `label = 0`.
+   - Merges, shuffles, and produces a final flat 80:20 training and testing split ready for PyTorch ingestion.
 
 ## Usage
 

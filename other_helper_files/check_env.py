@@ -46,11 +46,12 @@ REQUIRED: Dict[str, Optional[str]] = {
     "numpy": "2.1.0",
 
     # ML / DL
-    # "torch": "2.1.0",            # PyTorch
+    "torch": "2.1.0",            # PyTorch
 
     # HEP / ROOT
     "ROOT": None,                # presence-only (PyROOT often isn't semantically versioned the same way)
     "uproot": None,
+    "awkward": None,
 
     "yaml": "6.0.0"
 }
