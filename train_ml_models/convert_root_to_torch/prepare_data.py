@@ -1,6 +1,7 @@
 import awkward as ak
 import numpy as np
 import uproot
+import torch
 
 
 def flatten_per_tkel(filename: str, *,
@@ -150,6 +151,24 @@ def flatten_tkel_collection(data):
     return ak.zip(new_cols, depth_limit=1)
 
 
+def save_as_pytorch(data, filename):
+    feature_names = [f for f in data.fields if f != 'label']
+    features = []
+    for f in feature_names:
+        features.append(ak.to_numpy(data[f]))
+    
+    X = np.stack(features, axis=-1)
+    X_tensor = torch.tensor(X, dtype=torch.float32)
+    
+    save_dict = {"x": X_tensor, "features": feature_names}
+    
+    if 'label' in data.fields:
+        y_tensor = torch.tensor(ak.to_numpy(data['label']), dtype=torch.long)
+        save_dict["y"] = y_tensor
+        
+    torch.save(save_dict, filename)
+    print(f"Saved to {filename}")
+
 def prepare_ml_data(signal_file: str, bkg_file: str):
     print("Processing signal...")
     sig_data = flatten_per_tkel(signal_file,
@@ -193,3 +212,6 @@ if __name__ == "__main__":
 
     print(len(train_data))
     print(len(test_data))
+
+    save_as_pytorch(train_data, 'train_data.pt')
+    save_as_pytorch(test_data, 'test_data.pt')

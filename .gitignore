@@ -8,3 +8,4 @@ nb_plots/*
 *.parquet
 env_report.json
 *.pkl
+*.pt
