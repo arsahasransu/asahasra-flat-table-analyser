@@ -176,12 +176,22 @@ def eval_epoch(model, loader, criterion, device):
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
+    
+    if device.type == 'cpu':
+        # Optimize CPU threading for multi-core scaling
+        cores = os.cpu_count()
+        # Fallback to os.cpu_count(), but respect batch scheduler core limits if present
+        num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', cores if cores else 4))
+        torch.set_num_threads(num_threads)
+        print(f"Using device: {device} with {num_threads} intra-op threads")
+    else:
+        print(f"Using device: {device}")
     
     train_path = 'convert_root_to_torch/train_data.pt'
     test_path = 'convert_root_to_torch/test_data.pt'
     
-    train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=1024)
+    # Increased batch size for better multi-core throughput
+    train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=8192)
     torch.save(norm_stats, 'norm_stats.pt')
     
     model = SoftIsoSumNetwork(tkel_dim=11, puppi_dim=14, hidden_dims=[64, 32]).to(device)
