@@ -8,8 +8,15 @@ import math
 import matplotlib.pyplot as plt
 import datetime
 
+
+tkel_bs = 11
+puppi_bs = 14
+nlargestpt_per_puppipart = 5
+npuppipart = 5
+puppicands = nlargestpt_per_puppipart * npuppipart
+
 class SoftIsoSumNetwork(nn.Module):
-    def __init__(self, tkel_dim=11, puppi_dim=14, hidden_dims=[64, 32]):
+    def __init__(self, tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[64, 32]):
         super().__init__()
         
         # Build shared MLP for candidates
@@ -30,19 +37,19 @@ class SoftIsoSumNetwork(nn.Module):
         
     def forward(self, tkel_norm, puppi_norm, puppi_pt_unnorm):
         """
-        tkel_norm: (batch, 11)
-        puppi_norm: (batch, 25, 14)
-        puppi_pt_unnorm: (batch, 25) - physical pT to sum over
+        tkel_norm: (batch, tkel_bs)
+        puppi_norm: (batch, puppicands, puppi_bs)
+        puppi_pt_unnorm: (batch, puppicands) - physical pT to sum over
         """
         batch_size = tkel_norm.shape[0]
         
-        # Expand tkel: (batch, 25, 11)
-        tkel_expanded = tkel_norm.unsqueeze(1).expand(-1, 25, -1)
+        # Expand tkel: (batch, puppicands, tkel_bs)
+        tkel_expanded = tkel_norm.unsqueeze(1).expand(-1, puppicands, -1)
         
-        # Concat: (batch, 25, 11 + 14)
+        # Concat: (batch, puppicands, tkel_bs + puppi_bs)
         combined = torch.cat([tkel_expanded, puppi_norm], dim=2)
         
-        # MLP -> Weights: (batch, 25)
+        # MLP -> Weights: (batch, puppicands)
         weights_logit = self.mlp(combined).squeeze(-1)
         weights = torch.sigmoid(weights_logit)
         
@@ -73,9 +80,6 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     # Split into tkel and puppi
     tkel_train = x_train[:, 0:tkel_index]
     puppi_train_flat = x_train[:, tkel_index:]
-    nlargestpt_per_puppipart = 5
-    npuppipart = 5
-    puppicands = nlargestpt_per_puppipart * npuppipart
     if puppi_features%puppicands == 0:
         puppi_train = puppi_train_flat.reshape(-1, puppicands, puppi_features//puppicands)
     else:
@@ -214,7 +218,7 @@ def main():
     train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=8192)
     torch.save(norm_stats, 'norm_stats.pt')
     
-    model = SoftIsoSumNetwork(tkel_dim=11, puppi_dim=14, hidden_dims=[64, 32]).to(device)
+    model = SoftIsoSumNetwork(tkel_dim=11, puppi_dim=14, hidden_dims=[256, 128, 64, 32]).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.BCEWithLogitsLoss()
