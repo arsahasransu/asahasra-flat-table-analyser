@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 import time
 import math
+import matplotlib.pyplot as plt
+import datetime
 
 class SoftIsoSumNetwork(nn.Module):
     def __init__(self, tkel_dim=11, puppi_dim=14, hidden_dims=[64, 32]):
@@ -57,18 +59,36 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     print("Loading data...")
     train_data = torch.load(train_path, weights_only=True)
     test_data = torch.load(test_path, weights_only=True)
-    
+
     x_train, y_train = train_data['x'], train_data['y'].float()
     x_test, y_test = test_data['x'], test_data['y'].float()
+
+    # Count the number of tkel features in data
+    data_features = train_data['features']
+    tkel_index = sum([feature.startswith('tkel') for feature in data_features])
+    print(f'Features of data for tkel: {tkel_index}')
+    puppi_features = sum([feature.startswith('mpuppi') for feature in data_features])
+    print(f'Features of data for puppi: {puppi_features}')
     
     # Split into tkel and puppi
-    tkel_train = x_train[:, 0:11]
-    puppi_train_flat = x_train[:, 11:]
-    puppi_train = puppi_train_flat.reshape(-1, 25, 14)
+    tkel_train = x_train[:, 0:tkel_index]
+    puppi_train_flat = x_train[:, tkel_index:]
+    nlargestpt_per_puppipart = 5
+    npuppipart = 5
+    puppicands = nlargestpt_per_puppipart * npuppipart
+    if puppi_features%puppicands == 0:
+        puppi_train = puppi_train_flat.reshape(-1, puppicands, puppi_features//puppicands)
+    else:
+        raise UnboundLocalError(f"Unresolved splitting of puppi cands, found "\
+                f"features {puppi_features} for {puppicands} puppi canddiates")
     
-    tkel_test = x_test[:, 0:11]
-    puppi_test_flat = x_test[:, 11:]
-    puppi_test = puppi_test_flat.reshape(-1, 25, 14)
+    tkel_test = x_test[:, 0:tkel_index]
+    puppi_test_flat = x_test[:, tkel_index:]
+    if puppi_features%puppicands == 0:
+        puppi_test = puppi_test_flat.reshape(-1, puppicands, puppi_features//puppicands)
+    else:
+        raise UnboundLocalError(f"Unresolved splitting of puppi cands, found "\
+                f"features {puppi_features} for {puppicands} puppi canddiates")
     
     # Extract unnormalized pT (which is the 0-th feature of the 14 puppi features)
     puppi_pt_train = puppi_train[:, :, 0].clone()
@@ -199,8 +219,15 @@ def main():
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.BCEWithLogitsLoss()
     
-    epochs = 20
+    epochs = 200
     best_acc = 0.0
+    
+    history = {
+        'train_loss': [],
+        'train_acc': [],
+        'val_loss': [],
+        'val_acc': []
+    }
     
     print("Starting training...")
     for epoch in range(epochs):
@@ -208,6 +235,11 @@ def main():
         
         train_loss, train_acc = train_epoch(model, train_loader, optimizer, criterion, device)
         val_loss, val_acc, avg_iso_sig, avg_iso_bkg = eval_epoch(model, test_loader, criterion, device)
+        
+        history['train_loss'].append(train_loss)
+        history['train_acc'].append(train_acc)
+        history['val_loss'].append(val_loss)
+        history['val_acc'].append(val_acc)
         
         t1 = time.time()
         print(f"Epoch {epoch+1:02d}/{epochs} | Time: {t1-t0:.1f}s | "
@@ -225,6 +257,35 @@ def main():
     model.load_state_dict(torch.load('best_soft_iso_model.pt', weights_only=True))
     print(f"Learned Threshold (Iso Cut): {model.threshold.item():.3f}")
     print(f"Learned Scale: {F.softplus(model.scale_raw).item():.3f}")
+
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, epochs + 1), history['train_loss'], label='Train Loss')
+    plt.plot(range(1, epochs + 1), history['val_loss'], label='Test Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Testing Loss')
+    plt.yscale('log')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f'loss_plot_{timestamp}.png')
+    plt.close()
+
+    train_oneminusacc = [1-acc for acc in history['train_acc']]
+    val_oneminusacc = [1-acc for acc in history['val_acc']]
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, epochs + 1), train_oneminusacc, label='Train Accuracy')
+    plt.plot(range(1, epochs + 1), val_oneminusacc, label='Test Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('1 - Accuracy')
+    plt.title('Training and Testing Accuracy')
+    plt.yscale('log')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f'accuracy_plot_{timestamp}.png')
+    plt.close()
+    print(f"Saved plots with timestamp: {timestamp}")
 
 if __name__ == '__main__':
     main()
