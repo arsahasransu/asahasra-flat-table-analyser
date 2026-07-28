@@ -78,6 +78,7 @@ class SoftIsoSumNetwork(nn.Module):
         
         return logits, iso_sum, weights
 
+
 def prepare_dataloaders(train_path, test_path, batch_size=1024):
     print("Loading data...")
     train_data = torch.load(train_path, weights_only=True)
@@ -149,6 +150,7 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     
     return train_loader, test_loader, norm_stats
 
+
 def train_epoch(model, loader, optimizer, criterion, device):
     model.train()
     total_loss = 0.0
@@ -176,6 +178,7 @@ def train_epoch(model, loader, optimizer, criterion, device):
         total += y.size(0)
         
     return total_loss / total, correct / total
+
 
 @torch.no_grad()
 def eval_epoch(model, loader, criterion, device):
@@ -217,7 +220,9 @@ def eval_epoch(model, loader, criterion, device):
         
     return total_loss / total, correct / total, avg_iso_sig, avg_iso_bkg
 
-def plot_epoch(history, epochs):
+
+def plot_epoch(history, epochs, *,
+               savefile_ext = ""):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     
     plt.figure(figsize=(10, 5))
@@ -229,7 +234,7 @@ def plot_epoch(history, epochs):
     plt.yscale('log')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f'loss_plot_{timestamp}.png')
+    plt.savefig(f'loss_plot{savefile_ext}_{timestamp}.png')
     plt.close()
 
     train_oneminusacc = [1-acc for acc in history['train_acc']]
@@ -243,36 +248,25 @@ def plot_epoch(history, epochs):
     plt.yscale('log')
     plt.legend()
     plt.grid(True)
-    plt.savefig(f'accuracy_plot_{timestamp}.png')
+    plt.savefig(f'accuracy_plot{savefile_ext}_{timestamp}.png')
     plt.close()
     print(f"Saved plots with timestamp: {timestamp}")
 
-def main():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    if device.type == 'cpu':
-        # Optimize CPU threading for multi-core scaling
-        cores = os.cpu_count()
-        # Fallback to os.cpu_count(), but respect batch scheduler core limits if present
-        num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', cores if cores else 4))
-        torch.set_num_threads(num_threads)
-        print(f"Using device: {device} with {num_threads} intra-op threads")
-    else:
-        print(f"Using device: {device}")
-    
-    train_path = 'convert_root_to_torch/train_data.pt'
-    test_path = 'convert_root_to_torch/test_data.pt'
-    
+
+def train_model(device, train_path, test_path, *,
+                savefile_ext = "",
+                epochs = 20,
+                batch_size = 1024):
     # Increased batch size for better multi-core throughput
-    train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=8192)
-    torch.save(norm_stats, 'norm_stats.pt')
+    train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=batch_size)
+    torch.save(norm_stats, f'norm_stats{savefile_ext}.pt')
     
     model = SoftIsoSumNetwork(tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[64, 32]).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.BCEWithLogitsLoss()
     
-    epochs = 20
+    epochs = epochs
     best_acc = 0.0
     
     history = {
@@ -302,16 +296,38 @@ def main():
               
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), 'best_soft_iso_model.pt')
+            torch.save(model.state_dict(), f'best_soft_iso_model{savefile_ext}.pt')
             
     print(f"Training complete. Best Validation Accuracy: {best_acc:.4f}")
     
     # Print final learned parameters
-    model.load_state_dict(torch.load('best_soft_iso_model.pt', weights_only=True))
+    model.load_state_dict(torch.load(f'best_soft_iso_model{savefile_ext}.pt', weights_only=True))
     print(f"Learned Threshold (Iso Cut): {model.threshold.item():.3f}")
     print(f"Learned Scale: {F.softplus(model.scale_raw).item():.3f}")
 
-    plot_epoch(history, epochs)
+    plot_epoch(history, epochs, savefile_ext = savefile_ext)
+
+
+def main():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    if device.type == 'cpu':
+        # Optimize CPU threading for multi-core scaling
+        cores = os.cpu_count()
+        # Fallback to os.cpu_count(), but respect batch scheduler core limits if present
+        num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', cores if cores else 4))
+        torch.set_num_threads(num_threads)
+        print(f"Using device: {device} with {num_threads} intra-op threads")
+    else:
+        print(f"Using device: {device}")
+    
+    train_path_eb = 'convert_root_to_torch/eb_train_data.pt'
+    test_path_eb = 'convert_root_to_torch/eb_test_data.pt'
+    train_model(device, train_path_eb, test_path_eb, savefile_ext = "_eb")
+    
+    train_path_ee = 'convert_root_to_torch/ee_train_data.pt'
+    test_path_ee = 'convert_root_to_torch/ee_test_data.pt'
+    train_model(device, train_path_ee, test_path_ee, savefile_ext = "_ee")
 
 if __name__ == '__main__':
     main()
