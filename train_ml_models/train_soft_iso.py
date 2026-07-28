@@ -73,23 +73,26 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     # Count the number of tkel features in data
     data_features = train_data['features']
     tkel_index = sum([feature.startswith('tkel') for feature in data_features])
-    print(f'Features of data for tkel: {tkel_index}')
+    if tkel_index != tkel_bs:
+        raise(f'Required exact match of tkel features: {tkel_bs}, found {tkel_index}')
     puppi_features = sum([feature.startswith('mpuppi') for feature in data_features])
-    print(f'Features of data for puppi: {puppi_features}')
+    if puppi_features // puppicands != puppi_bs:
+        raise(f'Required exact match of puppi features: {puppi_bs}, '\
+              'found {puppi_features}')
     
     # Split into tkel and puppi
-    tkel_train = x_train[:, 0:tkel_index]
-    puppi_train_flat = x_train[:, tkel_index:]
+    tkel_train = x_train[:, 0:tkel_bs]
+    puppi_train_flat = x_train[:, tkel_bs:]
     if puppi_features%puppicands == 0:
-        puppi_train = puppi_train_flat.reshape(-1, puppicands, puppi_features//puppicands)
+        puppi_train = puppi_train_flat.reshape(-1, puppicands, puppi_bs)
     else:
         raise UnboundLocalError(f"Unresolved splitting of puppi cands, found "\
                 f"features {puppi_features} for {puppicands} puppi canddiates")
     
-    tkel_test = x_test[:, 0:tkel_index]
-    puppi_test_flat = x_test[:, tkel_index:]
+    tkel_test = x_test[:, 0:tkel_bs]
+    puppi_test_flat = x_test[:, tkel_bs:]
     if puppi_features%puppicands == 0:
-        puppi_test = puppi_test_flat.reshape(-1, puppicands, puppi_features//puppicands)
+        puppi_test = puppi_test_flat.reshape(-1, puppicands, puppi_bs)
     else:
         raise UnboundLocalError(f"Unresolved splitting of puppi cands, found "\
                 f"features {puppi_features} for {puppicands} puppi canddiates")
@@ -198,6 +201,36 @@ def eval_epoch(model, loader, criterion, device):
         
     return total_loss / total, correct / total, avg_iso_sig, avg_iso_bkg
 
+def plot_epoch(history, epochs):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, epochs + 1), history['train_loss'], label='Train Loss')
+    plt.plot(range(1, epochs + 1), history['val_loss'], label='Test Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Testing Loss')
+    plt.yscale('log')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f'loss_plot_{timestamp}.png')
+    plt.close()
+
+    train_oneminusacc = [1-acc for acc in history['train_acc']]
+    val_oneminusacc = [1-acc for acc in history['val_acc']]
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, epochs + 1), train_oneminusacc, label='Train Accuracy')
+    plt.plot(range(1, epochs + 1), val_oneminusacc, label='Test Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('1 - Accuracy')
+    plt.title('Training and Testing Accuracy')
+    plt.yscale('log')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f'accuracy_plot_{timestamp}.png')
+    plt.close()
+    print(f"Saved plots with timestamp: {timestamp}")
+
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -218,12 +251,12 @@ def main():
     train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=8192)
     torch.save(norm_stats, 'norm_stats.pt')
     
-    model = SoftIsoSumNetwork(tkel_dim=11, puppi_dim=14, hidden_dims=[256, 128, 64, 32]).to(device)
+    model = SoftIsoSumNetwork(tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[64, 32]).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.BCEWithLogitsLoss()
     
-    epochs = 200
+    epochs = 20
     best_acc = 0.0
     
     history = {
@@ -262,34 +295,7 @@ def main():
     print(f"Learned Threshold (Iso Cut): {model.threshold.item():.3f}")
     print(f"Learned Scale: {F.softplus(model.scale_raw).item():.3f}")
 
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    plt.figure(figsize=(10, 5))
-    plt.plot(range(1, epochs + 1), history['train_loss'], label='Train Loss')
-    plt.plot(range(1, epochs + 1), history['val_loss'], label='Test Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Training and Testing Loss')
-    plt.yscale('log')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(f'loss_plot_{timestamp}.png')
-    plt.close()
-
-    train_oneminusacc = [1-acc for acc in history['train_acc']]
-    val_oneminusacc = [1-acc for acc in history['val_acc']]
-    plt.figure(figsize=(10, 5))
-    plt.plot(range(1, epochs + 1), train_oneminusacc, label='Train Accuracy')
-    plt.plot(range(1, epochs + 1), val_oneminusacc, label='Test Accuracy')
-    plt.xlabel('Epochs')
-    plt.ylabel('1 - Accuracy')
-    plt.title('Training and Testing Accuracy')
-    plt.yscale('log')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(f'accuracy_plot_{timestamp}.png')
-    plt.close()
-    print(f"Saved plots with timestamp: {timestamp}")
+    plot_epoch(history, epochs)
 
 if __name__ == '__main__':
     main()
