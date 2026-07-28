@@ -1,3 +1,19 @@
+"""
+NN training script with the following constraints:
+ 1. The Shared MLP (Selector): A neural network 
+    (Linear(num_features, _) -> ReLU -> ... -> Linear(_, 1) -> Sigmoid) 
+    analyzes each of the PUPPI candidates by concatenating its features with the tkel 
+    features. It outputs a weight w_i between 0 and 1 for each candidate.
+ 2. The Soft IsoSum: The network computes iso_sum = sum(w_i * puppi_pt_i) 
+    over all puppi candidates, calculating the unnormalized, physical sum in GeV.
+ 3. The Option A Constraint: To map this physical isolation sum to a 
+    binary classification probability, the network uses a learnable threshold and scale:
+    Logits = (Threshold - IsoSum) * Scale
+    Because IsoSum is subtracted, the network is strictly mathematically 
+    forced to minimize IsoSum for Signal (to yield positive logits/probability > 0.5) 
+    and maximize IsoSum for Background (to yield negative logits/probability < 0.5).
+"""
+
 import os
 import torch
 import torch.nn as nn
