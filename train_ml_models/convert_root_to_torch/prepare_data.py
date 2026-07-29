@@ -4,6 +4,13 @@ import uproot
 import torch
 
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from ml_helper_functions import get_tkel_branches, get_puppi_branches
+from ml_helper_functions import split_puppi_by_pdgid, flatten_puppi_collections
+from ml_helper_functions import flatten_tkel_collection, pair_tkel_puppi_and_filter
+
 def flatten_per_tkel(filename: str, *,
                      tkeltag = "",
                      puppitag = ""):
@@ -11,37 +18,12 @@ def flatten_per_tkel(filename: str, *,
     try:
         file = uproot.open(filename)['snapshot']
     except:
-        print(f'Unable to snapshot tree in file: {filename}')
+        raise FileExistsError(f'Unable to snapshot tree in file: {filename}')
     print(f'Opened {filename}')
 
     # List the exact branches we need to save memory and time
-    tkel_branches = {
-        "pt": f"TkEleL2_{tkeltag}pt",
-        "eta": f"TkEleL2_{tkeltag}eta",
-        "phi": f"TkEleL2_{tkeltag}phi",
-        "caloEta": f"TkEleL2_{tkeltag}caloEta",
-        "caloPhi": f"TkEleL2_{tkeltag}caloPhi",
-        "tkPt": f"TkEleL2_{tkeltag}tkPt",
-        "tkEta": f"TkEleL2_{tkeltag}tkEta",
-        "tkPhi": f"TkEleL2_{tkeltag}tkPhi",
-        "charge": f"TkEleL2_{tkeltag}charge",
-        "hwQual": f"TkEleL2_{tkeltag}hwQual",
-        "vz": f"TkEleL2_{tkeltag}vz"
-    }
-    
-    puppi_branches = {
-        "pt": f"L1PuppiCands_{puppitag}pt",
-        "eta": f"L1PuppiCands_{puppitag}eta",
-        "phi": f"L1PuppiCands_{puppitag}phi",
-        "mass": f"L1PuppiCands_{puppitag}mass",
-        "charge": f"L1PuppiCands_{puppitag}charge",
-        "dxy": f"L1PuppiCands_{puppitag}dxy",
-        "hwDxy": f"L1PuppiCands_{puppitag}hwDxy",
-        "hwTkQuality": f"L1PuppiCands_{puppitag}hwTkQuality",
-        "pdgId": f"L1PuppiCands_{puppitag}pdgId",
-        "puppiWeight": f"L1PuppiCands_{puppitag}puppiWeight",
-        "z0": f"L1PuppiCands_{puppitag}z0"
-    }
+    tkel_branches = get_tkel_branches(tkeltag)
+    puppi_branches = get_puppi_branches(puppitag)
     
     branches_to_load = list(tkel_branches.values()) + list(puppi_branches.values())
     data = file.arrays(filter_name=branches_to_load)
@@ -50,105 +32,10 @@ def flatten_per_tkel(filename: str, *,
     tkel = ak.zip({k: data[v] for k, v in tkel_branches.items()})
     puppi = ak.zip({k: data[v] for k, v in puppi_branches.items()})
 
-    # Create a cartesian product to pair every TkEl with every L1PuppCand
-    pairs = ak.cartesian({"tkel": tkel, "puppi": puppi}, nested=True)
-    deta = pairs.tkel.eta - pairs.puppi.eta
-    dphi = pairs.tkel.phi - pairs.puppi.phi
-    dphi = dphi - 2 * np.pi * np.round(dphi / (2 * np.pi))
-    dr = np.sqrt(deta**2 + dphi**2)
-
-    # Add dR to the puppi records in pairs
-    pairs["puppi", "dR"] = dr
-    pairs["puppi", "deta"] = deta
-    pairs["puppi", "dphi"] = dphi
-
-    # Filter based on dr
-    mask = (dr > 0) & (dr < 0.5)
-    filtered_puppi = pairs.puppi[mask]
-
-    # Reassociate TkEl with matched L1PuppiCand
-    tkel_with_puppi = ak.zip(
-        {"tkel": tkel, "mpuppi": filtered_puppi},
-        depth_limit = 2
-    )
+    tkel_with_puppi = pair_tkel_puppi_and_filter(tkel, puppi, dr_cut=0.5)
 
     per_tkel_data = ak.flatten(tkel_with_puppi, axis=1)
     return per_tkel_data
-
-
-def split_puppi_by_pdgid(data):
-    """
-    Splits the nested 'mpuppi' collection into separate collections based on absolute pdgId:
-    - mpuppiel: 11
-    - mpuppiph: 22
-    - mpuppimu: 13
-    - mpuppich: 211
-    - mpuppinh: 130
-    """
-    mpuppi = data.mpuppi
-    abs_pdg = np.abs(mpuppi.pdgId)
-    
-    data["mpuppiel"] = mpuppi[abs_pdg == 11]
-    data["mpuppiph"] = mpuppi[abs_pdg == 22]
-    data["mpuppimu"] = mpuppi[abs_pdg == 13]
-    data["mpuppich"] = mpuppi[abs_pdg == 211]
-    data["mpuppinh"] = mpuppi[abs_pdg == 130]
-    
-    return data
-
-
-def flatten_puppi_collections(data, max_items=5):
-    """
-    Takes the max_items highest pT elements from each mpuppi category,
-    pads with 0 if fewer than max_items exist, and flattens them into individual columns.
-    Original mpuppi collections are removed for efficiency.
-    """
-    collections = ['mpuppiel', 'mpuppiph', 'mpuppimu', 'mpuppich', 'mpuppinh']
-    
-    new_cols = {}
-    
-    # Retain fields that are not part of the PUPPI collections and not the general 'mpuppi'
-    for field in data.fields:
-        if field not in collections and field != "mpuppi":
-            new_cols[field] = data[field]
-        
-    for coll in collections:
-        if coll not in data.fields:
-            print(f"Warning, did not find {coll} in data")
-            continue
-            
-        # Sort by pT descending
-        sorted_coll = data[coll][ak.argsort(data[coll].pt, ascending=False)]
-        
-        # Slice top max_items and pad to ensure exactly max_items length
-        padded_coll = ak.pad_none(sorted_coll[:, :max_items], max_items, axis=1)
-        
-        # Flatten into new columns
-        for i in range(max_items):
-            item_i = padded_coll[:, i]
-            for field in item_i.fields:
-                col_name = f"{coll}_{i}_{field}"
-                # Replace None with 0 for each field
-                new_cols[col_name] = ak.fill_none(item_i[field], 0)
-                
-    # Zip all new columns simultaneously instead of assigning one by one (huge speedup)
-    return ak.zip(new_cols, depth_limit=1)
-
-
-def flatten_tkel_collection(data):
-    """
-    Expands the nested 'tkel' collection into individual top-level fields
-    and removes the original 'tkel' collection.
-    """
-    new_cols = {}
-    for field in data.fields:
-        if field == "tkel":
-            for tkel_field in data.tkel.fields:
-                new_cols[f"tkel_{tkel_field}"] = data.tkel[tkel_field]
-        else:
-            new_cols[field] = data[field]
-            
-    return ak.zip(new_cols, depth_limit=1)
 
 
 def save_as_pytorch(data, filename):
@@ -177,6 +64,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
     sig_data = flatten_per_tkel(signal_file,
                                 tkeltag = stkeltag,
                                 puppitag = spuppitag)
+    if sig_data is None: return None, None
     sig_data = split_puppi_by_pdgid(sig_data)
     sig_data = flatten_puppi_collections(sig_data, max_items=max_items)
     sig_data = flatten_tkel_collection(sig_data)
@@ -187,6 +75,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
     bkg_data = flatten_per_tkel(bkg_file,
                                 tkeltag = btkeltag,
                                 puppitag = bpuppitag)
+    if bkg_data is None: return None, None
     bkg_data = split_puppi_by_pdgid(bkg_data)
     bkg_data = flatten_puppi_collections(bkg_data, max_items=max_items)
     bkg_data = flatten_tkel_collection(bkg_data)
@@ -210,7 +99,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
 
 
 if __name__ == "__main__":
-    eb_train_data, eb_test_data = prepare_ml_data(
+    eb_res = prepare_ml_data(
         '../../DY_PU200_EB_snapshot.root',
         '../../MinBias_EB_snapshot.root',
         stkeltag = "Pt5_EB_MCH_", btkeltag = "Pt5_EB_",
@@ -218,11 +107,12 @@ if __name__ == "__main__":
         bpuppitag = "Pt1_TkEleL2Pt5EB_0p0dR0p5_",
         max_items = 5
     )
+    if eb_res[0] is not None:
+        eb_train_data, eb_test_data = eb_res
+        save_as_pytorch(eb_train_data, 'eb_train_data.pt')
+        save_as_pytorch(eb_test_data, 'eb_test_data.pt')
 
-    save_as_pytorch(eb_train_data, 'eb_train_data.pt')
-    save_as_pytorch(eb_test_data, 'eb_test_data.pt')
-
-    ee_train_data, ee_test_data = prepare_ml_data(
+    ee_res = prepare_ml_data(
         '../../DY_PU200_EE_snapshot.root',
         '../../MinBias_EE_snapshot.root',
         stkeltag = "Pt5_EE_MCH_", btkeltag = "Pt5_EE_",
@@ -230,6 +120,7 @@ if __name__ == "__main__":
         bpuppitag = "Pt1_TkEleL2Pt5EE_0p0dR0p5_",
         max_items = 5
     )
-
-    save_as_pytorch(ee_train_data, 'ee_train_data.pt')
-    save_as_pytorch(ee_test_data, 'ee_test_data.pt')
+    if ee_res[0] is not None:
+        ee_train_data, ee_test_data = ee_res
+        save_as_pytorch(ee_train_data, 'ee_train_data.pt')
+        save_as_pytorch(ee_test_data, 'ee_test_data.pt')

@@ -24,60 +24,9 @@ import math
 import matplotlib.pyplot as plt
 import datetime
 
-
-tkel_bs = 11
-puppi_bs = 14
-nlargestpt_per_puppipart = 5
-npuppipart = 5
-puppicands = nlargestpt_per_puppipart * npuppipart
-
-class SoftIsoSumNetwork(nn.Module):
-    def __init__(self, tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[64, 32]):
-        super().__init__()
-        
-        # Build shared MLP for candidates
-        layers = []
-        input_dim = tkel_dim + puppi_dim
-        for h_dim in hidden_dims:
-            layers.append(nn.Linear(input_dim, h_dim))
-            layers.append(nn.ReLU())
-            input_dim = h_dim
-        layers.append(nn.Linear(input_dim, 1))
-        
-        self.mlp = nn.Sequential(*layers)
-        
-        # Learnable threshold and scale for BCE conversion
-        # We want: logit = (threshold - iso_sum) * scale
-        self.threshold = nn.Parameter(torch.tensor([5.0]))
-        self.scale_raw = nn.Parameter(torch.tensor([0.0])) # F.softplus(0) ~ 0.69
-        
-    def forward(self, tkel_norm, puppi_norm, puppi_pt_unnorm):
-        """
-        tkel_norm: (batch, tkel_bs)
-        puppi_norm: (batch, puppicands, puppi_bs)
-        puppi_pt_unnorm: (batch, puppicands) - physical pT to sum over
-        """
-        batch_size = tkel_norm.shape[0]
-        
-        # Expand tkel: (batch, puppicands, tkel_bs)
-        tkel_expanded = tkel_norm.unsqueeze(1).expand(-1, puppicands, -1)
-        
-        # Concat: (batch, puppicands, tkel_bs + puppi_bs)
-        combined = torch.cat([tkel_expanded, puppi_norm], dim=2)
-        
-        # MLP -> Weights: (batch, puppicands)
-        weights_logit = self.mlp(combined).squeeze(-1)
-        weights = torch.sigmoid(weights_logit)
-        
-        # Weighted sum of physical pT
-        iso_sum = torch.sum(weights * puppi_pt_unnorm, dim=1) # (batch,)
-        
-        # Convert to BCE logit
-        scale = F.softplus(self.scale_raw)
-        logits = (self.threshold - iso_sum) * scale
-        
-        return logits, iso_sum, weights
-
+import sys
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from ml_helper_functions import SoftIsoSumNetwork, tkel_bs, puppi_bs, puppicands
 
 def prepare_dataloaders(train_path, test_path, batch_size=1024):
     print("Loading data...")
