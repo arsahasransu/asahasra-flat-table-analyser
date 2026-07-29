@@ -67,13 +67,20 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     puppi_pt_train = puppi_train[:, :, 0].clone()
     puppi_pt_test = puppi_test[:, :, 0].clone()
     
+    # Apply log(pT) transformation in-place on the feature arrays before calculating stats
+    tkel_train[:, 0] = torch.log(torch.clamp(tkel_train[:, 0], min=1e-6))
+    tkel_test[:, 0] = torch.log(torch.clamp(tkel_test[:, 0], min=1e-6))
+    
+    puppi_train[:, :, 0] = torch.log(torch.clamp(puppi_train[:, :, 0], min=1e-6))
+    puppi_test[:, :, 0] = torch.log(torch.clamp(puppi_test[:, :, 0], min=1e-6))
+    
     # Compute Normalization statistics on Train only
     tkel_mean = tkel_train.mean(dim=0)
     tkel_std = tkel_train.std(dim=0)
     tkel_std[tkel_std < 1e-6] = 1.0 # Prevent division by zero
     
     # Normalize all 25 candidates uniformly
-    puppi_train_reshaped = puppi_train.reshape(-1, 14)
+    puppi_train_reshaped = puppi_train.reshape(-1, puppi_bs)
     puppi_mean = puppi_train_reshaped.mean(dim=0)
     puppi_std = puppi_train_reshaped.std(dim=0)
     puppi_std[puppi_std < 1e-6] = 1.0

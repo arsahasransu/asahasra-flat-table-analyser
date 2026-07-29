@@ -5,7 +5,6 @@ puppiIsoData/
 nb_plots/*
 *.png
 *.DS_Store
-*.parquet
 env_report.json
 *.pkl
 *.pt
