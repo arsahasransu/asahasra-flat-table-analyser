@@ -108,9 +108,11 @@ def make_roc(vals: list[list[np.ndarray]], *,
     roc_res = []
 
     for (si, bi, sample) in vals:
+        si_flat = ak.to_numpy(ak.flatten(si, axis=None))
+        bi_flat = ak.to_numpy(ak.flatten(bi, axis=None))
 
-        true_val = np.concatenate([np.ones_like(si), np.zeros_like(bi)])
-        pred_scores = np.concatenate([si, bi]) 
+        true_val = np.concatenate([np.ones_like(si_flat), np.zeros_like(bi_flat)])
+        pred_scores = np.concatenate([si_flat, bi_flat]) 
 
         fpr, tpr, auc, thr = roc_curve(true_val, pred_scores, points = points)
         print(f"AUC: {auc:.4f}")
@@ -130,23 +132,19 @@ def make_roc_per_event(vals, *,
 
     def _compute_roc(si, bi):
         # Filter to non-empty events only
-        si_nonempty = [ev for ev in si if len(ev) > 0]
-        bi_nonempty = [ev for ev in bi if len(ev) > 0]
+        si_nonempty = si[ak.num(si) > 0]
+        bi_nonempty = bi[ak.num(bi) > 0]
 
         nsi = len(si_nonempty)
         nbi = len(bi_nonempty)
 
         # Precompute per-event minimum — O(n_events)
-        si_mins = np.array([ev.min() for ev in si_nonempty])
-        bi_mins = np.array([ev.min() for ev in bi_nonempty])
-
-        # Sort mins once — O(n_events log n_events)
-        si_mins_sorted = np.sort(si_mins)
-        bi_mins_sorted = np.sort(bi_mins)
+        si_mins_np = np.sort(ak.to_numpy(ak.min(si_nonempty, axis=1)))
+        bi_mins_np = np.sort(ak.to_numpy(ak.min(bi_nonempty, axis=1)))
 
         # Count events passing each threshold — O(n_thresholds log n_events)
-        tpr_counts = np.searchsorted(si_mins_sorted, thrvs_sorted, side='right')
-        fpr_counts = np.searchsorted(bi_mins_sorted, thrvs_sorted, side='right')
+        tpr_counts = np.searchsorted(si_mins_np, thrvs_sorted, side='right')
+        fpr_counts = np.searchsorted(bi_mins_np, thrvs_sorted, side='right')
 
         tprvs = tpr_counts / nsi
         fprvs = fpr_counts / nbi
@@ -169,31 +167,18 @@ def make_roc_per_event(vals, *,
     ptcuts = sorted(ptcuts)
     all_roc_res = []
 
-    def generate_mask(arr, ptlim):
-        return np.vectorize(lambda x: x > ptlim, otypes=[object])(arr)
-
-    def apply_mask(arr, mask):
-        masked_arr = np.vectorize(lambda x, m: x[m], otypes=[object])(arr, mask)
-        return np.array([x for x in masked_arr if x.size > 0], dtype=object)
-
     for ptcut in ptcuts:
         roc_res = []
         for (si, bi, sample) in vals:
             print(f"PT cut = {ptcut} GeV, sample = {sample}")
 
-            # start = time.time()
-            s_mask = generate_mask(si_pt, ptcut)
-            si_filtered = apply_mask(si, s_mask)
+            si_filtered = si[si_pt > ptcut]
+            bi_filtered = bi[bi_pt > ptcut]
 
-            b_mask = generate_mask(bi_pt, ptcut)
-            bi_filtered = apply_mask(bi, b_mask)
-            # end = time.time()
-            # print(f"Time taken to filter events: {end - start} seconds")
-
-            nsi = si_filtered.shape[0]
-            nbi = bi_filtered.shape[0]
-            print(f"  Signal events: {nsi} / {si.shape[0]}")
-            print(f"  Background events: {nbi} / {bi.shape[0]}")
+            nsi = ak.sum(ak.num(si_filtered) > 0)
+            nbi = ak.sum(ak.num(bi_filtered) > 0)
+            print(f"  Signal events: {nsi} / {len(si)}")
+            print(f"  Background events: {nbi} / {len(bi)}")
 
             fprvs, tprvs = _compute_roc(si_filtered, bi_filtered)
             label = sample

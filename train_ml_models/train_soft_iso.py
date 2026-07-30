@@ -211,13 +211,13 @@ def plot_epoch(history, epochs, *,
 
 def train_model(device, train_path, test_path, *,
                 savefile_ext = "",
-                epochs = 20,
+                epochs = 60,
                 batch_size = 1024):
     # Increased batch size for better multi-core throughput
     train_loader, test_loader, norm_stats = prepare_dataloaders(train_path, test_path, batch_size=batch_size)
     torch.save(norm_stats, f'norm_stats{savefile_ext}.pt')
     
-    model = SoftIsoSumNetwork(tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[64, 32]).to(device)
+    model = SoftIsoSumNetwork(tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[32, 32]).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.BCEWithLogitsLoss()

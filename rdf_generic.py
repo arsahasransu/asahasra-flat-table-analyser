@@ -88,12 +88,13 @@ def load_rdf_snapshot_from_root(
     rootpath: str,
     treename: str = 'snapshot',
     step_size: int = 100_000
-) -> dict[str, np.ndarray]:
+):
     """
-    Load ROOT snapshot tree → dict of numpy arrays.
+    Load ROOT snapshot tree → dict of awkward arrays.
 
     """
     import uproot
+    import awkward as ak
     from concurrent.futures import ThreadPoolExecutor
 
     executor = ThreadPoolExecutor()   # uproot picks thread count
@@ -109,7 +110,7 @@ def load_rdf_snapshot_from_root(
             for batch in tree.iterate(
                 branches,
                 step_size=step_size,
-                library="np",          # returns numpy directly — no .to_list()
+                library="ak",          # use awkward arrays directly
                 decompression_executor=executor,
                 interpretation_executor=executor,
             ):
@@ -117,24 +118,13 @@ def load_rdf_snapshot_from_root(
                     accumulators[b].append(batch[b])
 
             # --- concatenate chunks ------------------------------------
-            result: dict[str, np.ndarray] = {}
+            result = {}
             for b in branches:
                 chunks = accumulators[b]
                 if not chunks:
-                    result[b] = np.array([], dtype=object)
+                    result[b] = ak.Array([])
                     continue
-
-                # Flat numeric arrays → typed concatenate (fast path)
-                if chunks[0].dtype != object:
-                    result[b] = np.concatenate(chunks)
-                else:
-                    # Ragged RVec columns — keep as object array of arrays
-                    result[b] = np.empty(sum(len(c) for c in chunks), dtype=object)
-                    idx = 0
-                    for c in chunks:
-                        for row in c:
-                            result[b][idx] = row
-                            idx += 1
+                result[b] = ak.concatenate(chunks)
 
     finally:
         executor.shutdown(wait=False)
@@ -143,11 +133,10 @@ def load_rdf_snapshot_from_root(
 
 
 def save_rdf_snapshot(df: RDataFrame, cols: list[str], savename: str, *, recreate = False):
-    parquetfilename = f'{savename}.parquet'
     rootfilename    = f'{savename}_snapshot.root'
     treename        = 'snapshot'
 
-    print("Saving: " + ", ".join(cols) + f" to {parquetfilename}")
+    print("Saving: " + ", ".join(cols) + f" to {rootfilename}")
 
     # --- Stage 1: Snapshot to ROOT (multithreaded C++ side, no Python GIL) ---
     df.Snapshot(treename, rootfilename, cols)

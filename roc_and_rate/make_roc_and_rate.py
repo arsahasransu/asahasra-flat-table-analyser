@@ -27,29 +27,33 @@ def main():
     ebspt = fsig["TkEleL2_Pt5_EB_MCH_pt"]
     ebsiso = fsig["TkEleL2_Pt5_EB_MCH_tkIso"]
     ebspiso = fsig["TkEleL2_Pt5_EB_MCH_puppiIso"]
+    ebswpiso = fsig["TkEleL2_Pt5_EB_MCH_weighted_iso_score"]
     ebspreiso = fsig["TkEleL2_Pt5_EB_MCH_reisotot_dRmin0_03_puppiIso"]
     ebspreisochg = fsig["TkEleL2_Pt5_EB_MCH_reisochg_dRmin0_03_puppiIso"]
     ebbpt = fbkg["TkEleL2_Pt5_EB_pt"]
     ebbiso = fbkg["TkEleL2_Pt5_EB_tkIso"]
     ebbpiso = fbkg["TkEleL2_Pt5_EB_puppiIso"]
+    ebbwpiso = fbkg["TkEleL2_Pt5_EB_weighted_iso_score"]
     ebbpreiso = fbkg["TkEleL2_Pt5_EB_reisotot_dRmin0_03_puppiIso"]
     ebbpreisochg = fbkg["TkEleL2_Pt5_EB_reisochg_dRmin0_03_puppiIso"]
-    print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebspreiso.shape, ebspreisochg.shape)
-    print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbpreiso.shape, ebbpreisochg.shape)
+    # print(ebspt.shape, ebsiso.shape, ebspiso.shape, ebswpiso.shape, ebspreiso.shape, ebspreisochg.shape)
+    # print(ebbpt.shape, ebbiso.shape, ebbpiso.shape, ebbwpiso.shape, ebbpreiso.shape, ebbpreisochg.shape)
 
 
     eespt = fsigee["TkEleL2_Pt5_EE_MCH_pt"]
     eesiso = fsigee["TkEleL2_Pt5_EE_MCH_tkIso"]
     eespiso = fsigee["TkEleL2_Pt5_EE_MCH_puppiIso"]
+    eeswpiso = fsigee["TkEleL2_Pt5_EE_MCH_weighted_iso_score"]
     eespreiso = fsigee["TkEleL2_Pt5_EE_MCH_reisotot_dRmin0_03_puppiIso"]
     eespreisochg = fsigee["TkEleL2_Pt5_EE_MCH_reisochg_dRmin0_03_puppiIso"]
     eebpt = fbkgee["TkEleL2_Pt5_EE_pt"]
     eebiso = fbkgee["TkEleL2_Pt5_EE_tkIso"]
     eebpiso = fbkgee["TkEleL2_Pt5_EE_puppiIso"]
+    eebwpiso = fbkgee["TkEleL2_Pt5_EE_weighted_iso_score"]
     eebpreiso = fbkgee["TkEleL2_Pt5_EE_reisotot_dRmin0_03_puppiIso"]
     eebpreisochg = fbkgee["TkEleL2_Pt5_EE_reisochg_dRmin0_03_puppiIso"]
-    print(eespt.shape, eesiso.shape, eespiso.shape, eespreiso.shape, eespreisochg.shape)
-    print(eebpt.shape, eebiso.shape, eebpiso.shape, eebpreiso.shape, eebpreisochg.shape)
+    # print(eespt.shape, eesiso.shape, eespiso.shape, eeswpiso.shape, eespreiso.shape, eespreisochg.shape)
+    # print(eebpt.shape, eebiso.shape, eebpiso.shape, eebwpiso.shape, eebpreiso.shape, eebpreisochg.shape)
 
     # PT cuts to apply
     ptcuts = [10, 15, 20]
@@ -57,7 +61,8 @@ def main():
     # --- EB ---
     roc_res_eb = make_roc_per_event([
         [ebsiso, ebbiso, 'track iso.'],
-        [ebspiso, ebbpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        # [ebspiso, ebbpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        [ebswpiso, ebbwpiso, r'ML weighted iso. score'],
         [ebspreiso, ebbpreiso, r'puppi iso. (TkEl calo. $\eta$ and $\phi$)'],
         # [ebspreisochg, ebbpreisochg, 'RePuppiIsoChg']
         ], thrvs=np.arange(0, 10.0125, 0.0125),
@@ -82,7 +87,8 @@ def main():
     # --- EE ---
     roc_res_ee = make_roc_per_event([
         [eesiso, eebiso, 'track iso.'],
-        [eespiso, eebpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        # [eespiso, eebpiso, r'puppi iso. (TkEl $\eta$ and $\phi$)'],
+        [eeswpiso, eebwpiso, r'ML weighted iso. score'],
         [eespreiso, eebpreiso, r'puppi iso. (TkEl calo. $\eta$ and $\phi$)'],
         # [eespreisochg, eebpreisochg, 'RePuppiIsoChg']
         ], thrvs=np.arange(0, 10, 0.0125),
