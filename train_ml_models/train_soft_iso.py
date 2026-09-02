@@ -36,6 +36,10 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     x_train, y_train = train_data['x'], train_data['y'].float()
     x_test, y_test = test_data['x'], test_data['y'].float()
 
+    # Load sample weights (background down-weighted relative to signal)
+    w_train = train_data.get('w', None)
+    w_test = test_data.get('w', None)
+
     # Count the number of tkel features in data
     data_features = train_data['features']
     tkel_index = sum([feature.startswith('tkel') for feature in data_features])
@@ -92,8 +96,13 @@ def prepare_dataloaders(train_path, test_path, batch_size=1024):
     puppi_train_norm = (puppi_train - puppi_mean) / puppi_std
     puppi_test_norm = (puppi_test - puppi_mean) / puppi_std
     
-    train_dataset = TensorDataset(tkel_train_norm, puppi_train_norm, puppi_pt_train, y_train)
-    test_dataset = TensorDataset(tkel_test_norm, puppi_test_norm, puppi_pt_test, y_test)
+    # Build datasets with or without weights (backward compat for old data)
+    if w_train is not None:
+        train_dataset = TensorDataset(tkel_train_norm, puppi_train_norm, puppi_pt_train, y_train, w_train)
+        test_dataset = TensorDataset(tkel_test_norm, puppi_test_norm, puppi_pt_test, y_test, w_test)
+    else:
+        train_dataset = TensorDataset(tkel_train_norm, puppi_train_norm, puppi_pt_train, y_train)
+        test_dataset = TensorDataset(tkel_test_norm, puppi_test_norm, puppi_pt_test, y_test)
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
@@ -113,16 +122,24 @@ def train_epoch(model, loader, optimizer, criterion, device):
     correct = 0
     total = 0
     
-    for tkel_norm, puppi_norm, puppi_pt, y in loader:
+    for batch in loader:
+        tkel_norm, puppi_norm, puppi_pt, y = batch[:4]
+        w = batch[4] if len(batch) == 5 else None
         tkel_norm = tkel_norm.to(device)
         puppi_norm = puppi_norm.to(device)
         puppi_pt = puppi_pt.to(device)
         y = y.to(device)
+        if w is not None:
+            w = w.to(device)
         
         optimizer.zero_grad()
         logits, iso_sum, weights = model(tkel_norm, puppi_norm, puppi_pt)
-        
-        loss = criterion(logits, y)
+
+        per_sample_loss = criterion(logits, y)
+        if w is not None:
+            loss = (per_sample_loss * w).mean()
+        else:
+            loss = per_sample_loss.mean()
         loss.backward()
         optimizer.step()
         
@@ -148,16 +165,23 @@ def eval_epoch(model, loader, criterion, device):
     sig_count = 0
     bkg_count = 0
     
-    for tkel_norm, puppi_norm, puppi_pt, y in loader:
+    for batch in loader:
+        tkel_norm, puppi_norm, puppi_pt, y = batch[:4]
+        w = batch[4] if len(batch) == 5 else None
         tkel_norm = tkel_norm.to(device)
         puppi_norm = puppi_norm.to(device)
         puppi_pt = puppi_pt.to(device)
         y = y.to(device)
+        if w is not None:
+            w = w.to(device)
         
         logits, iso_sum, weights = model(tkel_norm, puppi_norm, puppi_pt)
-        
-        loss = criterion(logits, y)
-        total_loss += loss.item() * y.size(0)
+
+        per_sample_loss = criterion(logits, y)
+        if w is not None:
+            total_loss += (per_sample_loss * w).sum().item()
+        else:
+            total_loss += per_sample_loss.sum().item()
         
         preds = (logits > 0).float()
         correct += (preds == y).sum().item()
@@ -220,7 +244,8 @@ def train_model(device, train_path, test_path, *,
     model = SoftIsoSumNetwork(tkel_dim=tkel_bs, puppi_dim=puppi_bs, hidden_dims=[32, 32]).to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    criterion = nn.BCEWithLogitsLoss()
+    # Use reduction='none' so we can apply per-sample weights manually
+    criterion = nn.BCEWithLogitsLoss(reduction='none')
     
     epochs = epochs
     best_acc = 0.0

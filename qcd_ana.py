@@ -18,7 +18,7 @@ def qcd_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     df = df.Define(sufEl+'_n', sufEl+'_pt.size()')
     df = df.Define(sufPu+'_n', sufPu+'_pt.size()')
 
-    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 15.0', 'Pt5')
+    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 5.0', 'Pt5')
     sufElPt5 = sufEl+'_Pt5'
     df = rdf_g.define_newcollection(df, sufPu, f'{sufPu}_pt >= 1.0', 'Pt1')
     sufPuPt1 = sufPu+'_Pt1'

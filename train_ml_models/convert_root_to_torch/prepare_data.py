@@ -39,20 +39,24 @@ def flatten_per_tkel(filename: str, *,
 
 
 def save_as_pytorch(data, filename):
-    feature_names = [f for f in data.fields if f != 'label']
+    feature_names = [f for f in data.fields if f not in ('label', 'weight')]
     features = []
     for f in feature_names:
         features.append(ak.to_numpy(data[f]))
-    
+
     X = np.stack(features, axis=-1)
     X_tensor = torch.tensor(X, dtype=torch.float32)
-    
+
     save_dict = {"x": X_tensor, "features": feature_names}
-    
+
     if 'label' in data.fields:
         y_tensor = torch.tensor(ak.to_numpy(data['label']), dtype=torch.long)
         save_dict["y"] = y_tensor
-        
+
+    if 'weight' in data.fields:
+        w_tensor = torch.tensor(ak.to_numpy(data['weight']), dtype=torch.float32)
+        save_dict["w"] = w_tensor
+
     torch.save(save_dict, filename)
     print(f"Saved to {filename}")
 
@@ -69,7 +73,8 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
     sig_data = flatten_puppi_collections(sig_data, max_items=max_items)
     sig_data = flatten_tkel_collection(sig_data)
     sig_data["label"] = 1
-    print(len(sig_data))
+    n_sig = len(sig_data)
+    print(f"Signal events: {n_sig}")
     
     print("Processing background...")
     bkg_data = flatten_per_tkel(bkg_file,
@@ -80,7 +85,14 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
     bkg_data = flatten_puppi_collections(bkg_data, max_items=max_items)
     bkg_data = flatten_tkel_collection(bkg_data)
     bkg_data["label"] = 0
-    print(len(bkg_data))
+    n_bkg = len(bkg_data)
+    print(f"Background events: {n_bkg}")
+
+    # Down-weight background so that signal and background contribute equally.
+    # Background weight = 1.0, signal weight = N_bkg / N_sig
+    bkg_data["weight"] = ak.full_like(bkg_data["label"], 1.0)
+    sig_data["weight"] = ak.full_like(sig_data["label"], float(n_bkg) / float(n_sig))
+    print(f"Signal weight: {n_bkg / n_sig:.2f} (bkg/sig ratio = {n_bkg / n_sig:.2f})")
     
     print("Combining and shuffling datasets...")
     combined = ak.concatenate([sig_data, bkg_data])
@@ -100,7 +112,7 @@ def prepare_ml_data(signal_file: str, bkg_file: str, *,
 
 if __name__ == "__main__":
     eb_res = prepare_ml_data(
-        '../../DY_PU200_EB_snapshot.root',
+        '../../DoubleElectronGun_PU200_EB_snapshot.root',
         '../../MinBias_EB_snapshot.root',
         stkeltag = "Pt5_EB_MCH_", btkeltag = "Pt5_EB_",
         spuppitag = "Pt1_TkEleL2Pt5EBMCH_0p0dR0p5_",
@@ -113,7 +125,7 @@ if __name__ == "__main__":
         save_as_pytorch(eb_test_data, 'eb_test_data.pt')
 
     ee_res = prepare_ml_data(
-        '../../DY_PU200_EE_snapshot.root',
+        '../../DoubleElectronGun_PU200_EE_snapshot.root',
         '../../MinBias_EE_snapshot.root',
         stkeltag = "Pt5_EE_MCH_", btkeltag = "Pt5_EE_",
         spuppitag = "Pt1_TkEleL2Pt5EEMCH_0p0dR0p5_",

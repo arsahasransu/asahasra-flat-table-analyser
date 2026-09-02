@@ -8,7 +8,7 @@ import ROOT
 
 import an_specific_utilities as anautil
 from define_cpp_utils import define_cpp_utils
-import dy_to_ll_ana
+import dy_to_ll_ana, egun_ana
 import pypkg.my_py_generic_utils as ut
 from pypkg.post_analysis_persample import post_analysis_persample
 import qcd_ana
@@ -33,6 +33,13 @@ def analyser():
 
     opts = config['general']
     samples = config['samples']
+    compute_samples = config.get('compute_samples')
+
+    if compute_samples:
+        samples = {k: v for k, v in samples.items() if k in compute_samples}
+        missing = set(compute_samples) - set(samples.keys())
+        if missing:
+            raise ValueError(f"compute_samples references unknown samples: {missing}")
 
     # Remake the histogram root output directory
     outdir = pathlib.Path(f'{opts['output_dir']}')
@@ -49,6 +56,9 @@ def analyser():
         histograms = []
         if s_info['type'] == 'dytoll':
             dy_to_ll_ana.dy_to_ll_ana_main(anamanager)
+            histograms = anamanager.get_histograms()
+        if s_info['type'] == 'egun':
+            egun_ana.egun_ana_main(anamanager)
             histograms = anamanager.get_histograms()
         elif s_info['type'] == 'qcd':
             qcd_ana.qcd_ana_main(anamanager)

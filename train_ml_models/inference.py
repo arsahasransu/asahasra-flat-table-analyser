@@ -130,10 +130,12 @@ def add_soft_iso_to_root_file(file_path, tkeltag, puppitag, *,
 if __name__ == '__main__':
     # Add main block to process all snapshot files in the current directory
     snapshot_files = [
-        ('DY_PU200_EB_snapshot.root', 'Pt5_EB_MCH_', 'Pt1_TkEleL2Pt5EBMCH_0p0dR0p5_', '_eb'),
-        ('MinBias_EB_snapshot.root', 'Pt5_EB_', 'Pt1_TkEleL2Pt5EB_0p0dR0p5_', '_eb'),
-        ('DY_PU200_EE_snapshot.root', 'Pt5_EE_MCH_', 'Pt1_TkEleL2Pt5EEMCH_0p0dR0p5_', '_ee'),
-        ('MinBias_EE_snapshot.root', 'Pt5_EE_', 'Pt1_TkEleL2Pt5EE_0p0dR0p5_', '_ee')
+        ('../DoubleElectronGun_PU200_EB_snapshot.root', 'Pt5_EB_MCH_', 'Pt1_TkEleL2Pt5EBMCH_0p0dR0p5_', '_eb'),
+        ('../DY_PU200_EB_snapshot.root', 'Pt5_EB_MCH_', 'Pt1_TkEleL2Pt5EBMCH_0p0dR0p5_', '_eb'),
+        ('../MinBias_EB_snapshot.root', 'Pt5_EB_', 'Pt1_TkEleL2Pt5EB_0p0dR0p5_', '_eb'),
+        ('../DoubleElectronGun_PU200_EE_snapshot.root', 'Pt5_EE_MCH_', 'Pt1_TkEleL2Pt5EEMCH_0p0dR0p5_', '_ee'),
+        ('../DY_PU200_EE_snapshot.root', 'Pt5_EE_MCH_', 'Pt1_TkEleL2Pt5EEMCH_0p0dR0p5_', '_ee'),
+        ('../MinBias_EE_snapshot.root', 'Pt5_EE_', 'Pt1_TkEleL2Pt5EE_0p0dR0p5_', '_ee')
     ]
     
     model_dir = os.path.dirname(__file__)

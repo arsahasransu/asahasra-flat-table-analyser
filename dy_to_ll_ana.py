@@ -35,7 +35,7 @@ def dy_to_ll_ana_main(ana_man: anut.SampleRDFManager) -> anut.SampleRDFManager:
     # ##########################################################
 
     df = rdf_g.define_newcollection(df, sufGen, f'{sufGen}_prompt==2 && abs({sufGen}_eta)<=2.5', 'DYP')
-    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 15.0', 'Pt5')
+    df = rdf_g.define_newcollection(df, sufEl, f'{sufEl}_pt >= 5.0', 'Pt5')
     sufElPt5 = sufEl+'_Pt5'
     df = rdf_g.define_newcollection(df, sufPu, f'{sufPu}_pt >= 1.0', 'Pt1')
     sufPuPt1 = sufPu+'_Pt1'

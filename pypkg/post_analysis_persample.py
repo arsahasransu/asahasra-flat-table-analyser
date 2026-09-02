@@ -6,7 +6,7 @@ import rdf_generic as rdf_g
 def post_analysis_persample(anamanager: SampleRDFManager):
     sname = anamanager.s_name
 
-    if sname == 'DY_PU200':
+    if sname == 'DY_PU200' or sname == 'DoubleElectronGun_PU200':
         print(f"\nRunning post-analysis for {sname} sample...")
 
         # STEP 3_0_0, X_X_X: For ROC curves
