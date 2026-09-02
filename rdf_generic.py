@@ -92,10 +92,19 @@ def load_rdf_snapshot_from_root(
     """
     Load ROOT snapshot tree → dict of awkward arrays.
 
+    Works with both uproot 4 (library="ak") and uproot 5 (arrays() already
+    returns awkward, no library kwarg — and no interpretation_executor).
+    Fixed-entry branches are re-batched per chunk so ak.concatenate can
+    rebuild a regular layout across chunks (required for RNTuples, whose
+    per-chunk arrays are jagged over cluster boundaries).
     """
     import uproot
     import awkward as ak
     from concurrent.futures import ThreadPoolExecutor
+
+    # uproot 5: RNTuple/LegacyTTree arrays() take neither library nor
+    # interpretation_executor; uproot 4: both exist.
+    is_uproot5 = int(uproot.__version__.split('.')[0]) >= 5
 
     executor = ThreadPoolExecutor()   # uproot picks thread count
 
@@ -104,18 +113,33 @@ def load_rdf_snapshot_from_root(
             tree = f[treename]
             branches = tree.keys()
 
+            kwargs = {
+                'decompression_executor': executor,
+            }
+            if not is_uproot5:
+                kwargs['library'] = 'ak'   # use awkward arrays directly
+                kwargs['interpretation_executor'] = executor
+
             # --- accumulate per-branch chunks --------------------------
             accumulators: dict[str, list] = {b: [] for b in branches}
 
             for batch in tree.iterate(
                 branches,
                 step_size=step_size,
-                library="ak",          # use awkward arrays directly
-                decompression_executor=executor,
-                interpretation_executor=executor,
+                **kwargs,
             ):
                 for b in branches:
-                    accumulators[b].append(batch[b])
+                    arr = batch[b]
+                    # Ragged (variable-length) branches concatenate directly.
+                    # Fixed-entry branches must be re-batched so each chunk
+                    # has the same outer length as its chunk.
+                    if hasattr(arr, 'layout') and arr.layout.is_leaf:
+                        if ak.num(arr, axis=0) == 1:
+                            accumulators[b].append(arr[0])
+                        else:
+                            accumulators[b].extend(ak.unflatten(arr, ak.num(arr)))
+                    else:
+                        accumulators[b].append(arr)
 
             # --- concatenate chunks ------------------------------------
             result = {}

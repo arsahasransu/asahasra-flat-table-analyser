@@ -115,7 +115,7 @@ def main():
 plt.rcParams.update({
     # Font
     "font.family":        "serif",
-    "font.serif":         ["Arial"],
+    "font.serif":         ["Arial", "Liberation Sans", "DejaVu Sans"],   # Arial absent on CERN; Liberation Sans is metric-compatible
     "font.size":          13,
     "axes.titlesize":     15,
     "axes.titleweight":   "bold",

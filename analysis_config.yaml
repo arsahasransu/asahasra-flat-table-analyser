@@ -4,29 +4,24 @@ general:
   tree_name: Events
 
 compute_samples:
-  # - DY_noPU
-  # - DY_PU200
-  # - MinBias
+  - DY_noPU
+  - DY_PU200
+  - MinBias
   - DoubleElectronGun_PU200
 
 samples:
   DY_noPU:
-    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU0/FP/v151Xv1/perfNano_*.root
-    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv1base/DYToLL_M50_PU0/FP/v151Xv1base/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv2_Ntuples/DYToLL_M50_PU0/FP/v151Xv2/perfNano_*.root
     type: 'dytoll'
 
   DY_PU200:
-    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU200/FP/test_Data/perfNano_*.root
-    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/DYToLL_M50_PU200/FP/v151Xv1/perfNano_*.root
-    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv1base/DYToLL_M50_PU200/FP/v151Xv1base/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv2_Ntuples/DYToLL_M50_PU200/FP/v151Xv2/perfNano_*.root
     type: 'dytoll'
 
   MinBias:
-    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/MinBias_PU200/FP/test_Data/perfNano_*.root
-    # input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuples/MinBias_PU200/FP/v151Xv1/perfNano_*.root
-    input_file_pattern: Phase2EGPuppiIso_151Xv3_Ntuplesv1base/MinBias_PU200/FP/v151Xv1base/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv2_Ntuples/MinBias_PU200/FP/v151Xv2/perfNano_*.root
     type: 'qcd'
 
   DoubleElectronGun_PU200:
-    input_file_pattern: Phase2EGPuppiIso_151Xv1_Ntuplesv1/DoubleElectronGun_PU200/FP/v151Xv1/perfNano_*.root
+    input_file_pattern: Phase2EGPuppiIso_151Xv2_Ntuples/DoubleElectronGun_PU200/FP/v151Xv2/perfNano_*.root
     type: 'egun'

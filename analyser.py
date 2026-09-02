@@ -57,7 +57,7 @@ def analyser():
         if s_info['type'] == 'dytoll':
             dy_to_ll_ana.dy_to_ll_ana_main(anamanager)
             histograms = anamanager.get_histograms()
-        if s_info['type'] == 'egun':
+        elif s_info['type'] == 'egun':
             egun_ana.egun_ana_main(anamanager)
             histograms = anamanager.get_histograms()
         elif s_info['type'] == 'qcd':
